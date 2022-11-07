@@ -1,0 +1,12 @@
+# Ignore everything
+*
+
+# allow .gitignore
+!.gitignore
+
+# alllow tex directory
+!tex/
+
+# allow texfiles
+!*.tex
+
