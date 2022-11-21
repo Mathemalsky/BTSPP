@@ -1,12 +1,27 @@
 # Ignore everything
 *
 
-# allow .gitignore
+# allow this gitignore file
 !.gitignore
 
-# alllow tex directory
+# make git searching in tex directory
 !tex/
+tex/*
 
-# allow texfiles
-!*.tex
+# allow tex files in tex directory
+!tex/*.tex
+
+# make git searching in implementation directory
+!implementation/
+implementation/*
+
+# allow basic scripts
+!implementation/.clang-format
+
+# allow implementation
+!implementation/CMakeLists.txt
+!implementation/src/
+!implementation/src/*.cpp
+!implementation/include/
+!implementation/include/*.hpp
 
