@@ -17,3 +17,6 @@ file(GLOB HEADERS "include/*.hpp")
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
+find_package(glfw3 REQUIRED)
+
+target_link_libraries (${PROJECT_NAME} PRIVATE glfw IMGUI)
