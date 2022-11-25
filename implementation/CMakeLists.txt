@@ -23,4 +23,4 @@ find_package(GLEW REQUIRED)
 
 find_package(glfw3 REQUIRED)
 
-target_link_libraries (${PROJECT_NAME} PRIVATE glfw3 GLEW::GLEW IMGUI)
+target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI)
