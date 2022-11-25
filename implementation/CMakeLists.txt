@@ -15,5 +15,15 @@ file(GLOB SOURCES "src/*.cpp")
 # lists all header files to be included in the project
 file(GLOB HEADERS "include/*.hpp")
 
+add_subdirectory(lib/imgui)
+
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
+# check include directory for included files
+target_include_directories(${PROJECT_NAME} PUBLIC include)
+
+find_package(GLEW REQUIRED)
+
+find_package(glfw3 REQUIRED)
+
+target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI)

@@ -1,34 +1,23 @@
 # Ignore everything
 *
 
+# look into subdirectories
+!*/
+
 # allow this gitignore file
 !.gitignore
 
 # allow readme file
 !README.md
 
-# make git searching in tex directory
-!tex/
-tex/*
-
 # allow tex files in tex directory
 !tex/*.tex
-
-# make git searching in implementation directory
-!implementation/
-implementation/*
 
 # allow basic scripts
 !implementation/.clang-format
 
 # allow implementation
 !implementation/CMakeLists.txt
-!implementation/src/
 !implementation/src/*.cpp
-!implementation/include/
 !implementation/include/*.hpp
-!implementation/lib/
-!implementation/lib/*
-!implementation/lib/imgui/
 !implementation/lib/imgui/*
-
