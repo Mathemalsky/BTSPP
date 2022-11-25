@@ -7,6 +7,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "definitions.hpp"
 #include "variables.hpp"
 
 void setUpImgui(GLFWwindow* window, const char* glsl_version) {
@@ -23,6 +24,11 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForOpenGL(window, true);
   ImGui_ImplOpenGL3_Init(glsl_version);
+}
+
+void initImGuiWindows() {
+  // settings window
+  imguiwindow::SHOW_SETTINGS_WINDOW = imguiwindow::INITIAL_SHOW_SETTINGS_WINDOW;
 }
 
 void drawImgui() {

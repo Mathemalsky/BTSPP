@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 
 #include "definitions.hpp"
+#include "draw.hpp"
+#include "events.hpp"
 #include "gui.hpp"
 
 // error callback function which prints glfw errors in case they arise
@@ -52,11 +54,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   glfwSwapInterval(1);  // enable vsync
 
   // set initial state of the settings window
-  // initImGuiWindows();
-  // mainWindow::initMainWindow();
+  initImGuiWindows();
 
   // setup Dear ImGui
   setUpImgui(window, glsl_version);
+
+  // set callbacks for keyboard and scrolling
+  glfwSetKeyCallback(window, keyCallback);
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
@@ -66,8 +70,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     // handle Events triggert by user input, like keyboard etc.
     // handleFastEvents();
 
+    // draw the content
+    draw(window);
+
     // draw the imgui over the fatou image
-    // drawImgui();
+    drawImgui();
 
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);

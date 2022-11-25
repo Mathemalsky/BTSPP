@@ -1,0 +1,6 @@
+#pragma once
+
+#include <GLFW/glfw3.h>
+
+void keyCallback(
+  [[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods);
