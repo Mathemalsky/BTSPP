@@ -19,7 +19,7 @@ add_subdirectory(lib/imgui)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
-find_package(GLEW 2.2 REQUIRED)
+find_package(GLEW REQUIRED)
 
 find_package(glfw3 REQUIRED)
 

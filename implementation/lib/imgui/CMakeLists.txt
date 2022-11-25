@@ -40,7 +40,7 @@ if(NOT OPENGL_FOUND)
 endif(NOT OPENGL_FOUND)
 
 # GLEW
-find_package(GLEW 2.2 REQUIRED)
+find_package(GLEW REQUIRED)
 if(NOT GLEW_FOUND)
     message(ERROR " GLEW not found!")
 endif(NOT GLEW_FOUND)
