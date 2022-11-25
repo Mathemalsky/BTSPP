@@ -1,0 +1,7 @@
+#pragma once
+
+namespace mainwindow {
+constexpr unsigned int INITIAL_HEIGHT = 720;
+constexpr unsigned int INITIAL_WIDTH  = 1280;
+constexpr const char* NAME            = "BTSP";
+}  // namespace mainwindow

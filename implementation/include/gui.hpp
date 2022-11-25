@@ -1,0 +1,15 @@
+#pragma once
+
+#include <GLFW/glfw3.h>
+
+/*!
+ * \brief setUpImgui performs checks and sets up the imgui elements
+ * \param window asociated instance of glfw window
+ * \param glsl_version
+ */
+void setUpImgui(GLFWwindow* window, const char* glsl_version);
+
+/*!
+ * \brief cleanUpImgui frees memory for gui and performs proper shutdown of windows
+ */
+void cleanUpImgui();

@@ -19,6 +19,9 @@ add_subdirectory(lib/imgui)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
+# check include directory for included files
+target_include_directories(${PROJECT_NAME} PUBLIC include)
+
 find_package(GLEW REQUIRED)
 
 find_package(glfw3 REQUIRED)
