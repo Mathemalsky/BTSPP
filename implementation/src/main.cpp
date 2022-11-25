@@ -3,10 +3,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "definitions.hpp"
-#include "draw.hpp"
-#include "events.hpp"
-#include "gui.hpp"
+#include "draw/definitions.hpp"
+#include "draw/draw.hpp"
+#include "draw/events.hpp"
+#include "draw/gui.hpp"
 
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {

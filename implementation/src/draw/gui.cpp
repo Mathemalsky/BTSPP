@@ -1,5 +1,6 @@
-#include "gui.hpp"
+#include "draw/gui.hpp"
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 // imgui library
@@ -7,8 +8,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "definitions.hpp"
-#include "variables.hpp"
+#include "draw/definitions.hpp"
+#include "draw/variables.hpp"
 
 void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   IMGUI_CHECKVERSION();

@@ -1,8 +1,9 @@
-#include "draw.hpp"
+#include "draw/draw.hpp"
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "variables.hpp"
+#include "draw/variables.hpp"
 
 void draw(GLFWwindow* window) {
   int display_w, display_h;

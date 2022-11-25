@@ -19,5 +19,10 @@
 # allow implementation
 !implementation/CMakeLists.txt
 !implementation/src/*.cpp
-!implementation/include/*.hpp
+!implementation/src/draw/*.cpp
+!implementation/include/draw/*.hpp
+!implementation/src/graph/*.cpp
+!implementation/include/graph/*.hpp
+
+# libraries
 !implementation/lib/imgui/*

@@ -1,9 +1,10 @@
-#include "events.hpp"
+#include "draw/events.hpp"
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "definitions.hpp"
-#include "variables.hpp"
+#include "draw/definitions.hpp"
+#include "draw/variables.hpp"
 
 void toggleSettingsWindow() {
   if (imguiwindow::SHOW_SETTINGS_WINDOW == true) {
