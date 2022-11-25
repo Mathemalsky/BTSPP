@@ -20,4 +20,12 @@ void keyCallback(
   if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
     toggleSettingsWindow();
   }
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+}
+
+void handleFastEvents(GLFWwindow* window) {
+  glfwGetCursorPos(window, &mouse::x, &mouse::y);
+  glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);
 }

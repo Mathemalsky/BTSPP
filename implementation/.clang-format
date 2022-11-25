@@ -55,7 +55,7 @@ AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 
 # Never merge functions into a single line
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: InlineOnly
 
 # NOT!
 # if (a) return;

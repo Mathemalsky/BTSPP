@@ -39,6 +39,8 @@ void drawImgui() {
 
   if (imguiwindow::SHOW_SETTINGS_WINDOW) {
     ImGui::Begin("Settings", &imguiwindow::SHOW_SETTINGS_WINDOW);
+    ImGui::Text("mouse x = %f", mouse::x); // DEBUG
+    ImGui::Text("mouse y = %f", mouse::y); // DBEUG
     ImGui::Text(
       "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     // if (ImGui::Button("Close")) {imGuiWindow::SHOW_SETTINGS_WINDOW = false};

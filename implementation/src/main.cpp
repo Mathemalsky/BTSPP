@@ -8,6 +8,10 @@
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
 
+#include "graph/graph.hpp"
+
+#include "euclideandistancegraph.hpp"
+
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -51,6 +55,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   if (window == nullptr)
     return 1;
   glfwMakeContextCurrent(window);
+  glewInit();
   glfwSwapInterval(1);  // enable vsync
 
   // set initial state of the settings window
@@ -62,16 +67,20 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // set callbacks for keyboard and scrolling
   glfwSetKeyCallback(window, keyCallback);
 
+  // test drawing
+  Euclidean euclidean = generateEuclideanDistanceGraph(20);
+  DrawComponents components{&euclidean};
+
   // main loop
   while (!glfwWindowShouldClose(window)) {
     // runs only through the loop if something changed
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    // handleFastEvents();
+    handleFastEvents(window);
 
     // draw the content
-    draw(window);
+    draw(window, components);
 
     // draw the imgui over the fatou image
     drawImgui();
