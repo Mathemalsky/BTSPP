@@ -1,7 +1,6 @@
-#include<GLFW/glfw3.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
-int main(int argc, char *argv[])
-{
-
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   return 0;
 }
