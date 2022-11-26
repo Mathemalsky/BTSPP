@@ -6,19 +6,14 @@
 
 class Node {
 public:
-  virtual unsigned int& index()      = 0;
-  virtual unsigned int index() const = 0;
-};
+    Node() = default;
+    Node(unsigned int v) : pIndex(v) {}
 
-class IndexNode : Node {
-  IndexNode() = default;
-  IndexNode(unsigned int v) : pIndex(v) {}
+    ~Node() = default;
 
-  ~IndexNode() = default;
-
-  void operator=(unsigned int v) { pIndex = v; }
-  unsigned int& index() override { return pIndex; }
-  unsigned int index() const override { return pIndex; }
+    void operator=(unsigned int v) { pIndex = v; }
+    unsigned int& index() { return pIndex; }
+    unsigned int index() const { return pIndex; }
 
 private:
   unsigned int pIndex;
@@ -33,10 +28,10 @@ public:
   virtual bool adjacent(const Node& u, const Node& v)   = 0;
 
 protected:
-  std::vector<Node> pNodes;
+  unsigned int pNumberOfNodes;
 };
 
-class CompleteGraph : Graph {
+class CompleteGraph : public Graph  {
 public:
   CompleteGraph()  = default;
   ~CompleteGraph() = default;
@@ -44,7 +39,7 @@ public:
   bool adjacent([[maybe_unused]] const Node& u, [[maybe_unused]] const Node& v) override { return true; }
 };
 
-class Euclidean : CompleteGraph {
+class Euclidean : public CompleteGraph {
 public:
   Euclidean() = default;
   Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) {}
