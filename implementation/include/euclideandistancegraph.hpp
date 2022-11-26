@@ -2,4 +2,4 @@
 
 #include "graph/graph.hpp"
 
-Euclidean generateEuclideanDistanceGraph (unsigned int numOfNodes);
+Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes);

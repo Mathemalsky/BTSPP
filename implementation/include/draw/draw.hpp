@@ -14,3 +14,5 @@ struct DrawComponents {
  * \param window pointer to the glfw window
  */
 void draw(GLFWwindow* window, const DrawComponents& components);
+
+void testdraw(GLuint &vertexbuffer);
