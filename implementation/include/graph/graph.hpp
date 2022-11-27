@@ -6,14 +6,14 @@
 
 class Node {
 public:
-    Node() = default;
-    Node(unsigned int v) : pIndex(v) {}
+  Node() = default;
+  Node(unsigned int v) : pIndex(v) {}
 
-    ~Node() = default;
+  ~Node() = default;
 
-    void operator=(unsigned int v) { pIndex = v; }
-    unsigned int& index() { return pIndex; }
-    unsigned int index() const { return pIndex; }
+  void operator=(unsigned int v) { pIndex = v; }
+  unsigned int& index() { return pIndex; }
+  unsigned int index() const { return pIndex; }
 
 private:
   unsigned int pIndex;
@@ -31,7 +31,7 @@ protected:
   unsigned int pNumberOfNodes;
 };
 
-class CompleteGraph : public Graph  {
+class CompleteGraph : public Graph {
 public:
   CompleteGraph()  = default;
   ~CompleteGraph() = default;

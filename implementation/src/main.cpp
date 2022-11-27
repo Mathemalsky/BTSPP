@@ -74,7 +74,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   // An array of 3 vectors which represents 3 vertices
   static const GLfloat g_vertex_buffer_data[] = {
-    -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+    -1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 1.0f,
   };
 
   // This will identify our vertex buffer
@@ -86,7 +86,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // Give our vertices to OpenGL.
   glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-  GLuint programID = linkShaders();
+  linkShaders();
 
   /* end test example */
 
@@ -119,7 +119,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
     // DEBUG
     testdraw(vertexbuffer);
-    glUseProgram(programID);
+    // glUseProgram(programID);
 
     // draw the imgui over the fatou image
     drawImgui();
