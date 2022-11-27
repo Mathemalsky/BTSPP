@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 
 constexpr const char *vertexShaderSource = "#version 440 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
+    "layout(location = 0) in vec3 vertexPosition;\n"
     "void main()\n"
     "{\n"
     "   gl_Position.xyz = vertexPosition;\n"
