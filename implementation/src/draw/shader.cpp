@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-constexpr const char* vertexShaderSource =
+constexpr const char vertexShaderSource[] =
   "#version 440 core\n"
   "layout(location = 0) in vec2 vertexPosition;\n"
   "void main()\n"
@@ -13,7 +13,7 @@ constexpr const char* vertexShaderSource =
   "   gl_Position = vec4(vertexPosition, 0.0, 1.0);\n"
   "}\0";
 
-constexpr const char* fragmentShaderSource =
+constexpr const char fragmentShaderSource[] =
   "#version 440 core\n"
   "out vec3 color;\n"
   "void main(){\n"
