@@ -8,23 +8,37 @@
 constexpr const char vertexShaderSource[] = R"glsl(
   #version 440 core
   in vec2 vertexPosition;
+  in float size;
+  in float steps;
+
+  out float vSize;
+  out float vSteps;
 
   void main() {
     gl_Position = vec4(vertexPosition, 0.0, 1.0);
+    vSize  = size;
+    vSteps = steps;
   }
 )glsl";
 
 constexpr const char geometryShaderSource[] = R"glsl(
   #version 440 core
   layout(points) in;
-  layout(line_strip, max_vertices = 2) out;
+  layout(line_strip, max_vertices = 21) out;
+
+  in float vSize[];
+  in float vSteps[];
+
+  const float PI = 3.1415926;
 
   void main() {
-    gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0);
-    EmitVertex();
+    for(int i = 0; i < vSteps[0] +1; ++i) {
+      float ang = 2.0 * PI * i / vSteps[0];
 
-    gl_Position = gl_in[0].gl_Position + vec4(0.1, 0.0, 0.0, 0.0);
-    EmitVertex();
+      vec4 offset = vec4(cos(ang) * vSize[0]/16, sin(ang) * vSize[0]/9, 0.0, 0.0);
+      gl_Position = gl_in[0].gl_Position + offset;
+      EmitVertex();
+    }
 
     EndPrimitive();
 }
