@@ -8,6 +8,7 @@
 #include "draw/draw.hpp"
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
+#include "draw/openglsetup.hpp"
 #include "draw/shader.hpp"
 
 #include "graph/graph.hpp"
@@ -67,45 +68,22 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   /* begin test example */
 
-  const GLuint shaderProgram = linkShaders();
-
-  // declare vertex array
-  GLuint VertexArrayID;
-  glGenVertexArrays(1, &VertexArrayID);
-  glBindVertexArray(VertexArrayID);
+  OpenGLHandler openGLhandler;
+  openGLhandler.linkShaderProgram();
+  openGLhandler.addVertexArray();
+  openGLhandler.addVertexBuffer();
 
   // An array of 3 vectors which represents 3 vertices
   static const GLfloat g_vertex_buffer_data[] = {
     -0.45f, 0.45f, 0.3f, 20.0f, 0.45f, 0.45f, 0.3f, 20.0f, 0.45f, -0.45f, 0.3f, 20.0f, -0.45f, -0.45f, 0.3f, 20.0f,
   };
-
-  // This will identify our vertex buffer
-  GLuint vertexbuffer;
-  // Generate 1 buffer, put the resulting identifier in vertexbuffer
-  glGenBuffers(1, &vertexbuffer);
-  // The following commands will talk about our 'vertexbuffer' buffer
-  glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
   // Give our vertices to OpenGL.
   glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-  const GLint vertexPositionAttrib = glGetAttribLocation(shaderProgram, "vertexPosition");
-  glEnableVertexAttribArray(vertexPositionAttrib);
-  glVertexAttribPointer(
-    vertexPositionAttrib,  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    2,                     // size
-    GL_FLOAT,              // type
-    GL_FALSE,              // normalized?
-    4 * sizeof(GLfloat),   // stride
-    0                      // array buffer offset
-  );
-
-  const GLint sizeAttrib = glGetAttribLocation(shaderProgram, "size");
-  glEnableVertexAttribArray(sizeAttrib);
-  glVertexAttribPointer(sizeAttrib, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*) (2 * sizeof(GLfloat)));
-
-  const GLint stepsAttrib = glGetAttribLocation(shaderProgram, "steps");
-  glEnableVertexAttribArray(stepsAttrib);
-  glVertexAttribPointer(stepsAttrib, 1, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*) (3 * sizeof(GLfloat)));
+  openGLhandler.pushBackAttribute("vertexPosition", 2);
+  openGLhandler.pushBackAttribute("size", 1);
+  openGLhandler.pushBackAttribute("steps", 1);
+  openGLhandler.enableAllVertexAttribArrays();
 
   /* end test example */
 
@@ -146,10 +124,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
   }
-
-  // delete Opengl data
-  glDeleteBuffers(1, &vertexbuffer);
-  glDeleteVertexArrays(1, &VertexArrayID);
 
   // clean up Dear ImGui
   cleanUpImgui();
