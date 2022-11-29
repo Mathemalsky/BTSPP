@@ -15,4 +15,4 @@ struct DrawComponents {
  */
 void draw(GLFWwindow* window, const DrawComponents& components);
 
-void testdraw(GLuint& vertexbuffer);
+void testdraw(GLFWwindow* window);
