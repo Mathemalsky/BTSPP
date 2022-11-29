@@ -41,5 +41,5 @@ private:
   GLuint pVertexBufferID;
 
   std::vector<VertexAttribute> pVertexAttributes;
-  static constexpr unsigned int pDataTypesSize = 4;
+  static constexpr unsigned int pDataTypesSize = sizeof (float);
 };
