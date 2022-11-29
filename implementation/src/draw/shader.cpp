@@ -7,7 +7,7 @@
 
 constexpr const char vertexShaderSource[] = R"glsl(
   #version 440 core
-  layout(location = 0) in vec2 vertexPosition;
+  in vec2 vertexPosition;
 
   void main() {
     gl_Position = vec4(vertexPosition, 0.0, 1.0);
@@ -32,10 +32,10 @@ constexpr const char geometryShaderSource[] = R"glsl(
 
 constexpr const char fragmentShaderSource[] = R"glsl(
   #version 440 core
-  out vec3 color;
+  out vec4 color;
 
   void main() {
-    color = vec3(1,0,0);
+    color = vec4(1.0, 0.0, 0.0, 1.0);
   }
 )glsl";
 

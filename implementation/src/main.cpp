@@ -88,16 +88,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // Give our vertices to OpenGL.
   glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-  // 1st attribute buffer : vertices
-  // const GLint posAttrib = glGetAttribLocation(shaderProgram, "pos");
-  glEnableVertexAttribArray(0);
+  const GLint vertexPositionAttrib = glGetAttribLocation(shaderProgram, "vertexPosition");
+  glEnableVertexAttribArray(vertexPositionAttrib);
   glVertexAttribPointer(
-    0,         // attribute 0. No particular reason for 0, but must match the layout in the shader.
-    2,         // size
-    GL_FLOAT,  // type
-    GL_FALSE,  // normalized?
-    0,         // stride
-    (void*) 0  // array buffer offset
+    vertexPositionAttrib,  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+    2,                     // size
+    GL_FLOAT,              // type
+    GL_FALSE,              // normalized?
+    0,                     // stride
+    (void*) 0              // array buffer offset
   );
 
   /* end test example */
