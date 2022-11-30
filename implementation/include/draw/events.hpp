@@ -6,4 +6,6 @@
 void keyCallback(
   [[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods);
 
+void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods);
+
 void handleFastEvents(GLFWwindow* window);

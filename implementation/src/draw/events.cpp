@@ -25,7 +25,22 @@ void keyCallback(
   }
 }
 
+void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods) {
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+    input::STATE[GLFW_MOUSE_BUTTON_LEFT] = true;
+  }
+  if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+    input::STATE[GLFW_MOUSE_BUTTON_LEFT] = false;
+  }
+}
+
+void moveNode() {
+}
+
 void handleFastEvents(GLFWwindow* window) {
   glfwGetCursorPos(window, &mouse::x, &mouse::y);
   glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);
+  if (input::STATE[GLFW_MOUSE_BUTTON_LEFT]) {
+    moveNode();
+  }
 }

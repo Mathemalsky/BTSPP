@@ -16,8 +16,8 @@ constexpr const char* NAME            = "BTSP";
 template <class T>
 class Data {
 public:
-  Data() = default;
-  Data(T* pointer, const unsigned int size, bool toDelete = false)
+  Data<T>() = default;
+  Data<T>(T* pointer, const unsigned int size, bool toDelete = false)
     : pData(pointer), pSize(size), pDestructionNeeded(toDelete) {}
   explicit Data(std::vector<T>& vec) : pData(&vec[0]), pSize(vec.size()), pDestructionNeeded(false) {}
 

@@ -38,7 +38,10 @@ public:
 
   unsigned int vertAttrTotLen() const { return pVertAttrTotLen; }
 
-  float* pointsToVertexBufferData(const Data<Point2D> points);
+  void pointsToVertexBufferData(Point2D* points, unsigned int size);
+  void vertexBufferDataToGL() {
+    glBufferData(GL_ARRAY_BUFFER, 20 * pVertAttrTotLen * pDataTypesSize, pVertexBufferData.data(), GL_STATIC_DRAW);
+  }
 
 private:
   GLuint pShaderProgramID;
@@ -48,4 +51,6 @@ private:
   std::vector<VertexAttribute> pVertexAttributes;
   unsigned int pVertAttrTotLen;
   static constexpr unsigned int pDataTypesSize = sizeof(float);
+
+  Data<float> pVertexBufferData;
 };

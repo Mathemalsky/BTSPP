@@ -10,6 +10,7 @@
 #include "draw/gui.hpp"
 #include "draw/openglhandler.hpp"
 #include "draw/shader.hpp"
+#include "draw/variables.hpp"
 
 #include "graph/graph.hpp"
 
@@ -82,12 +83,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   Euclidean euclidean = generateEuclideanDistanceGraph(20);
   // DrawComponents components{&euclidean};
 
-  Data<Point2D> points = toData(euclidean.allPositions());
+  // graph::POINTS = toData(euclidean.allPositions());
+  // Data<Point2D> points(euclidean.allPositions(), euclidean.allPositions().size(), true);
+  // graph::POINTS = (euclidean.pointer(), euclidean.numberOfNodes())
 
-  float* g_vertex_buffer_data = openGLhandler.pointsToVertexBufferData(points);
-  // Give our vertices to OpenGL.
-  glBufferData(GL_ARRAY_BUFFER, 320, g_vertex_buffer_data, GL_STATIC_DRAW);  // MAGIC NUMBER
-
+  openGLhandler.pointsToVertexBufferData(euclidean.pointer(), euclidean.numberOfNodes());
+  openGLhandler.vertexBufferDataToGL();
   /* end test example */
 
   // enable vsync
@@ -99,8 +100,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // set initial state of the settings window
   initImGuiWindows();
 
-  // set callbacks for keyboard and scrolling
+  // set callbacks for keyboard and mouse
   glfwSetKeyCallback(window, keyCallback);
+  glfwSetMouseButtonCallback(window, mouseButtonCallback);
+
+  // set input mode
+  glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
@@ -120,8 +125,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
   }
-
-  delete[] g_vertex_buffer_data;
 
   // clean up Dear ImGui
   cleanUpImgui();

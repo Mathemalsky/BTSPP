@@ -27,6 +27,8 @@ public:
   virtual double distance(const Node& u, const Node& v) = 0;
   virtual bool adjacent(const Node& u, const Node& v)   = 0;
 
+  unsigned int numberOfNodes() { return pNumberOfNodes; }
+
 protected:
   unsigned int pNumberOfNodes;
 };
@@ -42,13 +44,15 @@ public:
 class Euclidean : public CompleteGraph {
 public:
   Euclidean() = default;
-  Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) {}
+  Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) { pNumberOfNodes = positions.size(); }
 
   ~Euclidean() = default;
 
   double distance(const Node& u, const Node& v) override { return dist(pPositions[u.index()], pPositions[v.index()]); }
   Point2D position(const Node& v) const { return pPositions[v.index()]; }
   const std::vector<Point2D>& allPositions() const { return pPositions; }
+  // std::vector<Point2D>& allPositions() {return pPositions; }
+  Point2D* pointer() { return &pPositions[0]; }
 
 private:
   std::vector<Point2D> pPositions;

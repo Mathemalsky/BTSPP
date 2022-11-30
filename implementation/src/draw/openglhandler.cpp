@@ -45,13 +45,13 @@ void OpenGLHandler::enableAllVertexAttribArrays() {
 }
 
 // generalization NEEDED
-float* OpenGLHandler::pointsToVertexBufferData(const Data<Point2D> points) {
-  float* vertexBufferData = new float[points.size() * pVertAttrTotLen];
-  for (unsigned int i = 0; i < points.size(); ++i) {
+void OpenGLHandler::pointsToVertexBufferData(Point2D* points, unsigned int size) {
+  float* vertexBufferData = new float[size * pVertAttrTotLen];
+  for (unsigned int i = 0; i < size; ++i) {
     vertexBufferData[i * pVertAttrTotLen + 0] = points[i].x;
     vertexBufferData[i * pVertAttrTotLen + 1] = points[i].y;
     vertexBufferData[i * pVertAttrTotLen + 2] = 0.1f;   // radius
     vertexBufferData[i * pVertAttrTotLen + 3] = 12.0f;  // steps
   }
-  return vertexBufferData;
+  pVertexBufferData = Data(vertexBufferData, pVertAttrTotLen * size);
 }
