@@ -8,7 +8,7 @@
 #include "draw/draw.hpp"
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
-#include "draw/openglsetup.hpp"
+#include "draw/openglhandler.hpp"
 #include "draw/shader.hpp"
 
 #include "graph/graph.hpp"
@@ -73,17 +73,25 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   openGLhandler.addVertexArray();
   openGLhandler.addVertexBuffer();
 
-  // An array of 3 vectors which represents 3 vertices
-  static const GLfloat g_vertex_buffer_data[] = {
-    -0.45f, 0.45f, 0.3f, 20.0f, 0.45f, 0.45f, 0.3f, 20.0f, 0.45f, -0.45f, 0.3f, 20.0f, -0.45f, -0.45f, 0.3f, 20.0f,
-  };
-  // Give our vertices to OpenGL.
-  glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
   openGLhandler.pushBackAttribute("vertexPosition", 2);
   openGLhandler.pushBackAttribute("size", 1);
   openGLhandler.pushBackAttribute("steps", 1);
   openGLhandler.enableAllVertexAttribArrays();
+
+  // An array of 3 vectors which represents 3 vertices
+  /*
+  static const GLfloat g_vertex_buffer_data[] = {
+    -0.45f, 0.45f, 0.3f, 20.0f, 0.45f, 0.45f, 0.3f, 20.0f, 0.45f, -0.45f, 0.3f, 20.0f, -0.45f, -0.45f, 0.3f, 20.0f,
+  };
+  */
+
+  // test drawing
+  Euclidean euclidean = generateEuclideanDistanceGraph(20);
+  // DrawComponents components{&euclidean};
+
+  float* g_vertex_buffer_data = openGLhandler.euclideanDistanceGraphToVertexBufferData(&euclidean);
+  // Give our vertices to OpenGL.
+  glBufferData(GL_ARRAY_BUFFER, 320, g_vertex_buffer_data, GL_STATIC_DRAW);  // MAGIC NUMBER
 
   /* end test example */
 
@@ -99,10 +107,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // set callbacks for keyboard and scrolling
   glfwSetKeyCallback(window, keyCallback);
 
-  // test drawing
-  // Euclidean euclidean = generateEuclideanDistanceGraph(20);
-  // DrawComponents components{&euclidean};
-
   // main loop
   while (!glfwWindowShouldClose(window)) {
     // runs only through the loop if something changed
@@ -112,10 +116,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     handleFastEvents(window);
 
     // draw the content
-    // draw(window, components);
-
-    // DEBUG
-    testdraw(window);
+    draw(window);
     // glUseProgram(programID);
 
     // draw the gui
@@ -124,6 +125,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
   }
+
+  delete[] g_vertex_buffer_data;
 
   // clean up Dear ImGui
   cleanUpImgui();

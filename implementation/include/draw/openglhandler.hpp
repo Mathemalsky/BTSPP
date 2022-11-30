@@ -8,6 +8,8 @@
 
 #include "draw/shader.hpp"
 
+#include "graph/graph.hpp"
+
 struct VertexAttribute {
   std::string name;
   unsigned int size;
@@ -15,7 +17,7 @@ struct VertexAttribute {
 
 class OpenGLHandler {
 public:
-  OpenGLHandler() = default;
+  OpenGLHandler() : pVertexAttributesTotalLength(0) {}
 
   ~OpenGLHandler();
 
@@ -23,9 +25,7 @@ public:
   void addVertexBuffer();
 
   void insertAttribute(unsigned int position, std::string name, unsigned size);
-  void pushBackAttribute(std::string name, unsigned int size) {
-    pVertexAttributes.push_back(VertexAttribute{name, size});
-  }
+  void pushBackAttribute(std::string name, unsigned int size);
 
   void enableAllVertexAttribArrays();
 
@@ -35,11 +35,16 @@ public:
   GLuint vertexArrayID() const { return pVertexArrayID; }
   GLuint vertexBufferID() const { return pVertexBufferID; }
 
+  unsigned int vertAttrTotLen() const { return pVertexAttributesTotalLength; }
+
+  float* euclideanDistanceGraphToVertexBufferData(const Euclidean* graph);
+
 private:
   GLuint pShaderProgramID;
   GLuint pVertexArrayID;
   GLuint pVertexBufferID;
 
   std::vector<VertexAttribute> pVertexAttributes;
-  static constexpr unsigned int pDataTypesSize = sizeof (float);
+  unsigned int pVertexAttributesTotalLength;
+  static constexpr unsigned int pDataTypesSize = sizeof(float);
 };

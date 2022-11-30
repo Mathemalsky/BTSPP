@@ -21,7 +21,7 @@ Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
   std::cerr << "seed: ";
   seed.param(std::ostream_iterator<uint_fast32_t>(std::cerr, " "));
   std::cerr << "\n";
-  std::uniform_real_distribution<double> distribution(0, 1.0);
+  std::uniform_real_distribution<double> distribution(-0.95, 0.95);
   for (Point2D& point : positions) {
     point.x = distribution(generator);
     point.y = distribution(generator);
