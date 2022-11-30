@@ -82,7 +82,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   Euclidean euclidean = generateEuclideanDistanceGraph(20);
   // DrawComponents components{&euclidean};
 
-  float* g_vertex_buffer_data = openGLhandler.pointsToVertexBufferData(Data<Point2D>(euclidean.allPositions()));
+  Data<Point2D> points = toData(euclidean.allPositions());
+
+  float* g_vertex_buffer_data = openGLhandler.pointsToVertexBufferData(points);
   // Give our vertices to OpenGL.
   glBufferData(GL_ARRAY_BUFFER, 320, g_vertex_buffer_data, GL_STATIC_DRAW);  // MAGIC NUMBER
 

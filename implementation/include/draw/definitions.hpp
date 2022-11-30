@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <vector>
 
 namespace imguiwindow {
@@ -15,20 +16,15 @@ constexpr const char* NAME            = "BTSP";
 template <class T>
 class Data {
 public:
-  Data(const T* pointer, const unsigned int size) : pData(pointer), pSize(size), pDestructionNeeded(false) {}
-  explicit Data(const std::vector<T>& vec) : pData(&vec[0]), pSize(vec.size()), pDestructionNeeded(false) {}
+  Data() = default;
+  Data(T* pointer, const unsigned int size, bool toDelete = false)
+    : pData(pointer), pSize(size), pDestructionNeeded(toDelete) {}
+  explicit Data(std::vector<T>& vec) : pData(&vec[0]), pSize(vec.size()), pDestructionNeeded(false) {}
 
   ~Data() {
     if (pDestructionNeeded) {
       delete[] pData;
     }
-  }
-
-  void operator=(const std::vector<T>& vec) {
-    pSize              = vec.size();
-    pData              = new T[pSize];
-    pDestructionNeeded = true;
-    // std::memcpy()
   }
 
   T& operator[](unsigned int index) { return pData[index]; }
@@ -39,7 +35,15 @@ public:
   unsigned int byteSize() const { return pSize * sizeof(T); }
 
 private:
-  const T* pData;
+  T* pData;
   unsigned int pSize;
   bool pDestructionNeeded;
 };
+
+template <typename T>
+Data<T> toData(const std::vector<T>& vec) {
+  const unsigned int size = vec.size();
+  T* data                 = new T[size];
+  std::memcpy(data, &vec[0], size * sizeof(T));
+  return Data(data, size, true);
+}
