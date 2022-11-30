@@ -78,18 +78,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   openGLhandler.pushBackAttribute("steps", 1);
   openGLhandler.enableAllVertexAttribArrays();
 
-  // An array of 3 vectors which represents 3 vertices
-  /*
-  static const GLfloat g_vertex_buffer_data[] = {
-    -0.45f, 0.45f, 0.3f, 20.0f, 0.45f, 0.45f, 0.3f, 20.0f, 0.45f, -0.45f, 0.3f, 20.0f, -0.45f, -0.45f, 0.3f, 20.0f,
-  };
-  */
-
   // test drawing
   Euclidean euclidean = generateEuclideanDistanceGraph(20);
   // DrawComponents components{&euclidean};
 
-  float* g_vertex_buffer_data = openGLhandler.euclideanDistanceGraphToVertexBufferData(&euclidean);
+  float* g_vertex_buffer_data = openGLhandler.pointsToVertexBufferData(Data<Point2D>(euclidean.allPositions()));
   // Give our vertices to OpenGL.
   glBufferData(GL_ARRAY_BUFFER, 320, g_vertex_buffer_data, GL_STATIC_DRAW);  // MAGIC NUMBER
 

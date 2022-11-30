@@ -6,9 +6,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/definitions.hpp"
 #include "draw/shader.hpp"
 
-#include "graph/graph.hpp"
+#include "graph/geometry.hpp"
 
 struct VertexAttribute {
   std::string name;
@@ -17,7 +18,7 @@ struct VertexAttribute {
 
 class OpenGLHandler {
 public:
-  OpenGLHandler() : pVertexAttributesTotalLength(0) {}
+  OpenGLHandler() : pVertAttrTotLen(0) {}
 
   ~OpenGLHandler();
 
@@ -35,9 +36,9 @@ public:
   GLuint vertexArrayID() const { return pVertexArrayID; }
   GLuint vertexBufferID() const { return pVertexBufferID; }
 
-  unsigned int vertAttrTotLen() const { return pVertexAttributesTotalLength; }
+  unsigned int vertAttrTotLen() const { return pVertAttrTotLen; }
 
-  float* euclideanDistanceGraphToVertexBufferData(const Euclidean* graph);
+  float* pointsToVertexBufferData(const Data<Point2D> points);
 
 private:
   GLuint pShaderProgramID;
@@ -45,6 +46,6 @@ private:
   GLuint pVertexBufferID;
 
   std::vector<VertexAttribute> pVertexAttributes;
-  unsigned int pVertexAttributesTotalLength;
+  unsigned int pVertAttrTotLen;
   static constexpr unsigned int pDataTypesSize = sizeof(float);
 };

@@ -24,12 +24,12 @@ void OpenGLHandler::addVertexBuffer() {
 void OpenGLHandler::insertAttribute(unsigned int position, std::string name, unsigned int size) {
   const std::vector<VertexAttribute>::iterator it = pVertexAttributes.begin() + position;
   pVertexAttributes.insert(it, VertexAttribute{name, size});
-  pVertexAttributesTotalLength += size;
+  pVertAttrTotLen += size;
 }
 
 void OpenGLHandler::pushBackAttribute(std::string name, unsigned int size) {
   pVertexAttributes.push_back(VertexAttribute{name, size});
-  pVertexAttributesTotalLength += size;
+  pVertAttrTotLen += size;
 }
 
 void OpenGLHandler::enableAllVertexAttribArrays() {
@@ -38,22 +38,20 @@ void OpenGLHandler::enableAllVertexAttribArrays() {
     const GLint vertexAttrib = glGetAttribLocation(shaderProgramID(), attribute.name.c_str());
     glEnableVertexAttribArray(vertexAttrib);
     glVertexAttribPointer(
-      vertexAttrib, attribute.size, GL_FLOAT, GL_FALSE, pVertexAttributesTotalLength * pDataTypesSize,
+      vertexAttrib, attribute.size, GL_FLOAT, GL_FALSE, pVertAttrTotLen * pDataTypesSize,
       (void*) ((long) (offset * pDataTypesSize)));
     offset += attribute.size;
   }
 }
 
 // generalization NEEDED
-float* OpenGLHandler::euclideanDistanceGraphToVertexBufferData(const Euclidean* graph) {
-  const std::vector<Point2D>& positions = graph->allPositions();
-  const unsigned int size               = positions.size();
-  float* vertexBufferData               = new float[size * pVertexAttributesTotalLength];
-  for (unsigned int i = 0; i < size; ++i) {
-    vertexBufferData[i * pVertexAttributesTotalLength + 0] = positions[i].x;
-    vertexBufferData[i * pVertexAttributesTotalLength + 1] = positions[i].y;
-    vertexBufferData[i * pVertexAttributesTotalLength + 2] = 0.1f;   // radius
-    vertexBufferData[i * pVertexAttributesTotalLength + 3] = 12.0f;  // steps
+float* OpenGLHandler::pointsToVertexBufferData(const Data<Point2D> points) {
+  float* vertexBufferData = new float[points.size() * pVertAttrTotLen];
+  for (unsigned int i = 0; i < points.size(); ++i) {
+    vertexBufferData[i * pVertAttrTotLen + 0] = points[i].x;
+    vertexBufferData[i * pVertAttrTotLen + 1] = points[i].y;
+    vertexBufferData[i * pVertAttrTotLen + 2] = 0.1f;   // radius
+    vertexBufferData[i * pVertAttrTotLen + 3] = 12.0f;  // steps
   }
   return vertexBufferData;
 }
