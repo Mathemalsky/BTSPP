@@ -38,7 +38,7 @@ public:
 
   unsigned int vertAttrTotLen() const { return pVertAttrTotLen; }
 
-  void pointsToVertexBufferData(Point2D* points, unsigned int size);
+  void pointsToVertexBufferData(Data<Point2D>& points);
   void vertexBufferDataToGL() {
     glBufferData(GL_ARRAY_BUFFER, 20 * pVertAttrTotLen * pDataTypesSize, pVertexBufferData.data(), GL_STATIC_DRAW);
   }

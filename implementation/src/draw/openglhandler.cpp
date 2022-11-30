@@ -45,7 +45,8 @@ void OpenGLHandler::enableAllVertexAttribArrays() {
 }
 
 // generalization NEEDED
-void OpenGLHandler::pointsToVertexBufferData(Point2D* points, unsigned int size) {
+void OpenGLHandler::pointsToVertexBufferData(Data<Point2D>& points) {
+  const unsigned int size = points.size();
   float* vertexBufferData = new float[size * pVertAttrTotLen];
   for (unsigned int i = 0; i < size; ++i) {
     vertexBufferData[i * pVertAttrTotLen + 0] = points[i].x;

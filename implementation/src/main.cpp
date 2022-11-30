@@ -85,9 +85,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   // graph::POINTS = toData(euclidean.allPositions());
   // Data<Point2D> points(euclidean.allPositions(), euclidean.allPositions().size(), true);
-  // graph::POINTS = (euclidean.pointer(), euclidean.numberOfNodes())
+  graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
 
-  openGLhandler.pointsToVertexBufferData(euclidean.pointer(), euclidean.numberOfNodes());
+  openGLhandler.pointsToVertexBufferData(graph::POINTS);
   openGLhandler.vertexBufferDataToGL();
   /* end test example */
 
