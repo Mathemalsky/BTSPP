@@ -71,14 +71,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   /* begin test example */
 
-  OpenGLHandler openGLhandler;
+  OpenGLHandler<float> openGLhandler;
   openGLhandler.linkShaderProgram();
   openGLhandler.addVertexArray();
   openGLhandler.addVertexBuffer();
 
-  openGLhandler.pushBackAttribute("vertexPosition", 2);
-  openGLhandler.pushBackAttribute("size", 1);
-  openGLhandler.pushBackAttribute("steps", 1);
+  openGLhandler.emplaceBackAttribute("vertexPosition", 2);
+  openGLhandler.emplaceBackAttribute("size", 1);
+  openGLhandler.emplaceBackAttribute("steps", 1);
   openGLhandler.enableAllVertexAttribArrays();
 
   // test drawing

@@ -16,14 +16,14 @@ bool SHOW_SETTINGS_WINDOW;
 
 namespace input {
 std::unordered_map<int, bool> STATE;
+
+namespace mouse {
+double x;
+double y;
+}  // namespace mouse
 }  // namespace input
 
 namespace mainwindow {
 int HEIGHT;
 int WIDTH;
 }  // namespace mainwindow
-
-namespace mouse {
-double x;
-double y;
-}  // namespace mouse

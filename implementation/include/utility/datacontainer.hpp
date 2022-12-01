@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstddef>
 #include <vector>
 
 template <typename Data>
@@ -15,6 +16,12 @@ public:
   DataIterator& operator++() {
     ++pPtr;
     return *this;
+  }
+
+  DataIterator operator++(int) {
+    DataIterator tmp = *this;
+    ++(*this);
+    return tmp;
   }
 
   Reference operator*() const { return *pPtr; }
@@ -64,11 +71,11 @@ public:
   }
 
   ValueType* data() { return pData; }
-  unsigned int size() const { return pSize; }
-  unsigned int byteSize() const { return pSize * sizeof(ValueType); }
+  size_t size() const { return pSize; }
+  size_t byteSize() const { return pSize * sizeof(ValueType); }
 
 private:
   ValueType* pData;        /*!< pointer to memory */
-  unsigned int pSize;      /*!< number of objects at this memory address*/
+  size_t pSize;            /*!< number of objects at this memory address*/
   bool pDestructionNeeded; /*!< stores if this pointer needs to be destructed when leaving scope */
 };
