@@ -2,9 +2,9 @@
 
 #include <unordered_map>
 
-#include "draw/definitions.hpp"
-
 #include "graph/geometry.hpp"
+
+#include "utility/datacontainer.hpp"
 
 namespace graph {
 extern Data<Point2D> POINTS;

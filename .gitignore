@@ -25,6 +25,7 @@
 !implementation/include/draw/*.hpp
 !implementation/src/graph/*.cpp
 !implementation/include/graph/*.hpp
+!implementation/include/utility/*.hpp
 
 # libraries
 !implementation/lib/imgui/*

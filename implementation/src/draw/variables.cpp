@@ -4,6 +4,8 @@
 
 #include "graph/geometry.hpp"
 
+#include "utility/datacontainer.hpp"
+
 namespace graph {
 Data<Point2D> POINTS;
 }

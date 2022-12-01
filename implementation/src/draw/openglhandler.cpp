@@ -5,6 +5,8 @@
 
 #include "graph/graph.hpp"
 
+#include "utility/datacontainer.hpp"
+
 OpenGLHandler::~OpenGLHandler() {
   // delete Opengl data
   glDeleteVertexArrays(1, &pVertexArrayID);

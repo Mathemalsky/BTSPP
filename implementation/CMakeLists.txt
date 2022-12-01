@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g -Wall -Wextra -pedanti
 file(GLOB SOURCES "src/*.cpp" "src/draw/*.cpp" "src/graph/*.cpp")
 
 # lists all header files to be included in the project
-file(GLOB HEADERS "include/*.hpp" "include/draw/*.hpp" "include/graph/*.hpp")
+file(GLOB HEADERS "include/*.hpp" "include/draw/*.hpp" "include/graph/*.hpp" "include/utility/*.hpp")
 
 add_subdirectory(lib/imgui)
 

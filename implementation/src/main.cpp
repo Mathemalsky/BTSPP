@@ -14,6 +14,8 @@
 
 #include "graph/graph.hpp"
 
+#include "utility/datacontainer.hpp"
+
 #include "euclideandistancegraph.hpp"
 
 // error callback function which prints glfw errors in case they arise

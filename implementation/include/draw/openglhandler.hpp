@@ -6,10 +6,11 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "draw/definitions.hpp"
 #include "draw/shader.hpp"
 
 #include "graph/geometry.hpp"
+
+#include "utility/datacontainer.hpp"
 
 struct VertexAttribute {
   std::string name;

@@ -6,6 +6,8 @@
 #include "draw/definitions.hpp"
 #include "draw/variables.hpp"
 
+#include "utility/datacontainer.hpp"
+
 void toggleSettingsWindow() {
   if (imguiwindow::SHOW_SETTINGS_WINDOW == true) {
     imguiwindow::SHOW_SETTINGS_WINDOW = false;
@@ -35,6 +37,11 @@ void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int ac
 }
 
 void moveNode() {
+  for (Point2D& point : graph::POINTS) {
+    if (norm2(point.x - mouse::x, point.y - mouse::y) < 0.01) {
+      // move point
+    }
+  }
 }
 
 void handleFastEvents(GLFWwindow* window) {
