@@ -9,6 +9,9 @@ OpenGLHandler::~OpenGLHandler() {
   // delete Opengl data
   glDeleteVertexArrays(1, &pVertexArrayID);
   glDeleteBuffers(1, &pVertexBufferID);
+  glDeleteProgram(pShaderProgramID);
+
+  pVertexBufferData.~Data();
 }
 
 void OpenGLHandler::addVertexArray() {
