@@ -21,8 +21,6 @@ inline Point2D transformCoordinates(const double x, const double y) {
  *                          implementation of templates needs to be included in header
  **********************************************************************************************************************/
 
-// DEBUG
-#include <iostream>
 template <typename Type>
 void moveNode(GLFWwindow* window, OpenGLHandler<Type>& openGLHandler) {
   double x, y;
@@ -31,13 +29,12 @@ void moveNode(GLFWwindow* window, OpenGLHandler<Type>& openGLHandler) {
   const Point2D diffMousePos = transformCoordinates(x, y) - oldMousePos;
   for (Point2D& point : graph::POINTS) {
     if (norm2(point - oldMousePos) < 0.01) {
-      std::cerr << point << "-> ";  // DEBUG
       point += diffMousePos;
-      std::cerr << point << std::endl;  // DBEUG
+      break;  // move only one point at one at a time
     }
   }
   openGLHandler.updatePointsInVertexBufferData(graph::POINTS);
-  glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);
+  //
 }
 
 template <typename Type>
@@ -46,6 +43,5 @@ void handleFastEvents(GLFWwindow* window, OpenGLHandler<Type>& openGLHandler) {
   if (input::STATE[GLFW_MOUSE_BUTTON_LEFT]) {
     moveNode(window, openGLHandler);
   }
-
   glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);
 }

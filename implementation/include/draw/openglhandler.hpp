@@ -161,4 +161,5 @@ void OpenGLHandler<Type>::updatePointsInVertexBufferData(const Data<Point2D>& po
     pVertexBufferData[i * pVertAttr.attrLen() + offset + 0] = points[i].x;  // cannot use memcpy here because we
     pVertexBufferData[i * pVertAttr.attrLen() + offset + 1] = points[i].y;  // need to cast double to float
   }
+  glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * pVertAttr.attrLen() * pTypeSize, pVertexBufferData.data());
 }
