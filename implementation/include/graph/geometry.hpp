@@ -1,7 +1,7 @@
-#ifndef GRAPH_GEOMETRY_HPP
-#define GRAPH_GEOMETRY_HPP
+#pragma once
 
 #include <cmath>
+#include <fstream>
 
 struct Point2D {
   double x, y;
@@ -17,4 +17,6 @@ inline double dist(const Point2D& p, const Point2D& q) {
   return norm2(p.x - q.x, p.y - q.y);
 }
 
-#endif
+inline std::ostream& operator<<(std::ostream& os, const Point2D& point) {
+  return os << "(" << point.x << ", " << point.y << ") ";
+}

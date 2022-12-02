@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <fstream>
 #include <vector>
 
 template <typename Data>
@@ -57,9 +58,9 @@ public:
     }
   }
 
-  Iterator begin() { return Iterator(pData); }
+  Iterator begin() const { return Iterator(pData); }
 
-  Iterator end() { return Iterator(pData + pSize); }
+  Iterator end() const { return Iterator(pData + pSize); }
 
   ValueType& operator[](unsigned int index) {
     assert(index < pSize && "[Data] trying to access out of range");
@@ -79,3 +80,11 @@ private:
   size_t pSize;            /*!< number of objects at this memory address*/
   bool pDestructionNeeded; /*!< stores if this pointer needs to be destructed when leaving scope */
 };
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Data<T>& data) {
+  for (const T& dat : data) {
+    os << dat << " ";
+  }
+  return os << std::endl;
+}

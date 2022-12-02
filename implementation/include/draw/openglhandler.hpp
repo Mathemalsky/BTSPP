@@ -38,13 +38,16 @@ public:
     return pAttr[index];
   }
 
+  const VertexAttribute& operator[](const std::string& str) const {
+    assert(pPosition.at(str) < pAttr.size() && "[Data] trying to access out of range");
+    return pAttr[pPosition.at(str)];
+  }
+
   size_t attrLen() const { return pVertAttrTotLen; }
 
   void emplaceBack(const char* name, const size_t size);
 
   void enableAllToShaderProgram(const GLuint shaderProgramID);
-
-  const std::unordered_map<std::string, size_t>& map() const { return pPosition; }
 
 private:
   std::vector<VertexAttribute> pAttr;
@@ -73,7 +76,7 @@ public:
   GLuint vertexArrayID() const { return pVertexArrayID; }
   GLuint vertexBufferID() const { return pVertexBufferID; }
 
-  void pointsToVertexBufferData(Data<Point2D>& points);
+  void pointsToVertexBufferData(const Data<Point2D>& points);
   void updatePointsInVertexBufferData(Data<Point2D>& points);
   void vertexBufferDataToGL() {
     glBufferData(GL_ARRAY_BUFFER, 20 * pVertAttr.attrLen() * pTypeSize, pVertexBufferData.data(), GL_STATIC_DRAW);
@@ -134,24 +137,26 @@ void OpenGLHandler<Type>::addVertexBuffer() {
   glBindBuffer(GL_ARRAY_BUFFER, pVertexBufferID);
 }
 
-// generalization NEEDED
 template <typename Type>
-void OpenGLHandler<Type>::pointsToVertexBufferData(Data<Point2D>& points) {
-  const size_t size       = points.size();
-  float* vertexBufferData = new float[size * pVertAttr.attrLen()];
+void OpenGLHandler<Type>::pointsToVertexBufferData(const Data<Point2D>& points) {
+  const size_t size         = points.size();
+  const size_t pointOffset  = pVertAttr["vertexPosition"].offset;
+  const size_t radiusOffset = pVertAttr["size"].offset;
+  const size_t stepsOffset  = pVertAttr["steps"].offset;
+  float* vertexBufferData   = new float[size * pVertAttr.attrLen()];
   for (unsigned int i = 0; i < size; ++i) {
-    vertexBufferData[i * pVertAttr.attrLen() + 0] = points[i].x;
-    vertexBufferData[i * pVertAttr.attrLen() + 1] = points[i].y;
-    vertexBufferData[i * pVertAttr.attrLen() + 2] = 0.1f;   // radius
-    vertexBufferData[i * pVertAttr.attrLen() + 3] = 12.0f;  // steps
+    vertexBufferData[i * pVertAttr.attrLen() + pointOffset + 0] = points[i].x;  // cannot use memcpy here because we
+    vertexBufferData[i * pVertAttr.attrLen() + pointOffset + 1] = points[i].y;  // need to cast double to float
+    vertexBufferData[i * pVertAttr.attrLen() + radiusOffset]    = 0.1f;         // radius
+    vertexBufferData[i * pVertAttr.attrLen() + stepsOffset]     = 12.0f;        // steps
   }
-  pVertexBufferData = Data(vertexBufferData, pVertAttr.attrLen() * size);
+  pVertexBufferData = Data(vertexBufferData, pVertAttr.attrLen() * size /*, true */);
 }
 
 template <typename Type>
 void OpenGLHandler<Type>::updatePointsInVertexBufferData(Data<Point2D>& points) {
   const size_t size   = points.size();
-  const size_t offset = pVertAttr.map()["vertexPosition"];
+  const size_t offset = pVertAttr.map().at("vertexPosition");
   for (unsigned int i = 0; i < size; ++i) {
     std::memcpy(pVertexBufferData + i * pVertAttr.attrLen() + offset, points[i], sizeof(Point2D));
   }
