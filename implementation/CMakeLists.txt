@@ -26,4 +26,6 @@ find_package(GLEW REQUIRED)
 
 find_package(glfw3 REQUIRED)
 
-target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI)
+find_package(Eigen3 3.4 REQUIRED NO_MODULE)
+
+target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI Eigen3::Eigen)

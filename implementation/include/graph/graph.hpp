@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <Eigen/SparseCore>
+
 #include "graph/geometry.hpp"
 
 class Node {
@@ -51,9 +53,23 @@ public:
   double distance(const Node& u, const Node& v) override { return dist(pPositions[u.index()], pPositions[v.index()]); }
   Point2D position(const Node& v) const { return pPositions[v.index()]; }
   const std::vector<Point2D>& allPositions() const { return pPositions; }
-  // std::vector<Point2D>& allPositions() {return pPositions; }
   Point2D* pointer() { return &pPositions[0]; }
 
 private:
   std::vector<Point2D> pPositions;
+};
+
+class EdgeCost {
+public:
+  EdgeCost(const double cost) : pCost(cost) {}
+
+  double operator()() const { return pCost; }
+  void operator=(const double cost) { pCost = cost; }
+
+private:
+  double pCost;
+};
+
+class SimpleGraph : public Graph {
+private:
 };
