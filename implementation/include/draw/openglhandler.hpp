@@ -77,9 +77,9 @@ public:
   GLuint vertexBufferID() const { return pVertexBufferID; }
 
   void pointsToVertexBufferData(const Data<Point2D>& points);
-  void updatePointsInVertexBufferData(Data<Point2D>& points);
+  void updatePointsInVertexBufferData(const Data<Point2D>& points);
   void vertexBufferDataToGL() {
-    glBufferData(GL_ARRAY_BUFFER, 20 * pVertAttr.attrLen() * pTypeSize, pVertexBufferData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 20 * pVertAttr.attrLen() * pTypeSize, pVertexBufferData.data(), GL_DYNAMIC_DRAW);
   }
 
 private:
@@ -154,10 +154,11 @@ void OpenGLHandler<Type>::pointsToVertexBufferData(const Data<Point2D>& points) 
 }
 
 template <typename Type>
-void OpenGLHandler<Type>::updatePointsInVertexBufferData(Data<Point2D>& points) {
+void OpenGLHandler<Type>::updatePointsInVertexBufferData(const Data<Point2D>& points) {
   const size_t size   = points.size();
-  const size_t offset = pVertAttr.map().at("vertexPosition");
+  const size_t offset = pVertAttr["vertexPosition"].offset;
   for (unsigned int i = 0; i < size; ++i) {
-    std::memcpy(pVertexBufferData + i * pVertAttr.attrLen() + offset, points[i], sizeof(Point2D));
+    pVertexBufferData[i * pVertAttr.attrLen() + offset + 0] = points[i].x;  // cannot use memcpy here because we
+    pVertexBufferData[i * pVertAttr.attrLen() + offset + 1] = points[i].y;  // need to cast double to float
   }
 }

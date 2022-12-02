@@ -5,6 +5,18 @@
 
 struct Point2D {
   double x, y;
+
+  Point2D operator-(const Point2D& subtrahend) { return Point2D{x - subtrahend.x, y - subtrahend.y}; }
+
+  void operator-=(const Point2D& subtrahend) {
+    x -= subtrahend.x;
+    y -= subtrahend.y;
+  }
+
+  void operator+=(const Point2D& subtrahend) {
+    x += subtrahend.x;
+    y += subtrahend.y;
+  }
 };
 
 inline double norm2(const double x, const double y) {

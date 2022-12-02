@@ -8,7 +8,7 @@
 #include "draw/draw.hpp"
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
-#include "draw/openglhandler.hpp"
+#include "draw/openGLHandler.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
@@ -71,15 +71,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   /* begin test example */
 
-  OpenGLHandler<float> openGLhandler;
-  openGLhandler.linkShaderProgram();
-  openGLhandler.addVertexArray();
-  openGLhandler.addVertexBuffer();
+  OpenGLHandler<float> openGLHandler;
+  openGLHandler.linkShaderProgram();
+  openGLHandler.addVertexArray();
+  openGLHandler.addVertexBuffer();
 
-  openGLhandler.emplaceBackAttribute("vertexPosition", 2);
-  openGLhandler.emplaceBackAttribute("size", 1);
-  openGLhandler.emplaceBackAttribute("steps", 1);
-  openGLhandler.enableAllVertexAttribArrays();
+  openGLHandler.emplaceBackAttribute("vertexPosition", 2);
+  openGLHandler.emplaceBackAttribute("size", 1);
+  openGLHandler.emplaceBackAttribute("steps", 1);
+  openGLHandler.enableAllVertexAttribArrays();
 
   // test drawing
   Euclidean euclidean = generateEuclideanDistanceGraph(20);
@@ -89,8 +89,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // Data<Point2D> points(euclidean.allPositions(), euclidean.allPositions().size(), true);
   graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
 
-  openGLhandler.pointsToVertexBufferData(graph::POINTS);
-  openGLhandler.vertexBufferDataToGL();
+  openGLHandler.pointsToVertexBufferData(graph::POINTS);
+  openGLHandler.vertexBufferDataToGL();
   /* end test example */
 
   // enable vsync
@@ -115,7 +115,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    handleFastEvents(window);
+    handleFastEvents(window, openGLHandler);
 
     // draw the content
     draw(window);
