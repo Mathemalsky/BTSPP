@@ -28,13 +28,12 @@ void moveNode(GLFWwindow* window, OpenGLHandler<Type>& openGLHandler) {
   const Point2D oldMousePos  = transformCoordinates(input::mouse::x, input::mouse::y);
   const Point2D diffMousePos = transformCoordinates(x, y) - oldMousePos;
   for (Point2D& point : graph::POINTS) {
-    if (norm2(point - oldMousePos) < 0.01) {
+    if (norm2(point - oldMousePos) < 0.01) {  // MAGIC NUMBER
       point += diffMousePos;
       break;  // move only one point at one at a time
     }
   }
   openGLHandler.updatePointsInVertexBufferData(graph::POINTS);
-  //
 }
 
 template <typename Type>

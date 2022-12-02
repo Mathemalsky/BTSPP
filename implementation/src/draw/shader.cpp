@@ -26,14 +26,16 @@ constexpr const char geometryShaderSource[] = R"glsl(
   layout(points) in;
   layout(line_strip, max_vertices = 21) out;
 
+  uniform int u_steps;
+
   in float vSize[];
   in float vSteps[];
 
   const float PI = 3.1415926;
 
   void main() {
-    for(int i = 0; i < vSteps[0] +1; ++i) {
-      float ang = 2.0 * PI * i / vSteps[0];
+    for(int i = 0; i < u_steps +1; ++i) {
+      float ang = 2.0 * PI * i / u_steps;
 
       vec4 offset = vec4(cos(ang) * vSize[0]/16, sin(ang) * vSize[0]/9, 0.0, 0.0);
       gl_Position = gl_in[0].gl_Position + offset;

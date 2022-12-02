@@ -1,3 +1,4 @@
+#include <cassert>
 #include <cstdio>
 #include <iostream>
 
@@ -8,7 +9,7 @@
 #include "draw/draw.hpp"
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
-#include "draw/openGLHandler.hpp"
+#include "draw/openglhandler.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
@@ -69,7 +70,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     return -1;
   }
 
-  /* begin test example */
+  /* begin setting up opengl */
 
   OpenGLHandler<float> openGLHandler;
   openGLHandler.linkShaderProgram();
@@ -81,17 +82,18 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   openGLHandler.emplaceBackAttribute("steps", 1);
   openGLHandler.enableAllVertexAttribArrays();
 
-  // test drawing
+  // generate 20 random vertecis in euclidean plane
   Euclidean euclidean = generateEuclideanDistanceGraph(20);
-  // DrawComponents components{&euclidean};
 
-  // graph::POINTS = toData(euclidean.allPositions());
-  // Data<Point2D> points(euclidean.allPositions(), euclidean.allPositions().size(), true);
   graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
 
   openGLHandler.pointsToVertexBufferData(graph::POINTS);
   openGLHandler.vertexBufferDataToGL();
-  /* end test example */
+
+  GLint vertexStepsLocation = glGetUniformLocation(openGLHandler.shaderProgramID(), "u_steps");
+  assert(vertexStepsLocation != -1 && "could not find uniform");
+  glUniform1i(vertexStepsLocation, 4);
+  /* end test setting up opengl */
 
   // enable vsync
   glfwSwapInterval(1);
