@@ -74,6 +74,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   OpenGLHandler<float> openGLHandler;
   openGLHandler.linkShaderProgram();
+  openGLHandler.linkPrograms();
+  // openGLHandler.test();
   openGLHandler.addVertexArray();
   openGLHandler.addVertexBuffer();
 
@@ -93,6 +95,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   GLint vertexStepsLocation = glGetUniformLocation(openGLHandler.shaderProgramID(), "u_steps");
   assert(vertexStepsLocation != -1 && "could not find uniform");
   glUniform1i(vertexStepsLocation, 4);
+
+  GLint vertexRadiusLocation = glGetUniformLocation(openGLHandler.shaderProgramID(), "u_radius");
+  assert(vertexRadiusLocation != -1 && "could not find uniform");
+  glUniform1f(vertexRadiusLocation, 0.1f);
+
+  // openGLHandler.test();
+
   /* end test setting up opengl */
 
   // enable vsync

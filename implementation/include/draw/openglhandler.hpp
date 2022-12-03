@@ -16,6 +16,9 @@
 
 #include "utility/datacontainer.hpp"
 
+// DEBUG
+#include <iostream>
+
 struct VertexAttribute {
   VertexAttribute(const char* Name, const size_t Size, const size_t Offset) : name(Name), size(Size), offset(Offset) {}
 
@@ -68,11 +71,17 @@ public:
 
   void emplaceBackAttribute(const char* name, unsigned int size) { pVertAttr.emplaceBack(name, size); };
 
-  void enableAllVertexAttribArrays() { pVertAttr.enableAllToShaderProgram(pShaderProgramID); }
+  void enableAllVertexAttribArrays() {
+    pVertAttr.enableAllToShaderProgram(pCircleDrawProgram.id());
+    pVertAttr.enableAllToShaderProgram(pShaderProgramID);
+  }
 
   void linkShaderProgram() { pShaderProgramID = linkShaders(); }
+  void linkPrograms();
 
   GLuint shaderProgramID() const { return pShaderProgramID; }
+  GLuint circleDrawProgramID() const { return pCircleDrawProgram.id(); }  // DEBUG
+
   GLuint vertexArrayID() const { return pVertexArrayID; }
   GLuint vertexBufferID() const { return pVertexBufferID; }
 
@@ -82,9 +91,31 @@ public:
     glBufferData(GL_ARRAY_BUFFER, 20 * pVertAttr.attrLen() * pTypeSize, pVertexBufferData.data(), GL_DYNAMIC_DRAW);
   }
 
+  // DEBUG
+
+  void test() {
+    // pCircleDrawProgram.setUniform("u_radius", 0.1f);
+    // pCircleDrawProgram.setUniform("u_steps", 6);
+
+    std::cerr << pCircleDrawProgram.id() << std::endl;
+
+    /*
+
+    GLint vertexStepsLocation = glGetUniformLocation(pCircleDrawProgram.id(), "u_steps");
+    assert(vertexStepsLocation != -1 && "could not find uniform");
+    glUniform1i(vertexStepsLocation, 4);
+
+    GLint vertexRadiusLocation = glGetUniformLocation(pCircleDrawProgram.id(), "u_radius");
+    assert(vertexRadiusLocation != -1 && "could not find uniform");
+    glUniform1f(vertexRadiusLocation, 0.1f);
+    */
+    pCircleDrawProgram.use();
+  }
+
 private:
   static constexpr size_t pTypeSize = sizeof(Type);
 
+  ShaderProgram pCircleDrawProgram;
   GLuint pShaderProgramID;
   GLuint pVertexArrayID;
   GLuint pVertexBufferID;
@@ -120,7 +151,7 @@ OpenGLHandler<Type>::~OpenGLHandler() {
   // delete Opengl data
   glDeleteVertexArrays(1, &pVertexArrayID);
   glDeleteBuffers(1, &pVertexBufferID);
-  glDeleteProgram(pShaderProgramID);
+  // glDeleteProgram(pShaderProgramID);
 
   pVertexBufferData.~Data();
 }
@@ -135,6 +166,12 @@ template <typename Type>
 void OpenGLHandler<Type>::addVertexBuffer() {
   glGenBuffers(1, &pVertexBufferID);
   glBindBuffer(GL_ARRAY_BUFFER, pVertexBufferID);
+}
+
+template <typename Type>
+void OpenGLHandler<Type>::linkPrograms() {
+  ShaderCollection collection;
+  pCircleDrawProgram = collection.linkCircleDrawProgram();
 }
 
 template <typename Type>
