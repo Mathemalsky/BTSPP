@@ -74,14 +74,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   OpenGLHandler<float> openGLHandler;
   openGLHandler.linkShaderProgram();
-  openGLHandler.linkPrograms();
+  // openGLHandler.linkPrograms();
+
+  std::cerr << openGLHandler.shaderProgramID() << std::endl;
   // openGLHandler.test();
   openGLHandler.addVertexArray();
   openGLHandler.addVertexBuffer();
 
   openGLHandler.emplaceBackAttribute("vertexPosition", 2);
-  openGLHandler.emplaceBackAttribute("size", 1);
-  openGLHandler.emplaceBackAttribute("steps", 1);
+  // openGLHandler.emplaceBackAttribute("size", 1);
+  // openGLHandler.emplaceBackAttribute("steps", 1);
   openGLHandler.enableAllVertexAttribArrays();
 
   // generate 20 random vertecis in euclidean plane

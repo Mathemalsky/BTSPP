@@ -151,7 +151,7 @@ OpenGLHandler<Type>::~OpenGLHandler() {
   // delete Opengl data
   glDeleteVertexArrays(1, &pVertexArrayID);
   glDeleteBuffers(1, &pVertexBufferID);
-  // glDeleteProgram(pShaderProgramID);
+  glDeleteProgram(pShaderProgramID);
 
   pVertexBufferData.~Data();
 }
@@ -172,20 +172,21 @@ template <typename Type>
 void OpenGLHandler<Type>::linkPrograms() {
   ShaderCollection collection;
   pCircleDrawProgram = collection.linkCircleDrawProgram();
+  pShaderProgramID   = pCircleDrawProgram.id();
 }
 
 template <typename Type>
 void OpenGLHandler<Type>::pointsToVertexBufferData(const Data<Point2D>& points) {
-  const size_t size         = points.size();
-  const size_t pointOffset  = pVertAttr["vertexPosition"].offset;
-  const size_t radiusOffset = pVertAttr["size"].offset;
-  const size_t stepsOffset  = pVertAttr["steps"].offset;
-  float* vertexBufferData   = new float[size * pVertAttr.attrLen()];
+  const size_t size        = points.size();
+  const size_t pointOffset = pVertAttr["vertexPosition"].offset;
+  // const size_t radiusOffset = pVertAttr["size"].offset;
+  // const size_t stepsOffset  = pVertAttr["steps"].offset;
+  float* vertexBufferData = new float[size * pVertAttr.attrLen()];
   for (unsigned int i = 0; i < size; ++i) {
     vertexBufferData[i * pVertAttr.attrLen() + pointOffset + 0] = points[i].x;  // cannot use memcpy here because we
     vertexBufferData[i * pVertAttr.attrLen() + pointOffset + 1] = points[i].y;  // need to cast double to float
-    vertexBufferData[i * pVertAttr.attrLen() + radiusOffset]    = 0.1f;         // radius
-    vertexBufferData[i * pVertAttr.attrLen() + stepsOffset]     = 12.0f;        // steps
+    // vertexBufferData[i * pVertAttr.attrLen() + radiusOffset]    = 0.1f;         // radius
+    // vertexBufferData[i * pVertAttr.attrLen() + stepsOffset]     = 12.0f;        // steps
   }
   pVertexBufferData = Data(vertexBufferData, pVertAttr.attrLen() * size /*, true */);
 }

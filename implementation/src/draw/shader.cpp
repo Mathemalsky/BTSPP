@@ -9,16 +9,9 @@
 static constexpr const char vertexShaderSource[] = R"glsl(
   #version 440 core
   in vec2 vertexPosition;
-  in float size;
-  in float steps;
-
-  out float vSize;
-  out float vSteps;
 
   void main() {
     gl_Position = vec4(vertexPosition, 0.0, 1.0);
-    vSize  = size;
-    vSteps = steps;
   }
 )glsl";
 
@@ -29,9 +22,6 @@ static constexpr const char geometryShaderSource[] = R"glsl(
 
   uniform float u_radius;
   uniform int u_steps;
-
-  in float vSize[];
-  in float vSteps[];
 
   const float PI = 3.1415926;
 
