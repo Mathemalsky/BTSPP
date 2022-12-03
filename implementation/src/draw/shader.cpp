@@ -113,9 +113,10 @@ GLuint linkShaders() {
   const GLuint vertexShader   = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
   const GLuint geometryShader = compileShader(GL_GEOMETRY_SHADER, geometryShaderSource);
   const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, geometryShader);
-  glAttachShader(shaderProgram, fragmentShader);
+  ShaderCollection collection;
+  glAttachShader(shaderProgram, collection.pVertexShader);
+  glAttachShader(shaderProgram, collection.pGeometryShader);
+  glAttachShader(shaderProgram, collection.pFragmentShader);
   glLinkProgram(shaderProgram);
 
   int success;

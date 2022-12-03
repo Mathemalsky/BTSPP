@@ -30,7 +30,7 @@ public:
 
   ShaderProgram linkCircleDrawProgram() const;
 
-private:
+  // private:
   const GLuint pVertexShader;
   const GLuint pGeometryShader;
   const GLuint pFragmentShader;
