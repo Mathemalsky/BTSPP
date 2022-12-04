@@ -72,7 +72,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   /* begin setting up opengl */
 
-  OpenGLHandler<float> openGLHandler;
+  // generate 20 random vertecis in euclidean plane
+  Euclidean euclidean = generateEuclideanDistanceGraph(20);
+
+  graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
+
+ OpenGLHandler<float> openGLHandler;
   openGLHandler.linkShaderProgram();
   // openGLHandler.linkPrograms();
 
@@ -86,10 +91,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // openGLHandler.emplaceBackAttribute("steps", 1);
   openGLHandler.enableAllVertexAttribArrays();
 
-  // generate 20 random vertecis in euclidean plane
-  Euclidean euclidean = generateEuclideanDistanceGraph(20);
 
-  graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
 
   openGLHandler.pointsToVertexBufferData(graph::POINTS);
   openGLHandler.vertexBufferDataToGL();
@@ -105,6 +107,33 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // openGLHandler.test();
 
   /* end test setting up opengl */
+
+  /* second test */
+
+  ShaderCollection collection;
+  ShaderProgram drawCircles = collection.linkCircleDrawProgram();
+  std::cerr << "new ShaderProgram: " << drawCircles.id() << std::endl;
+  drawCircles.link();
+
+  // enable vertex attributes
+  const GLint vertexAttrib = glGetAttribLocation(drawCircles.id(), "vertexPosition");
+  glEnableVertexAttribArray(vertexAttrib);
+  glVertexAttribPointer(vertexAttrib, 2, GL_FLOAT, GL_FALSE, 2 * 4, (void*) (0));
+
+  // copy data to vertexbuffer
+
+  // set uniforms
+  GLint vertexStepsLocation2 = glGetUniformLocation(drawCircles.id(), "u_steps");
+  assert(vertexStepsLocation2 != -1 && "could not find uniform");
+  glUniform1i(vertexStepsLocation2, 4);
+
+  GLint vertexRadiusLocation2 = glGetUniformLocation(drawCircles.id(), "u_radius");
+  assert(vertexRadiusLocation2 != -1 && "could not find uniform");
+  glUniform1f(vertexRadiusLocation2, 0.1f);
+
+  //drawCircles.use();
+
+  /* second test end*/
 
   // enable vsync
   glfwSwapInterval(1);

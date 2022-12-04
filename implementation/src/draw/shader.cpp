@@ -62,7 +62,7 @@ GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {
   return shader;
 }
 
-void ShaderProgram::link() {
+void ShaderProgram::link() const {
   glLinkProgram(pProgramID);
 
   int success;
@@ -109,14 +109,24 @@ ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
 }
 
 GLuint linkShaders() {
-  const GLuint shaderProgram  = glCreateProgram();
+  GLuint shaderProgram  = glCreateProgram();
   const GLuint vertexShader   = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
   const GLuint geometryShader = compileShader(GL_GEOMETRY_SHADER, geometryShaderSource);
   const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
   ShaderCollection collection;
+
+  ShaderProgram p;
+  //p.attachShader(collection.pVertexShader);
+  //p.attachShader(collection.pGeometryShader);
+  //p.attachShader(collection.pFragmentShader);
+  //p.link();
+  //GLuint shaderProgram = glCreateProgram();
   glAttachShader(shaderProgram, collection.pVertexShader);
   glAttachShader(shaderProgram, collection.pGeometryShader);
   glAttachShader(shaderProgram, collection.pFragmentShader);
+
+  // DEBUG
+  // shaderProgram = p.id();
   glLinkProgram(shaderProgram);
 
   int success;
@@ -129,6 +139,7 @@ GLuint linkShaders() {
   }
 
   glUseProgram(shaderProgram);
+  // glUseProgram(p.id());
 
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);

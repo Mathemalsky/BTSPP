@@ -5,14 +5,14 @@
 
 class ShaderProgram {
 public:
-  ShaderProgram() { pProgramID = glCreateProgram(); }
+  ShaderProgram() : pProgramID(glCreateProgram()) {}
   ~ShaderProgram() { glDeleteProgram(pProgramID); }
 
   GLuint id() const { return pProgramID; }
 
   void attachShader(const GLuint shader) { glAttachShader(pProgramID, shader); }
 
-  void link();
+  void link() const;
 
   void setUniform(const char* name, const float value);
   void setUniform(const char* name, const int value);
