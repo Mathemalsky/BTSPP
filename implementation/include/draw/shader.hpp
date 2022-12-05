@@ -3,21 +3,23 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/openglerrors.hpp"
+
 class ShaderProgram {
 public:
   ShaderProgram() : pProgramID(glCreateProgram()) {}
-  ~ShaderProgram() { glDeleteProgram(pProgramID); }
+  ~ShaderProgram() { GL_CALL(glDeleteProgram(pProgramID);) }
 
   GLuint id() const { return pProgramID; }
 
-  void attachShader(const GLuint shader) { glAttachShader(pProgramID, shader); }
+  void attachShader(const GLuint shader) { GL_CALL(glAttachShader(pProgramID, shader);) }
 
   void link() const;
 
   void setUniform(const char* name, const float value);
   void setUniform(const char* name, const int value);
 
-  void use() { glUseProgram(pProgramID); }
+  void use() { GL_CALL(glUseProgram(pProgramID);) }
 
 private:
   GLuint pProgramID;
@@ -37,3 +39,4 @@ public:
 };
 
 GLuint linkShaders();
+GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource);

@@ -6,6 +6,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/openglerrors.hpp"
+
 static constexpr const char vertexShaderSource[] = R"glsl(
   #version 440 core
   in vec2 vertexPosition;
@@ -48,15 +50,15 @@ static constexpr const char fragmentShaderSource[] = R"glsl(
 )glsl";
 
 GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {
-  const GLuint shader = glCreateShader(shaderType);
-  glShaderSource(shader, 1, &shaderSource, nullptr);
-  glCompileShader(shader);
+  GL_CALL(const GLuint shader = glCreateShader(shaderType);)
+  GL_CALL(glShaderSource(shader, 1, &shaderSource, nullptr);)
+  GL_CALL(glCompileShader(shader);)
   int success;
   char infoLog[512];
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+  GL_CALL(glGetShaderiv(shader, GL_COMPILE_STATUS, &success);)
 
   if (!success) {
-    glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+    GL_CALL(glGetShaderInfoLog(shader, 512, nullptr, infoLog);)
     std::cout << "ERROR Compilation of shader failed\n" << infoLog << std::endl;
   }
   return shader;
@@ -76,15 +78,15 @@ void ShaderProgram::link() const {
 }
 
 void ShaderProgram::setUniform(const char* name, const float value) {
-  const GLint location = glGetUniformLocation(pProgramID, name);
+  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
-  glUniform1f(location, value);
+  GL_CALL(glUniform1f(location, value);)
 }
 
 void ShaderProgram::setUniform(const char* name, const int value) {
-  const GLint location = glGetUniformLocation(pProgramID, name);
+  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
-  glUniform1i(location, value);
+  GL_CALL(glUniform1i(location, value);)
 }
 
 ShaderCollection::ShaderCollection()
@@ -94,9 +96,9 @@ ShaderCollection::ShaderCollection()
 }
 
 ShaderCollection::~ShaderCollection() {
-  glDeleteShader(pVertexShader);
-  glDeleteShader(pGeometryShader);
-  glDeleteShader(pFragmentShader);
+  GL_CALL(glDeleteShader(pVertexShader);)
+  GL_CALL(glDeleteShader(pGeometryShader);)
+  GL_CALL(glDeleteShader(pFragmentShader);)
 }
 
 ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
@@ -109,18 +111,18 @@ ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
 }
 
 GLuint linkShaders() {
-  GLuint shaderProgram  = glCreateProgram();
+  GLuint shaderProgram        = glCreateProgram();
   const GLuint vertexShader   = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
   const GLuint geometryShader = compileShader(GL_GEOMETRY_SHADER, geometryShaderSource);
   const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
   ShaderCollection collection;
 
   ShaderProgram p;
-  //p.attachShader(collection.pVertexShader);
-  //p.attachShader(collection.pGeometryShader);
-  //p.attachShader(collection.pFragmentShader);
-  //p.link();
-  //GLuint shaderProgram = glCreateProgram();
+  // p.attachShader(collection.pVertexShader);
+  // p.attachShader(collection.pGeometryShader);
+  // p.attachShader(collection.pFragmentShader);
+  // p.link();
+  // GLuint shaderProgram = glCreateProgram();
   glAttachShader(shaderProgram, collection.pVertexShader);
   glAttachShader(shaderProgram, collection.pGeometryShader);
   glAttachShader(shaderProgram, collection.pFragmentShader);
