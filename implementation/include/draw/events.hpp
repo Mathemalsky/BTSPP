@@ -3,8 +3,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "draw/openglhandler.hpp"
 #include "draw/variables.hpp"
+#include "draw/vertexattributes.hpp"
 
 #include "graph/geometry.hpp"
 

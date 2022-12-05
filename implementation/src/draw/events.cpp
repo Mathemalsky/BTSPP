@@ -4,8 +4,8 @@
 #include <GLFW/glfw3.h>
 
 #include "draw/definitions.hpp"
-#include "draw/openglhandler.hpp"
 #include "draw/variables.hpp"
+#include "draw/vertexattributes.hpp"
 
 #include "utility/datacontainer.hpp"
 
