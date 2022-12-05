@@ -70,9 +70,9 @@ void ShaderProgram::link() const {
   int success;
   char infoLog[512];
 
-  glGetProgramiv(pProgramID, GL_LINK_STATUS, &success);
+  GL_CALL(glGetProgramiv(pProgramID, GL_LINK_STATUS, &success);)
   if (!success) {
-    glGetProgramInfoLog(pProgramID, 512, nullptr, infoLog);
+    GL_CALL(glGetProgramInfoLog(pProgramID, 512, nullptr, infoLog);)
     std::cerr << "ERROR Linking of shaders failed\n" << infoLog << std::endl;
   }
 }
@@ -141,8 +141,6 @@ GLuint linkShaders() {
   }
 
   glUseProgram(shaderProgram);
-  // glUseProgram(p.id());
-
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
   glDeleteShader(geometryShader);

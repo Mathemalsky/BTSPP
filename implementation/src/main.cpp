@@ -138,24 +138,28 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
 
   /*
- OpenGLHandler<float> openGLHandler;
-  openGLHandler.linkShaderProgram();
+  OpenGLHandler<float> openGLHandler;
+  //openGLHandler.linkShaderProgram();
   // openGLHandler.linkPrograms();
 
-  std::cerr << openGLHandler.shaderProgramID() << std::endl;
+  //std::cerr << openGLHandler.shaderProgramID() << std::endl;
   // openGLHandler.test();
   openGLHandler.addVertexArray();
   openGLHandler.addVertexBuffer();
 
-  openGLHandler.emplaceBackAttribute("vertexPosition", 2);
+
   // openGLHandler.emplaceBackAttribute("size", 1);
   // openGLHandler.emplaceBackAttribute("steps", 1);
+
+  openGLHandler.linkPrograms();
+
   openGLHandler.enableAllVertexAttribArrays();
-
-
+  openGLHandler.emplaceBackAttribute("vertexPosition", 2);
 
   openGLHandler.pointsToVertexBufferData(graph::POINTS);
   openGLHandler.vertexBufferDataToGL();
+
+
 
   GLint vertexStepsLocation = glGetUniformLocation(openGLHandler.shaderProgramID(), "u_steps");
   assert(vertexStepsLocation != -1 && "could not find uniform");
@@ -168,32 +172,37 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   glUniform1f(vertexRadiusLocation, 0.1f);
 
   // openGLHandler.test();
-  */
 
+  */
   /* end test setting up opengl */
 
   /* second test */
 
-  // vertexArray?
-  GLuint VAO;
-  GL_CALL(glGenVertexArrays(1, &VAO);)
-  GL_CALL(glBindVertexArray(VAO);)
 
-  // vertexBUffer?
-  GLuint VBO;
-  GL_CALL(glGenBuffers(1, &VBO);)
-  GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO);)
+  vertexArray();
+  vertexBuffer();
 
   ShaderCollection collection;
   ShaderProgram drawCircles = collection.linkCircleDrawProgram();
   std::cerr << "new ShaderProgram: " << drawCircles.id() << std::endl;
   // drawCircles.link();
 
+
+  VertexAttributes<float> vertexAttributes;
+  vertexAttributes.emplaceBack("vertexPosition", 2);
+  vertexAttributes.enableAllToShaderProgram(drawCircles.id());
+
+  /*
   // enable vertex attributes
   GL_CALL(const GLint vertexAttrib = glGetAttribLocation(drawCircles.id(), "vertexPosition");)
   GL_CALL(glEnableVertexAttribArray(vertexAttrib);)
   GL_CALL(glVertexAttribPointer(vertexAttrib, 2, GL_FLOAT, GL_FALSE, 0, (void*) (0));)
+  */
 
+  vertexAttributes.pointsToVertexBufferData(graph::POINTS);
+  vertexAttributes.vertexBufferDataToGL();
+
+  /*
   // copy data to vertexbuffer
   const size_t size       = graph::POINTS.size();
   float* vertexBufferData = new float[size * 2];
@@ -201,12 +210,16 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     vertexBufferData[i * 2]     = graph::POINTS[i].x;  // cannot use memcpy here because we
     vertexBufferData[i * 2 + 1] = graph::POINTS[i].y;  // need to cast double to float
   }
-  GL_CALL(glBufferData(GL_ARRAY_BUFFER, 160, vertexBufferData, GL_STATIC_DRAW);)
+
+
+  GL_CALL(glBufferData(GL_ARRAY_BUFFER, 160, vertexBufferData, GL_DYNAMIC_DRAW);)
+  */
 
   drawCircles.use();
 
   drawCircles.setUniform("u_steps", 6);
   drawCircles.setUniform("u_radius", 0.1f);
+
 
   // set uniforms
   /*
@@ -310,7 +323,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    // handleFastEvents(window, openGLHandler);
+    handleFastEvents(window, vertexAttributes);
 
     // draw the content
     draw(window);
@@ -324,7 +337,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   }
 
   // DEBUG
-  delete[] vertexBufferData;
+  //delete[] vertexBufferData;
 
   // clean up Dear ImGui
   cleanUpImgui();
