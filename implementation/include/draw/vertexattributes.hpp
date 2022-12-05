@@ -10,6 +10,7 @@
 #include <GLFW/glfw3.h>
 
 #include "draw/shader.hpp"
+#include "draw/variables.hpp"
 
 #include "graph/geometry.hpp"
 
@@ -18,9 +19,9 @@
 struct VertexAttribute {
   VertexAttribute(const char* Name, const size_t Size, const size_t Offset) : name(Name), size(Size), offset(Offset) {}
 
-  const char* name; /*!< name of attribute */
-  size_t size;      /*!< number of variables */
-  size_t offset;    /*!< offset in number of variables */
+  const char* name;    /*!< name of attribute */
+  const size_t size;   /*!< number of variables */
+  const size_t offset; /*!< offset in number of variables */
 };
 
 template <typename Type>
@@ -51,7 +52,9 @@ public:
   void pointsToVertexBufferData(const Data<Point2D>& points);
 
   void vertexBufferDataToGL() {
-    GL_CALL(glBufferData(GL_ARRAY_BUFFER, 20 * pVertAttrTotLen * pTypeSize, pVertexBufferData.data(), GL_DYNAMIC_DRAW);)
+    GL_CALL(glBufferData(
+              GL_ARRAY_BUFFER, graph::POINTS.size() * pVertAttrTotLen * pTypeSize, pVertexBufferData.data(),
+              GL_DYNAMIC_DRAW);)
   }
 
   void updatePointsInVertexBufferData(const Data<Point2D>& points);
@@ -60,7 +63,7 @@ private:
   std::vector<VertexAttribute> pAttr;
   std::unordered_map<std::string, size_t> pPosition;
   size_t pVertAttrTotLen;
-  size_t pTypeSize;
+  const size_t pTypeSize;
 
   Data<Type> pVertexBufferData;
 };

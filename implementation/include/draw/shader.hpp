@@ -12,17 +12,17 @@ public:
 
   GLuint id() const { return pProgramID; }
 
-  void attachShader(const GLuint shader) { GL_CALL(glAttachShader(pProgramID, shader);) }
+  void attachShader(const GLuint shader) const { GL_CALL(glAttachShader(pProgramID, shader);) }
 
   void link() const;
 
-  void setUniform(const char* name, const float value);
-  void setUniform(const char* name, const int value);
+  void setUniform(const char* name, const float value) const;
+  void setUniform(const char* name, const int value) const;
 
-  void use() { GL_CALL(glUseProgram(pProgramID);) }
+  void use() const { GL_CALL(glUseProgram(pProgramID);) }
 
 private:
-  GLuint pProgramID;
+  const GLuint pProgramID;
 };
 
 class ShaderCollection {
@@ -32,11 +32,8 @@ public:
 
   ShaderProgram linkCircleDrawProgram() const;
 
-  // private:
+private:
   const GLuint pVertexShader;
   const GLuint pGeometryShader;
   const GLuint pFragmentShader;
 };
-
-GLuint linkShaders();
-GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource);

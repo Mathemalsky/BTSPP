@@ -49,7 +49,32 @@ static constexpr const char fragmentShaderSource[] = R"glsl(
   }
 )glsl";
 
-GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {
+void ShaderProgram::link() const {
+  GL_CALL(glLinkProgram(pProgramID);)
+
+  int success;
+  char infoLog[512];
+
+  GL_CALL(glGetProgramiv(pProgramID, GL_LINK_STATUS, &success);)
+  if (!success) {
+    GL_CALL(glGetProgramInfoLog(pProgramID, 512, nullptr, infoLog);)
+    std::cerr << "ERROR Linking of shaders failed\n" << infoLog << std::endl;
+  }
+}
+
+void ShaderProgram::setUniform(const char* name, const float value) const {
+  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
+  assert(location != -1 && "could not find uniform");
+  GL_CALL(glUniform1f(location, value);)
+}
+
+void ShaderProgram::setUniform(const char* name, const int value) const {
+  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
+  assert(location != -1 && "could not find uniform");
+  GL_CALL(glUniform1i(location, value);)
+}
+
+static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {
   GL_CALL(const GLuint shader = glCreateShader(shaderType);)
   GL_CALL(glShaderSource(shader, 1, &shaderSource, nullptr);)
   GL_CALL(glCompileShader(shader);)
@@ -62,31 +87,6 @@ GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {
     std::cout << "ERROR Compilation of shader failed\n" << infoLog << std::endl;
   }
   return shader;
-}
-
-void ShaderProgram::link() const {
-  glLinkProgram(pProgramID);
-
-  int success;
-  char infoLog[512];
-
-  GL_CALL(glGetProgramiv(pProgramID, GL_LINK_STATUS, &success);)
-  if (!success) {
-    GL_CALL(glGetProgramInfoLog(pProgramID, 512, nullptr, infoLog);)
-    std::cerr << "ERROR Linking of shaders failed\n" << infoLog << std::endl;
-  }
-}
-
-void ShaderProgram::setUniform(const char* name, const float value) {
-  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
-  assert(location != -1 && "could not find uniform");
-  GL_CALL(glUniform1f(location, value);)
-}
-
-void ShaderProgram::setUniform(const char* name, const int value) {
-  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
-  assert(location != -1 && "could not find uniform");
-  GL_CALL(glUniform1i(location, value);)
 }
 
 ShaderCollection::ShaderCollection()
@@ -102,7 +102,7 @@ ShaderCollection::~ShaderCollection() {
 }
 
 ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
-  ShaderProgram circleProgram;
+  const ShaderProgram circleProgram;
   circleProgram.attachShader(pVertexShader);
   circleProgram.attachShader(pGeometryShader);
   circleProgram.attachShader(pFragmentShader);

@@ -1,7 +1,7 @@
 #pragma once
 
 namespace imguiwindow {
-constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = true;
+constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = false;
 }
 
 namespace mainwindow {
