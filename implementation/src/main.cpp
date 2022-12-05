@@ -9,9 +9,10 @@
 #include "draw/draw.hpp"
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
-#include "draw/openglhandler.hpp"
+#include "draw/openglerrors.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
+#include "draw/vertexattributes.hpp"
 
 #include "graph/graph.hpp"
 
@@ -70,30 +71,29 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     return -1;
   }
 
-  /* begin setting up opengl */
-
-  OpenGLHandler<float> openGLHandler;
-  openGLHandler.linkShaderProgram();
-  openGLHandler.addVertexArray();
-  openGLHandler.addVertexBuffer();
-
-  openGLHandler.emplaceBackAttribute("vertexPosition", 2);
-  openGLHandler.emplaceBackAttribute("size", 1);
-  openGLHandler.emplaceBackAttribute("steps", 1);
-  openGLHandler.enableAllVertexAttribArrays();
-
   // generate 20 random vertecis in euclidean plane
   Euclidean euclidean = generateEuclideanDistanceGraph(20);
 
   graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
 
-  openGLHandler.pointsToVertexBufferData(graph::POINTS);
-  openGLHandler.vertexBufferDataToGL();
+  vertexArray();
+  vertexBuffer();
 
-  GLint vertexStepsLocation = glGetUniformLocation(openGLHandler.shaderProgramID(), "u_steps");
-  assert(vertexStepsLocation != -1 && "could not find uniform");
-  glUniform1i(vertexStepsLocation, 4);
-  /* end test setting up opengl */
+  ShaderCollection collection;
+  ShaderProgram drawCircles = collection.linkCircleDrawProgram();
+
+  VertexAttributes<float> vertexAttributes;
+  vertexAttributes.emplaceBack("vertexPosition", 2);
+  vertexAttributes.enableAllToShaderProgram(drawCircles.id());
+
+  vertexAttributes.pointsToVertexBufferData(graph::POINTS);
+  vertexAttributes.vertexBufferDataToGL();
+
+  drawCircles.use();
+
+  // set uniforms, this must take place after the glUseProgram() call
+  drawCircles.setUniform("u_steps", 8);
+  drawCircles.setUniform("u_radius", 0.1f);
 
   // enable vsync
   glfwSwapInterval(1);
@@ -117,7 +117,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    handleFastEvents(window, openGLHandler);
+    handleFastEvents(window, vertexAttributes);
 
     // draw the content
     draw(window);
