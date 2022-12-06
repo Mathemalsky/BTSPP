@@ -7,7 +7,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build/)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O0 -g -Wall -Wextra -pedantic -fPIE")
 
 # lists all sourcefiles to be compiled with the project
 file(GLOB SOURCES "src/*.cpp" "src/draw/*.cpp" "src/graph/*.cpp")
@@ -28,4 +28,8 @@ find_package(glfw3 REQUIRED)
 
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 
-target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI Eigen3::Eigen)
+set(HIGHS_DIR ${CMAKE_SYSTEM_PREFIX_PATH}/lib/cmake/highs)
+find_package(HIGHS REQUIRED)
+find_package(Threads)
+
+target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI Eigen3::Eigen libhighs)

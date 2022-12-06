@@ -14,9 +14,9 @@ public:
 
   Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
-  virtual double distance(const size_t& u, const size_t& v) = 0;
-  virtual bool adjacent(const size_t& u, const size_t& v)   = 0;
-  virtual bool connected() const                            = 0;
+  virtual double distance(const size_t& u, const size_t& v) const = 0;
+  virtual bool adjacent(const size_t& u, const size_t& v) const   = 0;
+  virtual bool connected() const                                  = 0;
   // virtual bool connected() const = 0;
 
   size_t numberOfNodes() const { return pNumberOfNodes; }
@@ -30,18 +30,20 @@ public:
   CompleteGraph()  = default;
   ~CompleteGraph() = default;
 
-  bool adjacent([[maybe_unused]] const size_t& u, [[maybe_unused]] const size_t& v) override { return true; }
+  CompleteGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
+
+  bool adjacent([[maybe_unused]] const size_t& u, [[maybe_unused]] const size_t& v) const override { return true; }
   bool connected() const override { return true; }
 };
 
 class Euclidean : public CompleteGraph {
 public:
   Euclidean() = default;
-  Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) { pNumberOfNodes = positions.size(); }
+  Euclidean(const std::vector<Point2D>& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
 
   ~Euclidean() = default;
 
-  double distance(const size_t& u, const size_t& v) override { return dist(pPositions[u], pPositions[v]); }
+  double distance(const size_t& u, const size_t& v) const override { return dist(pPositions[u], pPositions[v]); }
   Point2D position(const size_t& v) const { return pPositions[v]; }
   const std::vector<Point2D>& allPositions() const { return pPositions; }
   Point2D* pointer() { return &pPositions[0]; }
