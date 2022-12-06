@@ -14,6 +14,8 @@ public:
   ~Node() = default;
 
   void operator=(unsigned int v) { pIndex = v; }
+  bool operator<(const Node other) const { return pIndex < other.pIndex; }
+  bool operator>(const Node other) const { return pIndex > other.pIndex; }
   unsigned int& index() { return pIndex; }
   unsigned int index() const { return pIndex; }
 
@@ -98,22 +100,31 @@ struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
 
 class SimpleGraph : public Graph {
 public:
+  SimpleGraph() = default;
   SimpleGraph(const size_t numberOfNodes)
     : pAdjacencyMatrix(Eigen::SparseMatrix<EdgeCost>(numberOfNodes, numberOfNodes)) {}
+
+  ~SimpleGraph();
   // constructor from 3 vectors
 
   // removal of a column and a row
 
-  virtual void addEdge(const EdgeCost edge)                                               = 0;
-  virtual void addEdge(const unsigned int row, const unsigned int col, const double edge) = 0;
+  virtual void addEdge(const Node out, const Node in, const EdgeCost edge) = 0;
 
 protected:
   Eigen::SparseMatrix<EdgeCost> pAdjacencyMatrix;
 };
 
 class UndirectedGraph : public SimpleGraph {
-  void addEdge(const EdgeCost edge) override;
-  void addEdge(const unsigned int row, const unsigned int col, const double edge) override;
+  void addEdge(const Node out, const Node in, const EdgeCost edge) override {
+    if (out > in) {
+      pAdjacencyMatrix.insert(out.index(), in.index()) = edge;
+    }
+    else if (out < in) {
+    }
+    else {
+    }
+  }
 };
 
 class Digraph : public SimpleGraph {};
