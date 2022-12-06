@@ -61,15 +61,59 @@ private:
 
 class EdgeCost {
 public:
+  EdgeCost() = default;
   EdgeCost(const double cost) : pCost(cost) {}
 
   double operator()() const { return pCost; }
   void operator=(const double cost) { pCost = cost; }
 
+  EdgeCost operator+(const EdgeCost other) { return std::min(pCost, other.pCost); }
+  EdgeCost operator*(const EdgeCost other) { return pCost + other.pCost; }
+
 private:
   double pCost;
 };
 
-class SimpleGraph : public Graph {
-private:
+/*
+ * Eigen needs some hints to deal with the custom type.
+ */
+namespace Eigen {
+template <>
+struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
+  typedef EdgeCost Real;
+  typedef EdgeCost NonInteger;
+  typedef EdgeCost Nested;
+
+  enum {
+    IsInteger             = 0,
+    IsSigned              = 1,
+    IsComplex             = 0,
+    RequireInitialization = 0,
+    ReadCost              = 1,
+    AddCost               = 7,
+    MulCost               = 3
+  };
 };
+}  // namespace Eigen
+
+class SimpleGraph : public Graph {
+public:
+  SimpleGraph(const size_t numberOfNodes)
+    : pAdjacencyMatrix(Eigen::SparseMatrix<EdgeCost>(numberOfNodes, numberOfNodes)) {}
+  // constructor from 3 vectors
+
+  // removal of a column and a row
+
+  virtual void addEdge(const EdgeCost edge)                                               = 0;
+  virtual void addEdge(const unsigned int row, const unsigned int col, const double edge) = 0;
+
+protected:
+  Eigen::SparseMatrix<EdgeCost> pAdjacencyMatrix;
+};
+
+class UndirectedGraph : public SimpleGraph {
+  void addEdge(const EdgeCost edge) override;
+  void addEdge(const unsigned int row, const unsigned int col, const double edge) override;
+};
+
+class Digraph : public SimpleGraph {};
