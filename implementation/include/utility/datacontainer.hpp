@@ -47,7 +47,7 @@ public:
   using Iterator  = DataIterator<Data<ValueType>>;
 
   Data() = default;
-  Data(ValueType* pointer, const unsigned int size, bool toDelete = false)
+  Data(ValueType* pointer, const size_t size, bool toDelete = false)
     : pData(pointer), pSize(size), pDestructionNeeded(toDelete) {}
 
   explicit Data(std::vector<ValueType>& vec) : pData(&vec[0]), pSize(vec.size()), pDestructionNeeded(false) {}
@@ -55,6 +55,7 @@ public:
   ~Data() {
     if (pDestructionNeeded) {
       delete[] pData;
+      // pDestructionNeeded = false; // DEBUG
     }
   }
 
@@ -62,13 +63,19 @@ public:
 
   Iterator end() const { return Iterator(pData + pSize); }
 
-  ValueType& operator[](unsigned int index) {
+  ValueType& operator[](const size_t index) {
     assert(index < pSize && "[Data] trying to access out of range");
     return pData[index];
   }
-  const ValueType& operator[](unsigned int index) const {
+  const ValueType& operator[](const size_t index) const {
     assert(index < pSize && "[Data] trying to access out of range");
     return pData[index];
+  }
+
+  void set(ValueType* pointer, const size_t size, bool toDelete = false) {
+    pData              = pointer;
+    pSize              = size;
+    pDestructionNeeded = toDelete;
   }
 
   ValueType* data() { return pData; }

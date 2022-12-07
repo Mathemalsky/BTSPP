@@ -17,7 +17,7 @@
 #include "utility/datacontainer.hpp"
 
 struct VertexAttribute {
-  VertexAttribute(const char* Name, const size_t Size, const size_t Offset) : name(Name), size(Size), offset(Offset) {}
+  VertexAttribute(const char* name, const size_t size, const size_t offset) : name(name), size(size), offset(offset) {}
 
   const char* name;    /*!< name of attribute */
   const size_t size;   /*!< number of variables */
@@ -99,7 +99,7 @@ void VertexAttributes<Type>::pointsToVertexBufferData(const Data<Point2D>& point
     vertexBufferData[i * pVertAttrTotLen + pointOffset + 0] = points[i].x;  // cannot use memcpy here because we
     vertexBufferData[i * pVertAttrTotLen + pointOffset + 1] = points[i].y;  // need to cast double to float
   }
-  pVertexBufferData = Data(vertexBufferData, pVertAttrTotLen * size /*, true */);
+  pVertexBufferData.set(vertexBufferData, pVertAttrTotLen * size, true);
 }
 
 template <typename Type>
@@ -110,7 +110,7 @@ void VertexAttributes<Type>::updatePointsInVertexBufferData(const Data<Point2D>&
     pVertexBufferData[i * pVertAttrTotLen + offset + 0] = points[i].x;  // cannot use memcpy here because we
     pVertexBufferData[i * pVertAttrTotLen + offset + 1] = points[i].y;  // need to cast double to float
   }
-  GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, 20 * pVertAttrTotLen * pTypeSize, pVertexBufferData.data());)
+  GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, points.size() * pVertAttrTotLen * pTypeSize, pVertexBufferData.data());)
 }
 
 inline void vertexArray() {
