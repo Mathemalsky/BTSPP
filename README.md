@@ -15,11 +15,13 @@ Here you probably need to slightly differ from the standard instalation describe
 git clone https://github.com/ERGO-Code/HiGHS.git
 cd HiGhS
 mkdir build && cd build
-cmake -DFAST_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ -DCMAKE_TARGETS=ON -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -fPIE" ..
+cmake -DFAST_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ -DCMAKE_TARGETS=ON -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -O3 -march=native -fPIE" ..
 cmake --build .
 ctest
 sudo cmake --install .
 ```
+`-fPIE` is necessary, `-O3` and `-march=native` are recommended
+
 Ofcourse `/usr/local/` can be replaced by any other path contained in `CMAKE_SYSTEM_PREFIX_PATH` variable.
 
 ### building the software
