@@ -18,6 +18,7 @@ void solveExact(const Euclidean* euclidean) {
   model.lp_.sense_   = ObjSense::kMinimize;
   model.lp_.offset_  = 0;  // offset has no effect on optimization
 
+  // set costfunction
   model.lp_.col_cost_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
@@ -29,7 +30,29 @@ void solveExact(const Euclidean* euclidean) {
   }
 
   model.lp_.col_lower_ = std::vector(model.lp_.num_col_, 0.0);  // set lower bound to zero
-  model.lp_.col_upper_ = std::vector(model.lp_.num_col_, 1.0);  // set upper bound to zero // rework
+
+  // iterate over all variables
+  const double BIG_M = numberOfNodes;  // can probably be shrinked to numberOfNodes -1
+  model.lp_.col_upper_.resize(model.lp_.num_col_);
+  model.lp_.integrality_.resize(model.lp_.num_col_);
+  for (size_t j = 0; j < numberOfNodes; ++j) {
+    for (size_t i = j + 1; i < numberOfNodes; ++i) {
+      model.lp_.col_upper_[j * numberOfNodes + i]   = 1.0;
+      model.lp_.col_upper_[i * numberOfNodes + j]   = 1.0;  // exploiting symmetry
+      model.lp_.integrality_[j * numberOfNodes + i] = HighsVarType::kInteger;
+      model.lp_.integrality_[i * numberOfNodes + j] = HighsVarType::kInteger;  // exploiting symmetry
+    }
+    model.lp_.col_upper_[j * numberOfNodes + j]   = BIG_M;
+    model.lp_.integrality_[j * numberOfNodes + j] = HighsVarType::kContinuous;
+  }
+
+  // iterate over all constraints
+  model.lp_.row_lower_.resize(model.lp_.num_row_);
+  model.lp_.row_upper_.resize(model.lp_.num_row_);
+  for (size_t i = 0; i < 2 * numberOfNodes; ++i) {
+    model.lp_.row_lower_[i] = 1.0;
+    model.lp_.row_upper_[i] = 1.0;
+  }
 
   model.lp_.row_lower_ = std::vector(model.lp_.num_row_, 0.0);  // set lower bound to zero // rework
   model.lp_.row_upper_ = std::vector(model.lp_.num_row_, 0.0);  // set lower bound to zero // rework
