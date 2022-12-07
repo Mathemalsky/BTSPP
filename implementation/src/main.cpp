@@ -94,6 +94,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // set uniforms, this must take place after the glUseProgram() call
   drawCircles.setUniform("u_steps", 8);
   drawCircles.setUniform("u_radius", 0.1f);
+  drawCircles.setUniform("u_color", 1.0f, 0.0f, 0.0f, 1.0f);
 
   // enable vsync
   glfwSwapInterval(1);

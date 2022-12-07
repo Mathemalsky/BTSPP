@@ -42,10 +42,12 @@ static constexpr const char geometryShaderSource[] = R"glsl(
 
 static constexpr const char fragmentShaderSource[] = R"glsl(
   #version 440 core
-  out vec4 color;
+  layout (location = 0) out vec4 fragColor;
+
+  uniform vec4 u_color;
 
   void main() {
-    color = vec4(1.0, 0.0, 0.0, 1.0);
+    fragColor = u_color;
   }
 )glsl";
 
@@ -72,6 +74,13 @@ void ShaderProgram::setUniform(const char* name, const int value) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
   GL_CALL(glUniform1i(location, value);)
+}
+
+void ShaderProgram::setUniform(
+  const char* name, const float val1, const float val2, const float val3, const float val4) const {
+  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
+  assert(location != -1 && "could not find uniform");
+  GL_CALL(glUniform4f(location, val1, val2, val3, val4);)
 }
 
 static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {

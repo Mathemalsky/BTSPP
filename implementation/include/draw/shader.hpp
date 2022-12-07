@@ -18,6 +18,7 @@ public:
 
   void setUniform(const char* name, const float value) const;
   void setUniform(const char* name, const int value) const;
+  void setUniform(const char* name, const float val1, const float val2, const float val3, const float val4) const;
 
   void use() const { GL_CALL(glUseProgram(pProgramID);) }
 
