@@ -12,8 +12,26 @@
 
 using Entry = Eigen::Triplet<double>;
 
+class Index {
+public:
+  Index(size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
+
+  size_t variableX(const size_t i, const size_t j) const { return j * pNumberOfNodes + i; }
+  size_t variableU(const size_t i) const { return i * pNumberOfNodes + i; }
+
+  size_t constraintXin(const size_t j) const { return j; }
+  size_t constraintXout(const size_t j) const { return pNumberOfNodes + j; }
+  size_t constraintU(const size_t i, const size_t j) const {
+    return 2 * pNumberOfNodes + j * (pNumberOfNodes - 2) + (i > j ? i - 1 : i);
+  }
+
+private:
+  const size_t pNumberOfNodes;
+};
+
 void solveExact(const Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
+  Index index(numberOfNodes);
 
   HighsModel model;
   model.lp_.num_col_ = numberOfNodes * numberOfNodes;
@@ -26,10 +44,10 @@ void solveExact(const Euclidean& euclidean) {
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
       const double dist                          = euclidean.distance(i, j);
-      model.lp_.col_cost_[j * numberOfNodes + i] = dist;
-      model.lp_.col_cost_[i * numberOfNodes + j] = dist;  // exploiting symmetry
+      model.lp_.col_cost_[index.variableX(i, j)] = dist;
+      model.lp_.col_cost_[index.variableX(j, i)] = dist;  // exploiting symmetry
     }
-    model.lp_.col_cost_[j * numberOfNodes + j] = 0.0;  // here we store u_j instead of x_jj
+    model.lp_.col_cost_[index.variableU(j)] = 0.0;  // here we store u_j instead of x_jj
   }
 
   model.lp_.col_lower_ = std::vector(model.lp_.num_col_, 0.0);  // set lower bound to zero
@@ -40,13 +58,13 @@ void solveExact(const Euclidean& euclidean) {
   model.lp_.integrality_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
-      model.lp_.col_upper_[j * numberOfNodes + i]   = 1.0;                     // bound by 1
-      model.lp_.col_upper_[i * numberOfNodes + j]   = 1.0;                     // exploiting symmetry
-      model.lp_.integrality_[j * numberOfNodes + i] = HighsVarType::kInteger;  // constrain x_ij to be \in {0,1}
-      model.lp_.integrality_[i * numberOfNodes + j] = HighsVarType::kInteger;  // exploiting symmetry
+      model.lp_.col_upper_[index.variableX(i, j)]   = 1.0;                     // bound by 1
+      model.lp_.col_upper_[index.variableX(j, i)]   = 1.0;                     // exploiting symmetry
+      model.lp_.integrality_[index.variableX(i, j)] = HighsVarType::kInteger;  // constrain x_ij to be \in {0,1}
+      model.lp_.integrality_[index.variableX(j, i)] = HighsVarType::kInteger;  // exploiting symmetry
     }
-    model.lp_.col_upper_[j * numberOfNodes + j]   = bigM;
-    model.lp_.integrality_[j * numberOfNodes + j] = HighsVarType::kContinuous;
+    model.lp_.col_upper_[index.variableU(j)]   = bigM;
+    model.lp_.integrality_[index.variableU(j)] = HighsVarType::kContinuous;
   }
 
   // iterate over all constraints
@@ -65,7 +83,6 @@ void solveExact(const Euclidean& euclidean) {
   }
 
   // construct matrix A
-
   // use handy fill function from eigen to populate the sparse matrix
   std::vector<Entry> entries;
   entries.reserve(2 * numberOfNodes * (numberOfNodes - 1) + 3 * (numberOfNodes - 1) * (numberOfNodes - 2));
@@ -73,30 +90,25 @@ void solveExact(const Euclidean& euclidean) {
   // inequalities for fixing in and out degree to 1
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = 0; i < j; ++i) {
-      entries.push_back(Entry(j, j * numberOfNodes + i, 1.0));                  // sum over in degree
-      entries.push_back(Entry(numberOfNodes + j, i * numberOfNodes + j, 1.0));  // sum over out degree
+      entries.push_back(Entry(index.constraintXin(j), index.variableX(i, j), 1.0));   // sum over in degree
+      entries.push_back(Entry(index.constraintXout(j), index.variableX(j, i), 1.0));  // sum over out degree
     }
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
-      entries.push_back(Entry(j, j * numberOfNodes + i, 1.0));                  // sum over in degree
-      entries.push_back(Entry(numberOfNodes + j, i * numberOfNodes + j, 1.0));  // sum over out degree
+      entries.push_back(Entry(index.constraintXin(j), index.variableX(i, j), 1.0));   // sum over in degree
+      entries.push_back(Entry(index.constraintXout(j), index.variableX(j, i), 1.0));  // sum over out degree
     }
   }
   // inequalities for guaranteeing connectednes
   for (size_t j = 0; j < numberOfNodes - 1; ++j) {
     for (size_t i = 0; i < j; ++i) {
-      entries.push_back(
-        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + i, (i + 1) * numberOfNodes + (i + 1), 1.0));  // +u_i
-      entries.push_back(
-        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + i, (j + 1) * numberOfNodes + (j + 1), -1.0));   // -u_j
-      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + i, j * numberOfNodes + i, p));  // +px_ij
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(i + 1), 1.0));   // +u_i
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(j + 1), -1.0));  // -u_j
+      entries.push_back(Entry(index.constraintU(i, j), index.variableX(i, j), p));      // +px_ij
     }
     for (size_t i = j + 1; i < numberOfNodes - 1; ++i) {
-      entries.push_back(
-        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + (i - 1), (i + 1) * numberOfNodes + (i + 1), 1.0));  // +u_i
-      entries.push_back(
-        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + (i - 1), (j + 1) * numberOfNodes + (j + 1), -1.0));  // -u_j
-      entries.push_back(
-        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + (i - 1), j * numberOfNodes + i, p));  // +px_ij
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(i + 1), 1.0));   // +u_i
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(j + 1), -1.0));  // -u_j
+      entries.push_back(Entry(index.constraintU(i, j), index.variableX(i, j), p));      // +px_ij
     }
   }
 
