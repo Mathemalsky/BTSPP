@@ -82,9 +82,9 @@ struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
     IsSigned              = 1,
     IsComplex             = 0,
     RequireInitialization = 0,
-    ReadCost              = 1,
-    AddCost               = 7,
-    MulCost               = 3
+    ReadCost              = 5,
+    AddCost               = 1,
+    MulCost               = 1
   };
 };
 }  // namespace Eigen

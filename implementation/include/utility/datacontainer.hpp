@@ -55,7 +55,6 @@ public:
   ~Data() {
     if (pDestructionNeeded) {
       delete[] pData;
-      // pDestructionNeeded = false; // DEBUG
     }
   }
 

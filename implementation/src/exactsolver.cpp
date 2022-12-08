@@ -12,14 +12,8 @@
 
 using Entry = Eigen::Triplet<double>;
 
-/*!
- * \brief solveExact solve the tsp to optimality using Miller-Tucker-Zemlin formulation
- * \param euclidean
- * \details x_ij belongs to the column j* numberOfNodes +i
- * hereby we ommit th x_jj entries and store u_j in that place
- */
-void solveExact(const Euclidean* euclidean) {
-  const size_t numberOfNodes = euclidean->numberOfNodes();
+void solveExact(const Euclidean& euclidean) {
+  const size_t numberOfNodes = euclidean.numberOfNodes();
 
   HighsModel model;
   model.lp_.num_col_ = numberOfNodes * numberOfNodes;
@@ -31,7 +25,7 @@ void solveExact(const Euclidean* euclidean) {
   model.lp_.col_cost_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
-      const double dist                          = euclidean->distance(i, j);
+      const double dist                          = euclidean.distance(i, j);
       model.lp_.col_cost_[j * numberOfNodes + i] = dist;
       model.lp_.col_cost_[i * numberOfNodes + j] = dist;  // exploiting symmetry
     }
@@ -65,46 +59,48 @@ void solveExact(const Euclidean* euclidean) {
   }
   // inequalities for guaranteeing connectednes
   const double p = numberOfNodes;
-  for (size_t j = 0; j < numberOfNodes - 1; ++j) {
-    for (size_t i = j + 1; i < numberOfNodes - 1; ++i) {
-      model.lp_.row_upper_[2 * numberOfNodes + j * (numberOfNodes - 1) + i] = p - 1;
-      model.lp_.row_upper_[2 * numberOfNodes + i * (numberOfNodes - 1) + j] = p - 1;  // exploiting symmetry
-    }
+  for (size_t i = 2 * numberOfNodes; i < (size_t) model.lp_.num_row_; ++i) {
+    model.lp_.row_lower_[i] = -1.0e32;  // lower bound -infinity
+    model.lp_.row_upper_[i] = p - 1;    // upper bound p-1
   }
-  model.lp_.row_lower_ = std::vector(model.lp_.num_row_, -1.0e32);  // set lower bound to -infinty
 
   // construct matrix A
 
   // use handy fill function from eigen to populate the sparse matrix
   std::vector<Entry> entries;
-  entries.reserve(numberOfNodes * (numberOfNodes - 1) * numberOfNodes + numberOfNodes * (numberOfNodes - 1));
+  entries.reserve(2 * numberOfNodes * (numberOfNodes - 1) + 3 * (numberOfNodes - 1) * (numberOfNodes - 2));
 
   // inequalities for fixing in and out degree to 1
   for (size_t j = 0; j < numberOfNodes; ++j) {
+    for (size_t i = 0; i < j; ++i) {
+      entries.push_back(Entry(j, j * numberOfNodes + i, 1.0));                  // sum over in degree
+      entries.push_back(Entry(numberOfNodes + j, i * numberOfNodes + j, 1.0));  // sum over out degree
+    }
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
-      for (size_t k = 0; k < numberOfNodes; ++k) {
-        entries.push_back(Entry(k, j * numberOfNodes + i, 1.0));
-        entries.push_back(Entry(k, i * numberOfNodes + j, 1.0));  // exploiting symmetry
-      }
+      entries.push_back(Entry(j, j * numberOfNodes + i, 1.0));                  // sum over in degree
+      entries.push_back(Entry(numberOfNodes + j, i * numberOfNodes + j, 1.0));  // sum over out degree
     }
   }
   // inequalities for guaranteeing connectednes
   for (size_t j = 0; j < numberOfNodes - 1; ++j) {
+    for (size_t i = 0; i < j; ++i) {
+      entries.push_back(
+        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + i, (i + 1) * numberOfNodes + (i + 1), 1.0));  // +u_i
+      entries.push_back(
+        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + i, (j + 1) * numberOfNodes + (j + 1), -1.0));   // -u_j
+      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + i, j * numberOfNodes + i, p));  // +px_ij
+    }
     for (size_t i = j + 1; i < numberOfNodes - 1; ++i) {
-      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 1) + i, i * numberOfNodes + i, 1.0));   // +u_i
-      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 1) + i, j * numberOfNodes + j, -1.0));  // -u_j
-      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 1) + i, j * numberOfNodes + i, p));     // +px_ij
-
-      // exploit symmetry
-      std::swap(i, j);
-      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 1) + i, i * numberOfNodes + i, 1.0));   // +u_i
-      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 1) + i, j * numberOfNodes + j, -1.0));  // -u_j
-      entries.push_back(Entry(2 * numberOfNodes + j * (numberOfNodes - 1) + i, j * numberOfNodes + i, p));     // +px_ij
-      std::swap(i, j);  // swap back before entering next loop
+      entries.push_back(
+        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + (i - 1), (i + 1) * numberOfNodes + (i + 1), 1.0));  // +u_i
+      entries.push_back(
+        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + (i - 1), (j + 1) * numberOfNodes + (j + 1), -1.0));  // -u_j
+      entries.push_back(
+        Entry(2 * numberOfNodes + j * (numberOfNodes - 2) + (i - 1), j * numberOfNodes + i, p));  // +px_ij
     }
   }
 
-  Eigen::SparseMatrix<double> A;
+  Eigen::SparseMatrix<double> A(model.lp_.num_row_, model.lp_.num_col_);
   A.setFromTriplets(entries.begin(), entries.end());
 
   // put data into HiGHs sparse matrix

@@ -19,6 +19,7 @@
 #include "utility/datacontainer.hpp"
 
 #include "euclideandistancegraph.hpp"
+#include "exactsolver.hpp"
 
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {
@@ -71,10 +72,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     return -1;
   }
 
-  // generate 20 random vertecis in euclidean plane
-  Euclidean euclidean = generateEuclideanDistanceGraph(20);
+  // generate random vertecis in euclidean plane
+  Euclidean euclidean = generateEuclideanDistanceGraph(5);
+  solveExact(euclidean);
 
-  graph::POINTS = Data(euclidean.pointer(), euclidean.numberOfNodes());
+  graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
 
   vertexArray();
   vertexBuffer();
