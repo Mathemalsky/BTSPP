@@ -154,12 +154,14 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
       std::cout << "; value = " << solution.col_value[col];
     std::cout << std::endl;
   }
+  /*
   for (int row = 0; row < lp.num_row_; row++) {
     std::cout << "Row    " << row;
     if (info.primal_solution_status)
       std::cout << "; value = " << solution.row_value[row];
     std::cout << std::endl;
   }
+  */
 
   std::vector<size_t> tour(numberOfNodes);
   tour[0] = 0;  // circle starts by definition with node 0

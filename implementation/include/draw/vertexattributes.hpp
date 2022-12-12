@@ -30,11 +30,11 @@ public:
   VertexAttributes() : pVertAttrTotLen(0), pTypeSize(sizeof(Type)) {}
 
   VertexAttribute& operator[](unsigned int index) {
-    assert(index < pAttr.size() && "[Data] trying to access out of range");
+    assert(index < pAttr.size() && "[VertexAttributes] trying to access out of range");
     return pAttr[index];
   }
   const VertexAttribute& operator[](unsigned int index) const {
-    assert(index < pAttr.size() && "[Data] trying to access out of range");
+    assert(index < pAttr.size() && "[VertexAttributes] trying to access out of range");
     return pAttr[index];
   }
 

@@ -17,6 +17,18 @@ static constexpr const char vertexShaderSource[] = R"glsl(
   }
 )glsl";
 
+static constexpr const char lineVertexShader[] = R"glsl(
+#version 440 core
+
+layout(std430, binding = 0) buffer LineVertex
+{
+   vec4 vertex[];
+};
+
+uniform float u_thickness;
+
+)glsl";
+
 static constexpr const char circleShaderSource[] = R"glsl(
   #version 440 core
   layout(points) in;
@@ -28,10 +40,10 @@ static constexpr const char circleShaderSource[] = R"glsl(
   const float PI = 3.1415926;
 
   void main() {
-    for(int i = 0; i < u_steps +1; ++i) {
+    for(int i = 0; i < u_steps + 1; ++i) {
       float ang = 2.0 * PI * i / u_steps;
 
-      vec4 offset = vec4(cos(ang) * u_radius/16, sin(ang) * u_radius/9, 0.0, 0.0);
+      vec4 offset = vec4(cos(ang) * u_radius / 16.0, sin(ang) * u_radius / 9.0, 0.0, 0.0);
       gl_Position = gl_in[0].gl_Position + offset;
       EmitVertex();
     }
