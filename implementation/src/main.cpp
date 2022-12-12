@@ -74,8 +74,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   // generate random vertecis in euclidean plane
   Euclidean euclidean = generateEuclideanDistanceGraph(5);
-  solveExact(euclidean);
-
+  graph::TOUR         = solveTSP(euclidean);
   graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
 
   vertexArray();

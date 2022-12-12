@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <unordered_map>
+#include <vector>
 
 #include "graph/geometry.hpp"
 
@@ -8,7 +10,8 @@
 
 namespace graph {
 extern Data<Point2D> POINTS;
-}
+extern std::vector<size_t> TOUR;
+}  // namespace graph
 
 namespace imguiwindow {
 extern bool SHOW_SETTINGS_WINDOW;

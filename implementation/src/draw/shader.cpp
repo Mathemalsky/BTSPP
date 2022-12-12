@@ -17,7 +17,7 @@ static constexpr const char vertexShaderSource[] = R"glsl(
   }
 )glsl";
 
-static constexpr const char geometryShaderSource[] = R"glsl(
+static constexpr const char circleShaderSource[] = R"glsl(
   #version 440 core
   layout(points) in;
   layout(line_strip, max_vertices = 21) out;
@@ -100,20 +100,20 @@ static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource)
 
 ShaderCollection::ShaderCollection()
   : pVertexShader(compileShader(GL_VERTEX_SHADER, vertexShaderSource))
-  , pGeometryShader(compileShader(GL_GEOMETRY_SHADER, geometryShaderSource))
+  , pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource))
   , pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource)) {
 }
 
 ShaderCollection::~ShaderCollection() {
   GL_CALL(glDeleteShader(pVertexShader);)
-  GL_CALL(glDeleteShader(pGeometryShader);)
+  GL_CALL(glDeleteShader(pCircleShader);)
   GL_CALL(glDeleteShader(pFragmentShader);)
 }
 
 ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
   const ShaderProgram circleProgram;
   circleProgram.attachShader(pVertexShader);
-  circleProgram.attachShader(pGeometryShader);
+  circleProgram.attachShader(pCircleShader);
   circleProgram.attachShader(pFragmentShader);
   circleProgram.link();
   return circleProgram;

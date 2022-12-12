@@ -1,5 +1,7 @@
 #include "draw/variables.hpp"
 
+#include <cstddef>
+#include <vector>
 #include <unordered_map>
 
 #include "graph/geometry.hpp"
@@ -8,7 +10,8 @@
 
 namespace graph {
 Data<Point2D> POINTS;
-}
+std::vector<size_t> TOUR;
+}  // namespace graph
 
 namespace imguiwindow {
 bool SHOW_SETTINGS_WINDOW;

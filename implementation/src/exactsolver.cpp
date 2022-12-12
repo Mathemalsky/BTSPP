@@ -12,6 +12,8 @@
 
 using Entry = Eigen::Triplet<double>;
 
+static constexpr double M_INFINITY = 1e32;
+
 class Index {
 public:
   Index(size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
@@ -29,7 +31,7 @@ private:
   const size_t pNumberOfNodes;
 };
 
-void solveExact(const Euclidean& euclidean) {
+std::vector<size_t> solveTSP(const Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   Index index(numberOfNodes);
 
@@ -78,8 +80,8 @@ void solveExact(const Euclidean& euclidean) {
   // inequalities for guaranteeing connectednes
   const double p = numberOfNodes;
   for (size_t i = 2 * numberOfNodes; i < (size_t) model.lp_.num_row_; ++i) {
-    model.lp_.row_lower_[i] = -1.0e32;  // lower bound -infinity
-    model.lp_.row_upper_[i] = p - 1;    // upper bound p-1
+    model.lp_.row_lower_[i] = -M_INFINITY;  // lower bound -infinity
+    model.lp_.row_upper_[i] = p - 1;        // upper bound p-1
   }
 
   // construct matrix A
@@ -158,4 +160,12 @@ void solveExact(const Euclidean& euclidean) {
       std::cout << "; value = " << solution.row_value[row];
     std::cout << std::endl;
   }
+
+  std::vector<size_t> tour(numberOfNodes);
+  tour[0] = 0;  // circle starts by definition with node 0
+  for (size_t i = 1; i < numberOfNodes; ++i) {
+    tour[index.variableU(i) + 1] = i;
+  }
+
+  return tour;
 }

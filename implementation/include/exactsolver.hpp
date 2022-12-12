@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "graph/graph.hpp"
 
 /*!
@@ -8,4 +10,4 @@
  * \details x_ij belongs to the column j* numberOfNodes +i
  * hereby we ommit th x_jj entries and store u_j in that place
  */
-void solveExact(const Euclidean& euclidean);
+std::vector<size_t> solveTSP(const Euclidean& euclidean);

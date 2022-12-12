@@ -35,6 +35,6 @@ public:
 
 private:
   const GLuint pVertexShader;
-  const GLuint pGeometryShader;
+  const GLuint pCircleShader;
   const GLuint pFragmentShader;
 };
