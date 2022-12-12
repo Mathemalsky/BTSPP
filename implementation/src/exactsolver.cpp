@@ -22,7 +22,7 @@ public:
   size_t constraintXin(const size_t j) const { return j; }
   size_t constraintXout(const size_t j) const { return pNumberOfNodes + j; }
   size_t constraintU(const size_t i, const size_t j) const {
-    return 2 * pNumberOfNodes + j * (pNumberOfNodes - 2) + (i > j ? i - 1 : i);
+    return 2 * pNumberOfNodes + (j - 1) * (pNumberOfNodes - 2) + (i > j ? i - 2 : i - 1);
   }
 
 private:
@@ -53,7 +53,7 @@ void solveExact(const Euclidean& euclidean) {
   model.lp_.col_lower_ = std::vector(model.lp_.num_col_, 0.0);  // set lower bound to zero
 
   // iterate over all variables
-  const double bigM = numberOfNodes;  // can probably be shrinked to numberOfNodes -1
+  const double bigM = numberOfNodes - 2;  //
   model.lp_.col_upper_.resize(model.lp_.num_col_);
   model.lp_.integrality_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
@@ -99,23 +99,23 @@ void solveExact(const Euclidean& euclidean) {
     }
   }
   // inequalities for guaranteeing connectednes
-  for (size_t j = 0; j < numberOfNodes - 1; ++j) {
-    for (size_t i = 0; i < j; ++i) {
-      entries.push_back(Entry(index.constraintU(i, j), index.variableU(i + 1), 1.0));   // +u_i
-      entries.push_back(Entry(index.constraintU(i, j), index.variableU(j + 1), -1.0));  // -u_j
-      entries.push_back(Entry(index.constraintU(i, j), index.variableX(i, j), p));      // +px_ij
+  for (size_t j = 1; j < numberOfNodes; ++j) {
+    for (size_t i = 1; i < j; ++i) {
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(i), 1.0));   // +u_i
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(j), -1.0));  // -u_j
+      entries.push_back(Entry(index.constraintU(i, j), index.variableX(i, j), p));  // +px_ij
     }
-    for (size_t i = j + 1; i < numberOfNodes - 1; ++i) {
-      entries.push_back(Entry(index.constraintU(i, j), index.variableU(i + 1), 1.0));   // +u_i
-      entries.push_back(Entry(index.constraintU(i, j), index.variableU(j + 1), -1.0));  // -u_j
-      entries.push_back(Entry(index.constraintU(i, j), index.variableX(i, j), p));      // +px_ij
+    for (size_t i = j + 1; i < numberOfNodes; ++i) {
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(i), 1.0));   // +u_i
+      entries.push_back(Entry(index.constraintU(i, j), index.variableU(j), -1.0));  // -u_j
+      entries.push_back(Entry(index.constraintU(i, j), index.variableX(i, j), p));  // +px_ij
     }
   }
 
   Eigen::SparseMatrix<double> A(model.lp_.num_row_, model.lp_.num_col_);
   A.setFromTriplets(entries.begin(), entries.end());
 
-  // put data into HiGHs sparse matrix
+  // copy data from eigen sparse matrix into HiGHs sparse matrix
   model.lp_.a_matrix_.format_ = MatrixFormat::kColwise;  // use column compressed storage order
   model.lp_.a_matrix_.start_.assign(A.outerIndexPtr(), A.outerIndexPtr() + A.cols());  // copy start indeces of columns
   model.lp_.a_matrix_.start_.push_back(A.nonZeros());  // add number of nonZeros in the end
@@ -123,12 +123,8 @@ void solveExact(const Euclidean& euclidean) {
   model.lp_.a_matrix_.value_.assign(A.valuePtr(), A.valuePtr() + A.nonZeros());            // copy values
 
   Highs highs;
-  HighsStatus return_status;
-
-  return_status = highs.passModel(model);
+  HighsStatus return_status = highs.passModel(model);
   assert(return_status == HighsStatus::kOk);
-
-  // const HighsLp& lp = highs.getLp();  // get a const reference to the LP data in HiGHS
 
   return_status = highs.run();  // solve instance
   assert(return_status == HighsStatus::kOk);
@@ -138,9 +134,28 @@ void solveExact(const Euclidean& euclidean) {
   std::cout << "Model status: " << highs.modelStatusToString(model_status) << std::endl;
 
   const HighsInfo& info = highs.getInfo();
-  std::cout << "Simplex iteration count: " << info.simplex_iteration_count << std::endl;
+  std::cout << "Simplex iteration count : " << info.simplex_iteration_count << std::endl;
   std::cout << "Objective function value: " << info.objective_function_value << std::endl;
-  std::cout << "Primal  solution status: " << highs.solutionStatusToString(info.primal_solution_status) << std::endl;
-  std::cout << "Dual    solution status: " << highs.solutionStatusToString(info.dual_solution_status) << std::endl;
-  std::cout << "Basis: " << highs.basisValidityToString(info.basis_validity) << std::endl;
+  std::cout << "Primal  solution status : " << highs.solutionStatusToString(info.primal_solution_status) << std::endl;
+  std::cout << "Dual    solution status : " << highs.solutionStatusToString(info.dual_solution_status) << std::endl;
+  std::cout << "Basis                   : " << highs.basisValidityToString(info.basis_validity) << std::endl;
+
+  // Get the solution values and basis
+  const HighsSolution& solution = highs.getSolution();
+  // const HighsBasis& basis = highs.getBasis();
+  const HighsLp& lp = highs.getLp();  // get a const reference to the LP data in HiGHS
+
+  // Report the primal solution values
+  for (int col = 0; col < lp.num_col_; col++) {
+    std::cout << "Column " << col;
+    if (info.primal_solution_status)
+      std::cout << "; value = " << solution.col_value[col];
+    std::cout << std::endl;
+  }
+  for (int row = 0; row < lp.num_row_; row++) {
+    std::cout << "Row    " << row;
+    if (info.primal_solution_status)
+      std::cout << "; value = " << solution.row_value[row];
+    std::cout << std::endl;
+  }
 }
