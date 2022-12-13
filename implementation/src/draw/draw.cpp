@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
 static void clearWindow(GLFWwindow* window) {
@@ -13,11 +14,16 @@ static void clearWindow(GLFWwindow* window) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-static void drawVerteces() {
+static void drawVerteces(const ShaderProgram& drawCircles) {
+  drawCircles.use();  // need to call glUseProgram before setting uniforms
+  drawCircles.setUniform("u_steps", 8);
+  drawCircles.setUniform("u_radius", 0.1f);
+  drawCircles.setUniform("u_color", 1.0f, 0.0f, 0.0f, 1.0f);
+
   glDrawArrays(GL_POINTS, 0, graph::POINTS.size());  // start at index 0
 }
 
-void draw(GLFWwindow* window) {
+void draw(GLFWwindow* window, const ShaderProgramCollection& programs) {
   clearWindow(window);
-  drawVerteces();
+  drawVerteces(programs.drawCircles);
 }

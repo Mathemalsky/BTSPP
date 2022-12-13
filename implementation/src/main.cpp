@@ -74,28 +74,22 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   // generate random vertecis in euclidean plane
   Euclidean euclidean = generateEuclideanDistanceGraph(5);
-  graph::TOUR         = solveTSP(euclidean);
+  // graph::TOUR         = solveTSP(euclidean);
   graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
 
   vertexArray();
   vertexBuffer();
 
-  ShaderCollection collection;
-  ShaderProgram drawCircles = collection.linkCircleDrawProgram();
+  const ShaderCollection collection;
+  const ShaderProgram drawCircles = collection.linkCircleDrawProgram();
+  const ShaderProgramCollection programs(drawCircles);
 
   VertexAttributes<float> vertexAttributes;
   vertexAttributes.emplaceBack("vertexPosition", 2);
-  vertexAttributes.enableAllToShaderProgram(drawCircles.id());
+  vertexAttributes.enableAllToShaderProgram(programs.drawCircles.id());
 
   vertexAttributes.pointsToVertexBufferData(graph::POINTS);
   vertexAttributes.vertexBufferDataToGL();
-
-  drawCircles.use();
-
-  // set uniforms, this must take place after the glUseProgram() call
-  drawCircles.setUniform("u_steps", 8);
-  drawCircles.setUniform("u_radius", 0.1f);
-  drawCircles.setUniform("u_color", 1.0f, 0.0f, 0.0f, 1.0f);
 
   // enable vsync
   glfwSwapInterval(1);
@@ -122,8 +116,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     handleFastEvents(window, vertexAttributes);
 
     // draw the content
-    draw(window);
-    // glUseProgram(programID);
+    draw(window, programs);
 
     // draw the gui
     drawImgui();

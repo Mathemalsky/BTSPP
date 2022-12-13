@@ -38,3 +38,9 @@ private:
   const GLuint pCircleShader;
   const GLuint pFragmentShader;
 };
+
+struct ShaderProgramCollection {
+  ShaderProgramCollection(const ShaderProgram& drawCircles) : drawCircles(drawCircles) {}
+  const ShaderProgram drawCircles;
+  ShaderProgram drawLineSegments;
+};
