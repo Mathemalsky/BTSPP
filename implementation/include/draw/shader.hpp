@@ -32,6 +32,7 @@ public:
   ~ShaderCollection();
 
   ShaderProgram linkCircleDrawProgram() const;
+  ShaderProgram linkLineSegementDrawProgram() const;
 
 private:
   const GLuint pVertexShader;
@@ -40,7 +41,8 @@ private:
 };
 
 struct ShaderProgramCollection {
-  ShaderProgramCollection(const ShaderProgram& drawCircles) : drawCircles(drawCircles) {}
+  ShaderProgramCollection(const ShaderProgram& drawCircles, const ShaderProgram& drawLineSegments)
+    : drawCircles(drawCircles), drawLineSegments(drawLineSegments) {}
   const ShaderProgram drawCircles;
-  ShaderProgram drawLineSegments;
+  const ShaderProgram drawLineSegments;
 };

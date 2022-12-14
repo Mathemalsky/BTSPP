@@ -74,13 +74,15 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   // generate random vertecis in euclidean plane
   Euclidean euclidean = generateEuclideanDistanceGraph(5);
-  // graph::TOUR         = solveTSP(euclidean);
   graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
-  graph::initPointsfFromPoints();
+  graph::TOUR = solveTSP(euclidean);
+  graph::initPointsfFromPoints();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+  graph::initTour32FromTour();     // convert to 32 bit integers because opengl isn't capable to deal with 64 bit
 
   const ShaderCollection collection;
-  const ShaderProgram drawCircles = collection.linkCircleDrawProgram();
-  const ShaderProgramCollection programs(drawCircles);
+  const ShaderProgram drawCircles      = collection.linkCircleDrawProgram();
+  const ShaderProgram drawLineSegments = collection.linkLineSegementDrawProgram();
+  const ShaderProgramCollection programs(drawCircles, drawLineSegments);
 
   VertexBuffer coordinates;
   coordinates.bind();

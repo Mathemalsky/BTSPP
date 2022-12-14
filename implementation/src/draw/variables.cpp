@@ -12,6 +12,7 @@ namespace graph {
 Data<Point2D> POINTS;
 Data<float> POINTS_F;
 std::vector<size_t> TOUR;
+std::vector<uint32_t> TOUR_32;
 
 void initPointsfFromPoints() {
   float* pointsF = new float[2 * POINTS.size()];
@@ -27,6 +28,17 @@ void updatePointsfFromPoints() {
     POINTS_F[2 * i]     = (float) POINTS[i].x;
     POINTS_F[2 * i + 1] = (float) POINTS[i].y;
   }
+}
+
+void updateTour32FromTour() {
+  for (size_t i = 0; i < TOUR.size(); ++i) {
+    TOUR_32[i] = (uint32_t) TOUR[i];
+  }
+}
+
+void initTour32FromTour() {
+  TOUR_32.resize(TOUR.size());
+  updateTour32FromTour();
 }
 }  // namespace graph
 

@@ -130,3 +130,11 @@ ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
   circleProgram.link();
   return circleProgram;
 }
+
+ShaderProgram ShaderCollection::linkLineSegementDrawProgram() const {
+  const ShaderProgram lineSegmentProgram;
+  lineSegmentProgram.attachShader(pVertexShader);
+  lineSegmentProgram.attachShader(pFragmentShader);
+  lineSegmentProgram.link();
+  return lineSegmentProgram;
+}

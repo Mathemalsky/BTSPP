@@ -27,10 +27,11 @@ static void drawEdges(const ShaderProgram& drawLineSegments) {
   drawLineSegments.use();
   drawLineSegments.setUniform("u_color", 1.0f, 0.0f, 0.0f, 1.0f);
 
-  glDrawElements(GL_LINES, graph::TOUR.size(), GL_UNSIGNED_INT, graph::TOUR.data());
+  glDrawElements(GL_LINES, graph::TOUR_32.size(), GL_UNSIGNED_INT, graph::TOUR_32.data());
 }
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs) {
   clearWindow(window);
   drawVerteces(programs.drawCircles);
+  drawEdges(programs.drawLineSegments);
 }

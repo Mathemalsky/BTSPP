@@ -12,9 +12,13 @@ namespace graph {
 extern Data<Point2D> POINTS;
 extern Data<float> POINTS_F;
 extern std::vector<size_t> TOUR;
+extern std::vector<uint32_t> TOUR_32;
 
 void initPointsfFromPoints();
 void updatePointsfFromPoints();
+
+void initTour32FromTour();
+void updateTour32FromTour();
 }  // namespace graph
 
 namespace imguiwindow {
