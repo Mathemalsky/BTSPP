@@ -77,12 +77,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // graph::TOUR         = solveTSP(euclidean);
   graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
 
-  vertexArray();
-  vertexBuffer();
-
   const ShaderCollection collection;
   const ShaderProgram drawCircles = collection.linkCircleDrawProgram();
   const ShaderProgramCollection programs(drawCircles);
+
+  vertexArray();
+  vertexBuffer();
 
   VertexAttributes<float> vertexAttributes;
   vertexAttributes.emplaceBack("vertexPosition", 2);

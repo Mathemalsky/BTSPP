@@ -9,6 +9,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/openglerrors.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
@@ -39,7 +40,7 @@ public:
   }
 
   const VertexAttribute& operator[](const std::string& str) const {
-    assert(pPosition.at(str) < pAttr.size() && "[Data] trying to access out of range");
+    assert(pPosition.at(str) < pAttr.size() && "[VertexAttributes] trying to access out of range");
     return pAttr[pPosition.at(str)];
   }
 
@@ -67,6 +68,74 @@ private:
 
   Data<Type> pVertexBufferData;
 };
+
+class VertexBuffer {
+public:
+  VertexBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
+  ~VertexBuffer() { GL_CALL(glDeleteBuffers(1, &pID);) }
+
+  void bind() const { GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, pID);) }
+
+  template <typename Type>
+  void bufferData(const Data<Type>& dat, const GLuint componentsPerVertex);
+
+  GLenum type() const { return pType; }
+  GLuint compPerVertex() const { return pComponentsPerVertex; }
+
+private:
+  GLuint pID;
+  GLenum pType;
+  GLuint pComponentsPerVertex;
+};
+
+template <typename Type>
+void VertexBuffer::bufferData(const Data<Type>& dat, const GLuint componentsPerVertex) {
+  this->bind();
+  GL_CALL(glBufferData(GL_ARRAY_BUFFER, dat.byteSize(), dat.data(), GL_DYNAMIC_DRAW);)
+
+  pComponentsPerVertex = componentsPerVertex;
+
+  if (std::is_same<Type, float>{}) {
+    pType = GL_FLOAT;
+  }
+  else {
+    // warn the type is not yet implemented
+  }
+}
+
+template <typename Type>
+void bufferSubData(const VertexBuffer& vbo, Data<Type>& dat) {
+  vbo.bind();
+  GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, dat.byteSize(), dat.data());)
+}
+
+class VertexArray {
+public:
+  VertexArray() { GL_CALL(glGenVertexArrays(1, &pID);) }
+  ~VertexArray() { GL_CALL(glDeleteVertexArrays(1, &pID);) }
+
+  void bind() const { GL_CALL(glBindVertexArray(pID);) }
+
+  void mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name);
+
+  void enable(const GLuint shaderProgramID, const char* name) const;
+
+private:
+  GLuint pID;
+};
+
+inline void VertexArray::mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) {
+  this->bind();
+  vbo.bind();
+  const GLint vertexAttribLocation = GL_CALL(glGetAttribLocation(shaderProgramID, name);)
+    GL_CALL(glVertexAttribPointer(vertexAttribLocation, vbo.compPerVertex(), vbo.type(), GL_FALSE, 0, nullptr);)
+}
+
+inline void VertexArray::enable(const GLuint shaderProgramID, const char* name) const {
+  this->bind();
+  const GLint vertexAttribLocation =
+    GL_CALL(glGetAttribLocation(shaderProgramID, name);) GL_CALL(glEnableVertexAttribArray(vertexAttribLocation);)
+}
 
 /***********************************************************************************************************************
  *                          implementation of templates needs to be included in header
