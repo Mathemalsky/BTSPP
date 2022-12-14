@@ -91,18 +91,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   vao.mapBufferToAttribute(coordinates, programs.drawCircles.id(), "vertexPosition");
   vao.enable(programs.drawCircles.id(), "vertexPosition");
 
-  /*
-  vertexArray();
-  vertexBuffer();
-
-  VertexAttributes<float> vertexAttributes;
-  vertexAttributes.emplaceBack("vertexPosition", 2);
-  vertexAttributes.enableAllToShaderProgram(programs.drawCircles.id());
-
-  vertexAttributes.pointsToVertexBufferData(graph::POINTS);
-  vertexAttributes.vertexBufferDataToGL();
-  */
-
   // enable vsync
   glfwSwapInterval(1);
 
