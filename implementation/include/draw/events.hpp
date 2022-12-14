@@ -21,8 +21,7 @@ inline Point2D transformCoordinates(const double x, const double y) {
  *                          implementation of templates needs to be included in header
  **********************************************************************************************************************/
 
-template <typename Type>
-void moveNode(GLFWwindow* window, VertexAttributes<Type>& vertexAttributes) {
+inline void moveNode(GLFWwindow* window, const VertexBuffer& coordinates) {
   double x, y;
   glfwGetCursorPos(window, &x, &y);
   const Point2D oldMousePos  = transformCoordinates(input::mouse::x, input::mouse::y);
@@ -33,14 +32,14 @@ void moveNode(GLFWwindow* window, VertexAttributes<Type>& vertexAttributes) {
       break;  // move only one point at one at a time
     }
   }
-  vertexAttributes.updatePointsInVertexBufferData(graph::POINTS);
+  graph::updatePointsfFromPoints();
+  coordinates.bufferSubData(graph::POINTS_F);
 }
 
-template <typename Type>
-void handleFastEvents(GLFWwindow* window, VertexAttributes<Type>& vertexAttributes) {
+inline void handleFastEvents(GLFWwindow* window, const VertexBuffer& coordinates) {
   glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);  // update window size
   if (input::STATE[GLFW_MOUSE_BUTTON_LEFT]) {
-    moveNode(window, vertexAttributes);
+    moveNode(window, coordinates);
   }
   glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);
 }

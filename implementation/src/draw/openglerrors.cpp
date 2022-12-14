@@ -9,6 +9,9 @@ void getOpenglErrors(const char* file, const unsigned int line) {
   while (GLenum error = glGetError()) {
     std::cerr << "[OPEN_GL] ";
     switch (error) {
+    case GL_INVALID_ENUM:
+      std::cerr << "GL_INVALID_ENUM\n";
+      break;
     case GL_INVALID_VALUE:
       std::cerr << "INVALID_VALUE\n";
       break;

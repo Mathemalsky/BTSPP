@@ -76,11 +76,22 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   Euclidean euclidean = generateEuclideanDistanceGraph(5);
   // graph::TOUR         = solveTSP(euclidean);
   graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
+  graph::initPointsfFromPoints();
 
   const ShaderCollection collection;
   const ShaderProgram drawCircles = collection.linkCircleDrawProgram();
   const ShaderProgramCollection programs(drawCircles);
 
+  VertexBuffer coordinates;
+  coordinates.bind();
+  coordinates.bufferData(graph::POINTS_F, 2);
+
+  VertexArray vao;
+  vao.bind();
+  vao.mapBufferToAttribute(coordinates, programs.drawCircles.id(), "vertexPosition");
+  vao.enable(programs.drawCircles.id(), "vertexPosition");
+
+  /*
   vertexArray();
   vertexBuffer();
 
@@ -90,6 +101,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   vertexAttributes.pointsToVertexBufferData(graph::POINTS);
   vertexAttributes.vertexBufferDataToGL();
+  */
 
   // enable vsync
   glfwSwapInterval(1);
@@ -113,7 +125,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    handleFastEvents(window, vertexAttributes);
+    handleFastEvents(window, coordinates);
 
     // draw the content
     draw(window, programs);

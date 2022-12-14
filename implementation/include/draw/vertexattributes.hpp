@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -77,7 +78,10 @@ public:
   void bind() const { GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, pID);) }
 
   template <typename Type>
-  void bufferData(const Data<Type>& dat, const GLuint componentsPerVertex);
+  void bufferData(Data<Type>& dat, const GLuint componentsPerVertex);
+
+  template <typename Type>
+  void bufferSubData(Data<Type>& dat) const;
 
   GLenum type() const { return pType; }
   GLuint compPerVertex() const { return pComponentsPerVertex; }
@@ -89,7 +93,7 @@ private:
 };
 
 template <typename Type>
-void VertexBuffer::bufferData(const Data<Type>& dat, const GLuint componentsPerVertex) {
+void VertexBuffer::bufferData(Data<Type>& dat, const GLuint componentsPerVertex) {
   this->bind();
   GL_CALL(glBufferData(GL_ARRAY_BUFFER, dat.byteSize(), dat.data(), GL_DYNAMIC_DRAW);)
 
@@ -99,13 +103,13 @@ void VertexBuffer::bufferData(const Data<Type>& dat, const GLuint componentsPerV
     pType = GL_FLOAT;
   }
   else {
-    // warn the type is not yet implemented
+    std::cerr << "[Buffer Data] Type not yet supported.\n";
   }
 }
 
 template <typename Type>
-void bufferSubData(const VertexBuffer& vbo, Data<Type>& dat) {
-  vbo.bind();
+void VertexBuffer::bufferSubData(Data<Type>& dat) const {
+  this->bind();
   GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, dat.byteSize(), dat.data());)
 }
 
@@ -127,14 +131,14 @@ private:
 inline void VertexArray::mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) {
   this->bind();
   vbo.bind();
-  const GLint vertexAttribLocation = GL_CALL(glGetAttribLocation(shaderProgramID, name);)
+  const GLint vertexAttribLocation = GL_CALL(glGetAttribLocation(shaderProgramID, name);)  // get attribute location
     GL_CALL(glVertexAttribPointer(vertexAttribLocation, vbo.compPerVertex(), vbo.type(), GL_FALSE, 0, nullptr);)
 }
 
 inline void VertexArray::enable(const GLuint shaderProgramID, const char* name) const {
   this->bind();
-  const GLint vertexAttribLocation =
-    GL_CALL(glGetAttribLocation(shaderProgramID, name);) GL_CALL(glEnableVertexAttribArray(vertexAttribLocation);)
+  const GLint vertexAttribLocation = GL_CALL(glGetAttribLocation(shaderProgramID, name);)  // get attribute location
+    GL_CALL(glEnableVertexAttribArray(vertexAttribLocation);)
 }
 
 /***********************************************************************************************************************
