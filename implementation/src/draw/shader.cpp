@@ -20,13 +20,42 @@ static constexpr const char vertexShaderSource[] = R"glsl(
 static constexpr const char lineVertexShader[] = R"glsl(
 #version 440 core
 
-layout(std430, binding = 0) buffer LineVertex
-{
-   vec4 vertex[];
-};
+  layout(std430, binding = 0) buffer lineVertex
+  {
+     vec2 vertex[];
+  };
 
-uniform float u_thickness;
+  uniform float u_thickness;
+  uniform vec2 u_resolution;
 
+  void main() {
+    int line_segment     = gl_VertexID / 6;
+    int triangle_vertex  = gl_VertexID % 6;
+
+    vec2 prev_direction = normalize(vertex[line_segment + 1] - vertex[line_segment]);
+    vec2 succ_direction = normalize(vertex[line_segment + 2] - vertex[line_segment + 1]);
+
+    vec2 prev_perpendicular(-prev_direction.y, prev_direction.x);
+    vec2 succ_perpendicular(-succ_direction.y, succ_direction.x);
+
+    vec2 offset = 2 * u_thickness * normalize(prev_perpendicular + succ_perpendicular) / u_resolution;
+
+    vec2 pos;
+    if(triangle_vertex == 0 || triangle_vertex == 2 || triangle_vertex == 5) {
+      pos = vertex[triangle_vertex + 1];
+    }
+    else {
+      pos = vertex[triangle_vertex + 2];
+    }
+
+    if(triangle_vertex == 0 || triangle_vertex == 1 || triangle_vertex == 3) {
+      pos -= offset;
+    }
+    else {
+      pos += offset;
+    }
+    gl_Position = vec4(pos, 0.0, 1.0);
+  }
 )glsl";
 
 static constexpr const char circleShaderSource[] = R"glsl(
@@ -47,9 +76,8 @@ static constexpr const char circleShaderSource[] = R"glsl(
       gl_Position = gl_in[0].gl_Position + offset;
       EmitVertex();
     }
-
     EndPrimitive();
-}
+  }
 )glsl";
 
 static constexpr const char fragmentShaderSource[] = R"glsl(
@@ -88,6 +116,12 @@ void ShaderProgram::setUniform(const char* name, const int value) const {
   GL_CALL(glUniform1i(location, value);)
 }
 
+void ShaderProgram::setUniform(const char* name, const float val1, const float val2) const {
+  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
+  assert(location != -1 && "could not find uniform");
+  GL_CALL(glUniform2f(location, val1, val2);)
+}
+
 void ShaderProgram::setUniform(
   const char* name, const float val1, const float val2, const float val3, const float val4) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
@@ -105,7 +139,7 @@ static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource)
 
   if (!success) {
     GL_CALL(glGetShaderInfoLog(shader, 512, nullptr, infoLog);)
-    std::cout << "ERROR Compilation of shader failed\n" << infoLog << std::endl;
+    std::cout << "ERROR Compilation of " << shaderSource << " failed\n" << infoLog << std::endl;
   }
   return shader;
 }
@@ -113,13 +147,15 @@ static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource)
 ShaderCollection::ShaderCollection()
   : pVertexShader(compileShader(GL_VERTEX_SHADER, vertexShaderSource))
   , pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource))
-  , pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource)) {
+  , pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource))
+  , pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShader)) {
 }
 
 ShaderCollection::~ShaderCollection() {
   GL_CALL(glDeleteShader(pVertexShader);)
   GL_CALL(glDeleteShader(pCircleShader);)
   GL_CALL(glDeleteShader(pFragmentShader);)
+  GL_CALL(glDeleteShader(pLineVertexShader);)
 }
 
 ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
