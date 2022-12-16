@@ -39,9 +39,7 @@ static constexpr const char lineVertexShader[] = R"glsl(
       vec2 prev_direction = normalize(vertex[line_segment + 1] - vertex[line_segment]);
       vec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
 
-      vec2 corner_direction = normalize(prev_perpendicular + line_perpendicular);
-      vec2 offset = u_thickness / dot(line_perpendicular, corner_direction) * corner_direction / u_resolution;
-      offset = u_thickness * line_perpendicular / u_resolution;
+      vec2 offset = u_thickness * line_perpendicular / u_resolution;
 
       pos = vertex[line_segment + 1];
       if(triangle_vertex == 0) {
@@ -55,9 +53,7 @@ static constexpr const char lineVertexShader[] = R"glsl(
       vec2 succ_direction = normalize(vertex[line_segment + 3] - vertex[line_segment + 2]);
       vec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
 
-      vec2 corner_direction = normalize(line_perpendicular + succ_perpendicular);
-      vec2 offset = u_thickness / dot(line_perpendicular, corner_direction) * corner_direction / u_resolution;
-      offset = u_thickness * line_perpendicular / u_resolution;
+      vec2 offset = u_thickness * line_perpendicular / u_resolution;
 
       pos = vertex[line_segment + 2];
       if(triangle_vertex == 4) {
@@ -72,12 +68,9 @@ static constexpr const char lineVertexShader[] = R"glsl(
 )glsl";
 
 /*
-    if(triangle_vertex == 0 || triangle_vertex == 1 || triangle_vertex == 3) {
-      pos -= offset;
-    }
-    else {
-      pos += offset;
-    }
+    vec2 corner_direction = normalize(prev_perpendicular + line_perpendicular);
+    float scalar = u_thickness / dot(corner_direction, line_perpendicular);
+    vec2 offset = scalar * corner_direction / u_resolution;
     */
 
 static constexpr const char circleShaderSource[] = R"glsl(
