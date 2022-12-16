@@ -41,6 +41,7 @@ static constexpr const char lineVertexShader[] = R"glsl(
 
       vec2 corner_direction = normalize(prev_perpendicular + line_perpendicular);
       vec2 offset = u_thickness / dot(line_perpendicular, corner_direction) * corner_direction / u_resolution;
+      offset = u_thickness * line_perpendicular / u_resolution;
 
       pos = vertex[line_segment + 1];
       if(triangle_vertex == 0) {
@@ -56,6 +57,7 @@ static constexpr const char lineVertexShader[] = R"glsl(
 
       vec2 corner_direction = normalize(line_perpendicular + succ_perpendicular);
       vec2 offset = u_thickness / dot(line_perpendicular, corner_direction) * corner_direction / u_resolution;
+      offset = u_thickness * line_perpendicular / u_resolution;
 
       pos = vertex[line_segment + 2];
       if(triangle_vertex == 4) {
