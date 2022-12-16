@@ -166,7 +166,7 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
   std::vector<size_t> tour(numberOfNodes);
   tour[0] = 0;  // circle starts by definition with node 0
   for (size_t i = 1; i < numberOfNodes; ++i) {
-    tour[index.variableU(i) + 1] = i;
+    tour[solution.col_value[index.variableU(i)] + 1] = i;
   }
 
   return tour;
