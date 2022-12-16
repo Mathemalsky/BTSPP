@@ -31,31 +31,52 @@ static constexpr const char lineVertexShader[] = R"glsl(
     int line_segment     = gl_VertexID / 6;
     int triangle_vertex  = gl_VertexID % 6;
 
-    vec2 prev_direction = normalize(vertex[line_segment + 1] - vertex[line_segment]);
-    vec2 succ_direction = normalize(vertex[line_segment + 2] - vertex[line_segment + 1]);
-
-    vec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
-    vec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
-
-    vec2 offset = 2 * u_thickness * normalize(prev_perpendicular + succ_perpendicular) / u_resolution;
+    vec2 line_direction = normalize(vertex[line_segment + 2] - vertex[line_segment + 1]);
+    vec2 line_perpendicular = vec2(-line_direction.y, line_direction.x);
 
     vec2 pos;
     if(triangle_vertex == 0 || triangle_vertex == 2 || triangle_vertex == 5) {
-      pos = vertex[triangle_vertex + 1];
+      vec2 prev_direction = normalize(vertex[line_segment + 1] - vertex[line_segment]);
+      vec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
+
+      vec2 corner_direction = normalize(prev_perpendicular + line_perpendicular);
+      vec2 offset = u_thickness / dot(line_perpendicular, corner_direction) * corner_direction / u_resolution;
+
+      pos = vertex[line_segment + 1];
+      if(triangle_vertex == 0) {
+        pos -= offset;
+      }
+      else {
+        pos += offset;
+      }
     }
     else {
-      pos = vertex[triangle_vertex + 2];
-    }
+      vec2 succ_direction = normalize(vertex[line_segment + 3] - vertex[line_segment + 2]);
+      vec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
 
+      vec2 corner_direction = normalize(line_perpendicular + succ_perpendicular);
+      vec2 offset = u_thickness / dot(line_perpendicular, corner_direction) * corner_direction / u_resolution;
+
+      pos = vertex[line_segment + 2];
+      if(triangle_vertex == 4) {
+        pos += offset;
+      }
+      else {
+        pos -= offset;
+      }
+    }
+    gl_Position = vec4(pos, 0.0, 1.0);
+  }
+)glsl";
+
+/*
     if(triangle_vertex == 0 || triangle_vertex == 1 || triangle_vertex == 3) {
       pos -= offset;
     }
     else {
       pos += offset;
     }
-    gl_Position = vec4(pos, 0.0, 1.0);
-  }
-)glsl";
+    */
 
 static constexpr const char circleShaderSource[] = R"glsl(
   #version 440 core

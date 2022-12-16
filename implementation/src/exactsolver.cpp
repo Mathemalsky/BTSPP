@@ -133,20 +133,23 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
 
   const HighsModelStatus& model_status = highs.getModelStatus();
   assert(model_status == HighsModelStatus::kOptimal);
-  std::cout << "Model status: " << highs.modelStatusToString(model_status) << std::endl;
+  // std::cout << "Model status: " << highs.modelStatusToString(model_status) << std::endl;
 
+  /*
   const HighsInfo& info = highs.getInfo();
   std::cout << "Simplex iteration count : " << info.simplex_iteration_count << std::endl;
   std::cout << "Objective function value: " << info.objective_function_value << std::endl;
   std::cout << "Primal  solution status : " << highs.solutionStatusToString(info.primal_solution_status) << std::endl;
   std::cout << "Dual    solution status : " << highs.solutionStatusToString(info.dual_solution_status) << std::endl;
   std::cout << "Basis                   : " << highs.basisValidityToString(info.basis_validity) << std::endl;
+  */
 
   // Get the solution values and basis
   const HighsSolution& solution = highs.getSolution();
   // const HighsBasis& basis = highs.getBasis();
   const HighsLp& lp = highs.getLp();  // get a const reference to the LP data in HiGHS
 
+  /*
   // Report the primal solution values
   for (int col = 0; col < lp.num_col_; col++) {
     std::cout << "Column " << col;
@@ -154,6 +157,7 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
       std::cout << "; value = " << solution.col_value[col];
     std::cout << std::endl;
   }
+  */
   /*
   for (int row = 0; row < lp.num_row_; row++) {
     std::cout << "Row    " << row;

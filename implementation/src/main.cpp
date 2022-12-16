@@ -91,7 +91,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   const ShaderBuffer tour;
   // tour.bufferData(graph::TOUR_32);
   // DEBUG
-  tour.bufferData(graph::POINTS_F);
+  float* tmp = new float[graph::POINTS_F.size() + 4];
+  std::memcpy(tmp, graph::POINTS_F.data(), graph::POINTS_F.byteSize());
+  std::memcpy(tmp + graph::POINTS_F.size(), graph::POINTS_F.data(), 4 * sizeof(float));
+  Data<float> test(tmp, graph::POINTS_F.size() + 4, true);
+
+  tour.bufferData(test);
 
   VertexArray vao;
   vao.bind();
