@@ -25,9 +25,12 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
 
 static void drawEdges(const ShaderProgram& drawLineSegments) {
   drawLineSegments.use();
+  drawLineSegments.setUniform("u_thickness", 3.0f);  // thickness is a float
+  drawLineSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
   drawLineSegments.setUniform("u_color", 1.0f, 0.0f, 0.0f, 1.0f);
 
-  // glDrawElements(GL_LINES, graph::TOUR_32.size(), GL_UNSIGNED_INT, graph::TOUR_32.data());
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glDrawArrays(GL_TRIANGLES, 0, 6 * (graph::POINTS.size() - 3));
 }
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs) {

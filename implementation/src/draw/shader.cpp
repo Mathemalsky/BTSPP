@@ -18,8 +18,7 @@ static constexpr const char vertexShaderSource[] = R"glsl(
 )glsl";
 
 static constexpr const char lineVertexShader[] = R"glsl(
-#version 440 core
-
+  #version 440 core
   layout(std430, binding = 0) buffer lineVertex
   {
      vec2 vertex[];
@@ -35,8 +34,8 @@ static constexpr const char lineVertexShader[] = R"glsl(
     vec2 prev_direction = normalize(vertex[line_segment + 1] - vertex[line_segment]);
     vec2 succ_direction = normalize(vertex[line_segment + 2] - vertex[line_segment + 1]);
 
-    vec2 prev_perpendicular(-prev_direction.y, prev_direction.x);
-    vec2 succ_perpendicular(-succ_direction.y, succ_direction.x);
+    vec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
+    vec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
 
     vec2 offset = 2 * u_thickness * normalize(prev_perpendicular + succ_perpendicular) / u_resolution;
 
@@ -169,7 +168,7 @@ ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
 
 ShaderProgram ShaderCollection::linkLineSegementDrawProgram() const {
   const ShaderProgram lineSegmentProgram;
-  lineSegmentProgram.attachShader(pVertexShader);
+  lineSegmentProgram.attachShader(pLineVertexShader);
   lineSegmentProgram.attachShader(pFragmentShader);
   lineSegmentProgram.link();
   return lineSegmentProgram;

@@ -72,14 +72,14 @@ public:
   void bind() const { GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, pID);) }
 
   template <typename Type>
-  void bufferData(std::vector<Type>& dat) const;
+  void bufferData(Data<Type>& dat) const;
 
 private:
   GLuint pID;
 };
 
 template <typename Type>
-void ShaderBuffer::bufferData(std::vector<Type>& dat) const {
+void ShaderBuffer::bufferData(Data<Type>& dat) const {
   this->bind();
   GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, dat.size() * sizeof(Type), dat.data(), GL_DYNAMIC_DRAW);)
 }

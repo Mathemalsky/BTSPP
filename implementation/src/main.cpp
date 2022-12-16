@@ -89,7 +89,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   coordinates.bufferData(graph::POINTS_F, 2);
 
   const ShaderBuffer tour;
-  tour.bufferData(graph::TOUR_32);
+  // tour.bufferData(graph::TOUR_32);
+  // DEBUG
+  tour.bufferData(graph::POINTS_F);
 
   VertexArray vao;
   vao.bind();

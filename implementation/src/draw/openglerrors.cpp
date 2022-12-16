@@ -1,6 +1,7 @@
 #include "draw/openglerrors.hpp"
 
 #include <iostream>
+#include <stdexcept>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -22,5 +23,6 @@ void getOpenglErrors(const char* file, const unsigned int line) {
       std::cerr << error << std::endl;
     }
     std::cerr << "from " << file << ": line " << line << std::endl;
+    throw std::runtime_error("OpenGL error" + std::to_string(error));
   }
 }
