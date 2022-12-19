@@ -1,4 +1,4 @@
-#include "draw/vertexattributes.hpp"
+#include "draw/buffers.hpp"
 
 void VertexArray::mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) {
   this->bind();

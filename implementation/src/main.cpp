@@ -12,7 +12,7 @@
 #include "draw/openglerrors.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
-#include "draw/vertexattributes.hpp"
+#include "draw/buffers.hpp"
 
 #include "graph/graph.hpp"
 
@@ -84,34 +84,25 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   const ShaderProgram drawLineSegments = collection.linkLineSegementDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawLineSegments);
 
-  VertexBuffer coordinates;
-  coordinates.bind();
-  coordinates.bufferData(graph::POINTS_F, 2);
+  Buffers buffers;
+  buffers.coordinates.bind();
+  buffers.coordinates.bufferData(graph::POINTS_F, 2);   // components per vertex
+  buffers.tourCoordinates.bufferData(graph::POINTS_F);  // copy vertex coordinates also into shader buffer
 
-  const ShaderBuffer tourVerteces;
-  // tour.bufferData(graph::TOUR_32);
-  // DEBUG
-  float* tmp = new float[graph::POINTS_F.size() + 4];
-  std::memcpy(tmp, graph::POINTS_F.data(), graph::POINTS_F.byteSize());
-  std::memcpy(tmp + graph::POINTS_F.size(), graph::POINTS_F.data(), 4 * sizeof(float));
-  Data<float> test(tmp, graph::POINTS_F.size() + 4, true);
-
-  tourVerteces.bufferData(test);
-
-  const ShaderBuffer tour;
+  // PRELIMINARY
   GLuint* tmp2 = new GLuint[graph::TOUR_32.size() + 3];
   std::memcpy(tmp2, graph::TOUR_32.data(), graph::TOUR_32.size() * sizeof(GLuint));
   std::memcpy(tmp2 + graph::TOUR_32.size(), graph::TOUR_32.data(), 3 * sizeof(GLuint));
   Data<GLuint> test2(tmp2, graph::TOUR_32.size() + 3, true);
 
-  tour.bufferData(test2);
+  buffers.tour.bufferData(test2);
 
   VertexArray vao;
   vao.bind();
-  vao.mapBufferToAttribute(coordinates, programs.drawCircles.id(), "vertexPosition");
+  vao.mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
   vao.enable(programs.drawCircles.id(), "vertexPosition");
-  vao.bindBufferBase(tourVerteces, 0);
-  vao.bindBufferBase(tour, 1);  // Test
+  vao.bindBufferBase(buffers.tourCoordinates, 0);
+  vao.bindBufferBase(buffers.tour, 1);
 
   // enable vsync
   glfwSwapInterval(1);
@@ -135,7 +126,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    handleFastEvents(window, coordinates);
+    handleFastEvents(window, buffers);
 
     // draw the content
     draw(window, programs);

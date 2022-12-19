@@ -5,7 +5,7 @@
 
 #include "draw/definitions.hpp"
 #include "draw/variables.hpp"
-#include "draw/vertexattributes.hpp"
+#include "draw/buffers.hpp"
 
 #include "utility/datacontainer.hpp"
 
@@ -37,7 +37,7 @@ void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int ac
   }
 }
 
-void moveNode(GLFWwindow* window, const VertexBuffer& coordinates) {
+static void moveNode(GLFWwindow* window, const Buffers& buffers) {
   double x, y;
   glfwGetCursorPos(window, &x, &y);
   const Point2D oldMousePos  = transformCoordinates(input::mouse::x, input::mouse::y);
@@ -49,13 +49,14 @@ void moveNode(GLFWwindow* window, const VertexBuffer& coordinates) {
     }
   }
   graph::updatePointsfFromPoints();
-  coordinates.bufferSubData(graph::POINTS_F);
+  buffers.coordinates.bufferSubData(graph::POINTS_F);
+  buffers.tourCoordinates.bufferSubData(graph::POINTS_F);
 }
 
-void handleFastEvents(GLFWwindow* window, const VertexBuffer& coordinates) {
+void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
   glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);  // update window size
   if (input::STATE[GLFW_MOUSE_BUTTON_LEFT]) {
-    moveNode(window, coordinates);
+    moveNode(window, buffers);
   }
   glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);
 }

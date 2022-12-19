@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include "draw/variables.hpp"
-#include "draw/vertexattributes.hpp"
+#include "draw/buffers.hpp"
 
 #include "graph/geometry.hpp"
 
@@ -17,6 +17,4 @@ inline Point2D transformCoordinates(const double x, const double y) {
   return Point2D{2.0 * x / mainwindow::WIDTH - 1.0, -2.0 * y / mainwindow::HEIGHT + 1.0};
 }
 
-void moveNode(GLFWwindow* window, const VertexBuffer& coordinates);
-
-void handleFastEvents(GLFWwindow* window, const VertexBuffer& coordinates);
+void handleFastEvents(GLFWwindow* window, const Buffers& coordinates);

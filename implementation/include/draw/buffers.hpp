@@ -18,6 +18,10 @@
 
 #include "utility/datacontainer.hpp"
 
+/***********************************************************************************************************************
+ *                                               VertexBuffer class
+ **********************************************************************************************************************/
+
 class VertexBuffer {
 public:
   VertexBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
@@ -55,12 +59,15 @@ void VertexBuffer::bufferData(Data<Type>& dat, const GLuint componentsPerVertex)
   }
 }
 
-// template needs to be declared in header
 template <typename Type>
 void VertexBuffer::bufferSubData(Data<Type>& dat) const {
   this->bind();
-  GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, dat.byteSize(), dat.data());)
+  GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, dat.byteSize(), dat.data());)  // 0 for no offset
 }
+
+/***********************************************************************************************************************
+ *                                               ShaderBuffer class
+ **********************************************************************************************************************/
 
 class ShaderBuffer {
 public:
@@ -74,6 +81,15 @@ public:
   template <typename Type>
   void bufferData(Data<Type>& dat) const;
 
+  template <typename Type>
+  void bufferData(std::vector<Type>& dat) const;
+
+  template <typename Type>
+  void bufferSubData(Data<Type>& dat) const;
+
+  template <typename Type>
+  void bufferSubData(std::vector<Type>& dat) const;
+
 private:
   GLuint pID;
 };
@@ -81,8 +97,30 @@ private:
 template <typename Type>
 void ShaderBuffer::bufferData(Data<Type>& dat) const {
   this->bind();
+  GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, dat.byteSize(), dat.data(), GL_DYNAMIC_DRAW);)
+}
+
+template <typename Type>
+void ShaderBuffer::bufferData(std::vector<Type>& dat) const {
+  this->bind();
   GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, dat.size() * sizeof(Type), dat.data(), GL_DYNAMIC_DRAW);)
 }
+
+template <typename Type>
+void ShaderBuffer::bufferSubData(Data<Type>& dat) const {
+  this->bind();
+  GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, dat.byteSize(), dat.data());)  // 0 for no offset
+}
+
+template <typename Type>
+void ShaderBuffer::bufferSubData(std::vector<Type>& dat) const {
+  this->bind();
+  GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, dat.size() * sizeof(Type), dat.data());)  // 0 for no offset
+}
+
+/***********************************************************************************************************************
+ *                                               VertexArray class
+ **********************************************************************************************************************/
 
 class VertexArray {
 public:
@@ -99,4 +137,10 @@ public:
 
 private:
   GLuint pID;
+};
+
+struct Buffers {
+  VertexBuffer coordinates;
+  ShaderBuffer tour;
+  ShaderBuffer tourCoordinates;
 };
