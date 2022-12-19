@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/buffers.hpp"
 #include "draw/definitions.hpp"
 #include "draw/draw.hpp"
 #include "draw/events.hpp"
@@ -12,7 +13,6 @@
 #include "draw/openglerrors.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
-#include "draw/buffers.hpp"
 
 #include "graph/graph.hpp"
 
@@ -73,7 +73,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   }
 
   // generate random vertecis in euclidean plane
-  Euclidean euclidean = generateEuclideanDistanceGraph(5);
+  Euclidean euclidean = generateEuclideanDistanceGraph(15);
   graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
   graph::TOUR = solveTSP(euclidean);
   graph::initPointsfFromPoints();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit

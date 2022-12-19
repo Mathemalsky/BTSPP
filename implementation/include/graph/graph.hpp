@@ -45,7 +45,6 @@ public:
 
   double distance(const size_t& u, const size_t& v) const override { return dist(pPositions[u], pPositions[v]); }
   Point2D position(const size_t& v) const { return pPositions[v]; }
-  const std::vector<Point2D>& allPositions() const { return pPositions; }
   Point2D* pointer() { return &pPositions[0]; }
 
 private:

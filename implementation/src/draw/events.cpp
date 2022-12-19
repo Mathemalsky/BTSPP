@@ -3,9 +3,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "draw/definitions.hpp"
-#include "draw/variables.hpp"
 #include "draw/buffers.hpp"
+#include "draw/definitions.hpp"
+#include "draw/openglerrors.hpp"
+#include "draw/variables.hpp"
 
 #include "utility/datacontainer.hpp"
 
@@ -24,7 +25,10 @@ void keyCallback(
     toggleSettingsWindow();
   }
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-    glfwSetWindowShouldClose(window, GLFW_TRUE);
+    GL_CALL(glfwSetWindowShouldClose(window, GLFW_TRUE);)
+  }
+  if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+    // update solution in separated detached thread
   }
 }
 
@@ -39,7 +43,7 @@ void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int ac
 
 static void moveNode(GLFWwindow* window, const Buffers& buffers) {
   double x, y;
-  glfwGetCursorPos(window, &x, &y);
+  GL_CALL(glfwGetCursorPos(window, &x, &y);)
   const Point2D oldMousePos  = transformCoordinates(input::mouse::x, input::mouse::y);
   const Point2D diffMousePos = transformCoordinates(x, y) - oldMousePos;
   for (Point2D& point : graph::POINTS) {
@@ -54,9 +58,9 @@ static void moveNode(GLFWwindow* window, const Buffers& buffers) {
 }
 
 void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
-  glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);  // update window size
+  GL_CALL(glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);)  // update window size
   if (input::STATE[GLFW_MOUSE_BUTTON_LEFT]) {
     moveNode(window, buffers);
   }
-  glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);
+  GL_CALL(glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);)
 }
