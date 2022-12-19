@@ -135,19 +135,17 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
   assert(model_status == HighsModelStatus::kOptimal);
   // std::cout << "Model status: " << highs.modelStatusToString(model_status) << std::endl;
 
-  /*
   const HighsInfo& info = highs.getInfo();
   std::cout << "Simplex iteration count : " << info.simplex_iteration_count << std::endl;
   std::cout << "Objective function value: " << info.objective_function_value << std::endl;
   std::cout << "Primal  solution status : " << highs.solutionStatusToString(info.primal_solution_status) << std::endl;
   std::cout << "Dual    solution status : " << highs.solutionStatusToString(info.dual_solution_status) << std::endl;
   std::cout << "Basis                   : " << highs.basisValidityToString(info.basis_validity) << std::endl;
-  */
 
   // Get the solution values and basis
   const HighsSolution& solution = highs.getSolution();
   // const HighsBasis& basis = highs.getBasis();
-  const HighsLp& lp = highs.getLp();  // get a const reference to the LP data in HiGHS
+  // const HighsLp& lp = highs.getLp();  // get a const reference to the LP data in HiGHS
 
   /*
   // Report the primal solution values
@@ -158,6 +156,7 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
     std::cout << std::endl;
   }
   */
+
   /*
   for (int row = 0; row < lp.num_row_; row++) {
     std::cout << "Row    " << row;
@@ -170,7 +169,8 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
   std::vector<size_t> tour(numberOfNodes);
   tour[0] = 0;  // circle starts by definition with node 0
   for (size_t i = 1; i < numberOfNodes; ++i) {
-    tour[solution.col_value[index.variableU(i)] + 1] = i;
+    // round because solution might not exactly hit integers
+    tour[std::round(solution.col_value[index.variableU(i)]) + 1] = i;
   }
 
   return tour;
