@@ -24,6 +24,11 @@ static constexpr const char lineVertexShader[] = R"glsl(
      vec2 vertex[];
   };
 
+  layout(std430, binding = 1) buffer lineIndex
+  {
+    uint index[];
+  };
+
   uniform float u_thickness;
   uniform vec2 u_resolution;
 
@@ -31,17 +36,17 @@ static constexpr const char lineVertexShader[] = R"glsl(
     int line_segment     = gl_VertexID / 6;
     int triangle_vertex  = gl_VertexID % 6;
 
-    vec2 line_direction = normalize(vertex[line_segment + 2] - vertex[line_segment + 1]);
+    vec2 line_direction = normalize(vertex[index[line_segment + 2]] - vertex[index[line_segment + 1]]);
     vec2 line_perpendicular = vec2(-line_direction.y, line_direction.x);
 
     vec2 pos;
     if(triangle_vertex == 0 || triangle_vertex == 2 || triangle_vertex == 5) {
-      vec2 prev_direction = normalize(vertex[line_segment + 1] - vertex[line_segment]);
+      vec2 prev_direction = normalize(vertex[index[line_segment + 1]] - vertex[index[line_segment]]);
       vec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
 
       vec2 offset = u_thickness * line_perpendicular / u_resolution;
 
-      pos = vertex[line_segment + 1];
+      pos = vertex[index[line_segment + 1]];
       if(triangle_vertex == 0) {
         pos -= offset;
       }
@@ -50,12 +55,12 @@ static constexpr const char lineVertexShader[] = R"glsl(
       }
     }
     else {
-      vec2 succ_direction = normalize(vertex[line_segment + 3] - vertex[line_segment + 2]);
+      vec2 succ_direction = normalize(vertex[index[line_segment + 3]] - vertex[index[line_segment + 2]]);
       vec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
 
       vec2 offset = u_thickness * line_perpendicular / u_resolution;
 
-      pos = vertex[line_segment + 2];
+      pos = vertex[index[line_segment + 2]];
       if(triangle_vertex == 4) {
         pos += offset;
       }

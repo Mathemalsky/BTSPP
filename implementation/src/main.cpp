@@ -88,7 +88,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   coordinates.bind();
   coordinates.bufferData(graph::POINTS_F, 2);
 
-  const ShaderBuffer tour;
+  const ShaderBuffer tourVerteces;
   // tour.bufferData(graph::TOUR_32);
   // DEBUG
   float* tmp = new float[graph::POINTS_F.size() + 4];
@@ -96,13 +96,22 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   std::memcpy(tmp + graph::POINTS_F.size(), graph::POINTS_F.data(), 4 * sizeof(float));
   Data<float> test(tmp, graph::POINTS_F.size() + 4, true);
 
-  tour.bufferData(test);
+  tourVerteces.bufferData(test);
+
+  const ShaderBuffer tour;
+  GLuint* tmp2 = new GLuint[graph::TOUR_32.size() + 3];
+  std::memcpy(tmp2, graph::TOUR_32.data(), graph::TOUR_32.size() * sizeof(GLuint));
+  std::memcpy(tmp2 + graph::TOUR_32.size(), graph::TOUR_32.data(), 3 * sizeof(GLuint));
+  Data<GLuint> test2(tmp2, graph::TOUR_32.size() + 3, true);
+
+  tour.bufferData(test2);
 
   VertexArray vao;
   vao.bind();
   vao.mapBufferToAttribute(coordinates, programs.drawCircles.id(), "vertexPosition");
   vao.enable(programs.drawCircles.id(), "vertexPosition");
-  vao.bindBufferBase(tour);
+  vao.bindBufferBase(tourVerteces, 0);
+  vao.bindBufferBase(tour, 1);  // Test
 
   // enable vsync
   glfwSwapInterval(1);

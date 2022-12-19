@@ -30,7 +30,7 @@ static void drawEdges(const ShaderProgram& drawLineSegments) {
   drawLineSegments.setUniform("u_color", 1.0f, 0.0f, 0.0f, 1.0f);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  glDrawArrays(GL_TRIANGLES, 0, 6 * (graph::POINTS.size() - 1));
+  glDrawArrays(GL_TRIANGLES, 0, 6 * (graph::POINTS.size()));
 }
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs) {

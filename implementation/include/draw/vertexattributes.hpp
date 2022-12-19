@@ -95,7 +95,7 @@ public:
 
   void enable(const GLuint shaderProgramID, const char* name) const;
 
-  void bindBufferBase(const ShaderBuffer& shaderBuffer);
+  void bindBufferBase(const ShaderBuffer& shaderBuffer, const GLuint bindingPoint) const;
 
 private:
   GLuint pID;
