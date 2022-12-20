@@ -10,10 +10,10 @@
 
 static constexpr const char vertexShaderSource[] = R"glsl(
   #version 440 core
-  in vec2 vertexPosition;
+  in dvec2 vertexPosition;
 
   void main() {
-    gl_Position = vec4(vertexPosition, 0.0, 1.0);
+    gl_Position = dvec4(vertexPosition, 0.0lf, 1.0lf);
   }
 )glsl";
 
@@ -21,7 +21,7 @@ static constexpr const char lineVertexShader[] = R"glsl(
   #version 440 core
   layout(std430, binding = 0) buffer lineVertex
   {
-     vec2 vertex[];
+     dvec2 vertex[];
   };
 
   layout(std430, binding = 1) buffer lineIndex
@@ -29,23 +29,23 @@ static constexpr const char lineVertexShader[] = R"glsl(
     uint index[];
   };
 
-  uniform float u_thickness;
-  uniform vec2 u_resolution;
+  uniform double u_thickness;
+  uniform dvec2 u_resolution;
 
   void main() {
     int line_segment     = gl_VertexID / 6;
     int triangle_vertex  = gl_VertexID % 6;
 
-    vec2 line_direction = normalize(vertex[index[line_segment + 2]] - vertex[index[line_segment + 1]]);
-    vec2 line_perpendicular = vec2(-line_direction.y, line_direction.x);
+    dvec2 line_direction = normalize(vertex[index[line_segment + 2]] - vertex[index[line_segment + 1]]);
+    dvec2 line_perpendicular = vec2(-line_direction.y, line_direction.x);
 
-    vec2 pos;
+    dvec2 pos;
     if(triangle_vertex == 0 || triangle_vertex == 2 || triangle_vertex == 5) {
-      vec2 prev_direction = normalize(vertex[index[line_segment + 1]] - vertex[index[line_segment]]);
-      vec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
+      dvec2 prev_direction = normalize(vertex[index[line_segment + 1]] - vertex[index[line_segment]]);
+      dvec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
 
-      vec2 corner_direction = prev_perpendicular + line_perpendicular;
-      vec2 offset = u_thickness / dot(corner_direction, line_perpendicular) * corner_direction / u_resolution;
+      dvec2 corner_direction = prev_perpendicular + line_perpendicular;
+      dvec2 offset = u_thickness / dot(corner_direction, line_perpendicular) * corner_direction / u_resolution;
 
       pos = vertex[index[line_segment + 1]];
       if(triangle_vertex == 0) {
@@ -56,11 +56,11 @@ static constexpr const char lineVertexShader[] = R"glsl(
       }
     }
     else {
-      vec2 succ_direction = normalize(vertex[index[line_segment + 3]] - vertex[index[line_segment + 2]]);
-      vec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
+      dvec2 succ_direction = normalize(vertex[index[line_segment + 3]] - vertex[index[line_segment + 2]]);
+      dvec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
 
-      vec2 corner_direction = succ_perpendicular + line_perpendicular;
-      vec2 offset = u_thickness / dot(corner_direction, line_perpendicular) * corner_direction / u_resolution;
+      dvec2 corner_direction = succ_perpendicular + line_perpendicular;
+      dvec2 offset = u_thickness / dot(corner_direction, line_perpendicular) * corner_direction / u_resolution;
 
       pos = vertex[index[line_segment + 2]];
       if(triangle_vertex == 4) {
@@ -70,7 +70,7 @@ static constexpr const char lineVertexShader[] = R"glsl(
         pos -= offset;
       }
     }
-    gl_Position = vec4(pos, 0.0, 1.0);
+    gl_Position = dvec4(pos, 0.0lf, 1.0lf);
   }
 )glsl";
 
@@ -79,16 +79,16 @@ static constexpr const char circleShaderSource[] = R"glsl(
   layout(points) in;
   layout(line_strip, max_vertices = 21) out;
 
-  uniform float u_radius;
+  uniform double u_radius;
   uniform int u_steps;
 
-  const float PI = 3.1415926;
+  const double PI = 3.1415926lf;
 
   void main() {
     for(int i = 0; i < u_steps + 1; ++i) {
-      float ang = 2.0 * PI * i / u_steps;
+      double ang = 2.0 * PI * i / u_steps;
 
-      vec4 offset = vec4(cos(ang) * u_radius, sin(ang) * u_radius, 0.0, 0.0);
+      dvec4 offset = vec4(coslf(ang) * u_radius, sin(ang) * u_radius, 0.0lf, 0.0lf);
       gl_Position = gl_in[0].gl_Position + offset;
       EmitVertex();
     }
@@ -98,9 +98,9 @@ static constexpr const char circleShaderSource[] = R"glsl(
 
 static constexpr const char fragmentShaderSource[] = R"glsl(
   #version 440 core
-  layout (location = 0) out vec4 fragColor;
+  layout (location = 0) out dvec4 fragColor;
 
-  uniform vec4 u_color;
+  uniform dvec4 u_color;
 
   void main() {
     fragColor = u_color;
@@ -120,10 +120,10 @@ void ShaderProgram::link() const {
   }
 }
 
-void ShaderProgram::setUniform(const char* name, const float value) const {
+void ShaderProgram::setUniform(const char* name, const double value) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
-  GL_CALL(glUniform1f(location, value);)
+  GL_CALL(glUniform1d(location, value);)
 }
 
 void ShaderProgram::setUniform(const char* name, const int value) const {
@@ -132,17 +132,17 @@ void ShaderProgram::setUniform(const char* name, const int value) const {
   GL_CALL(glUniform1i(location, value);)
 }
 
-void ShaderProgram::setUniform(const char* name, const float val1, const float val2) const {
+void ShaderProgram::setUniform(const char* name, const double val1, const double val2) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
-  GL_CALL(glUniform2f(location, val1, val2);)
+  GL_CALL(glUniform2d(location, val1, val2);)
 }
 
 void ShaderProgram::setUniform(
-  const char* name, const float val1, const float val2, const float val3, const float val4) const {
+  const char* name, const double val1, const double val2, const double val3, const double val4) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
-  GL_CALL(glUniform4f(location, val1, val2, val3, val4);)
+  GL_CALL(glUniform4d(location, val1, val2, val3, val4);)
 }
 
 static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {

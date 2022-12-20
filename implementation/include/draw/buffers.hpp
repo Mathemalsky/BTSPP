@@ -54,6 +54,9 @@ void VertexBuffer::bufferData(Data<Type>& dat, const GLuint componentsPerVertex)
   if (std::is_same<Type, float>{}) {
     pType = GL_FLOAT;
   }
+  else if (std::is_same<Type, double>{}) {
+    pType = GL_DOUBLE;
+  }
   else {
     std::cerr << "[Buffer Data] Type not yet supported.\n";
   }

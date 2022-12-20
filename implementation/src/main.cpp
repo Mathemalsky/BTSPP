@@ -86,8 +86,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   Buffers buffers;
   buffers.coordinates.bind();
-  buffers.coordinates.bufferData(graph::POINTS_F, 2);   // components per vertex
-  buffers.tourCoordinates.bufferData(graph::POINTS_F);  // copy vertex coordinates also into shader buffer
+  buffers.coordinates.bufferData(graph::POINTS, 2);   // components per vertex
+  buffers.tourCoordinates.bufferData(graph::POINTS);  // copy vertex coordinates also into shader buffer
 
   // PRELIMINARY
   GLuint* tmp2 = new GLuint[graph::TOUR_32.size() + 3];
