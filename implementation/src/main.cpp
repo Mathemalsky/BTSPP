@@ -16,7 +16,7 @@
 
 #include "graph/graph.hpp"
 
-#include "utility/datacontainer.hpp"
+#include "utility/utils.hpp"
 
 #include "euclideandistancegraph.hpp"
 #include "exactsolver.hpp"
@@ -73,11 +73,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   }
 
   // generate random vertecis in euclidean plane
-  Euclidean euclidean = generateEuclideanDistanceGraph(15);
-  graph::POINTS.set(euclidean.pointer(), euclidean.numberOfNodes());
-  graph::TOUR = solveTSP(euclidean);
-  graph::initPointsfFromPoints();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
-  graph::initTour32FromTour();     // convert to 32 bit integers because opengl isn't capable to deal with 64 bit
+  graph::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(15));
+  graph::TOUR      = solveTSP(graph::EUCLIDEAN);
+  graph::initPointsfFromEuclidean();   // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+  graph::initTourDrawCycleFromTour();  // append tour by copy of first 3 entries to make line_segment well defined
 
   const ShaderCollection collection;
   const ShaderProgram drawCircles      = collection.linkCircleDrawProgram();
@@ -88,14 +87,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   buffers.coordinates.bind();
   buffers.coordinates.bufferData(graph::POINTS_F, 2);   // components per vertex
   buffers.tourCoordinates.bufferData(graph::POINTS_F);  // copy vertex coordinates also into shader buffer
-
-  // PRELIMINARY
-  GLuint* tmp2 = new GLuint[graph::TOUR_32.size() + 3];
-  std::memcpy(tmp2, graph::TOUR_32.data(), graph::TOUR_32.size() * sizeof(GLuint));
-  std::memcpy(tmp2 + graph::TOUR_32.size(), graph::TOUR_32.data(), 3 * sizeof(GLuint));
-  Data<GLuint> test2(tmp2, graph::TOUR_32.size() + 3, true);
-
-  buffers.tour.bufferData(test2);
+  buffers.tour.bufferData(graph::TOUR_DRAW_CYCLE);      // copy indices of verteces in tour to shader buffer
 
   VertexArray vao;
   vao.bind();

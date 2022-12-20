@@ -5,20 +5,20 @@
 #include <vector>
 
 #include "graph/geometry.hpp"
-
-#include "utility/datacontainer.hpp"
+#include "graph/graph.hpp"
 
 namespace graph {
-extern Data<Point2D> POINTS;
-extern Data<float> POINTS_F;
-extern std::vector<size_t> TOUR;
-extern std::vector<uint32_t> TOUR_32;
+extern Euclidean EUCLIDEAN;
+;
+extern std::vector<float> POINTS_F;
+extern std::vector<unsigned int> TOUR;
+extern std::vector<unsigned int> TOUR_DRAW_CYCLE;
 
-void initPointsfFromPoints();
-void updatePointsfFromPoints();
+void updatePointsfFromEuclidean();
+void initPointsfFromEuclidean();
 
-void initTour32FromTour();
-void updateTour32FromTour();
+void updateTourDrawCycleFromTour();
+void initTourDrawCycleFromTour();
 }  // namespace graph
 
 namespace imguiwindow {

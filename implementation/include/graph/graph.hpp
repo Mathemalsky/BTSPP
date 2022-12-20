@@ -40,12 +40,14 @@ class Euclidean : public CompleteGraph {
 public:
   Euclidean() = default;
   Euclidean(const std::vector<Point2D>& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
+  Euclidean(std::vector<Point2D>&& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
 
   ~Euclidean() = default;
 
   double distance(const size_t& u, const size_t& v) const override { return dist(pPositions[u], pPositions[v]); }
   Point2D position(const size_t& v) const { return pPositions[v]; }
-  Point2D* pointer() { return &pPositions[0]; }
+  // Point2D* pointer() { return &pPositions[0]; }
+  std::vector<Point2D>& verteces() { return this->pPositions; }
 
 private:
   std::vector<Point2D> pPositions;

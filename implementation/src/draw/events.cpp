@@ -8,8 +8,6 @@
 #include "draw/openglerrors.hpp"
 #include "draw/variables.hpp"
 
-#include "utility/datacontainer.hpp"
-
 void toggleSettingsWindow() {
   if (imguiwindow::SHOW_SETTINGS_WINDOW == true) {
     imguiwindow::SHOW_SETTINGS_WINDOW = false;
@@ -46,13 +44,13 @@ static void moveNode(GLFWwindow* window, const Buffers& buffers) {
   GL_CALL(glfwGetCursorPos(window, &x, &y);)
   const Point2D oldMousePos  = transformCoordinates(input::mouse::x, input::mouse::y);
   const Point2D diffMousePos = transformCoordinates(x, y) - oldMousePos;
-  for (Point2D& point : graph::POINTS) {
+  for (Point2D& point : graph::EUCLIDEAN.verteces()) {
     if (norm2(point - oldMousePos) < 0.01) {  // MAGIC NUMBER
       point += diffMousePos;
       break;  // move only one point at one at a time
     }
   }
-  graph::updatePointsfFromPoints();
+  graph::updatePointsfFromEuclidean();
   buffers.coordinates.bufferSubData(graph::POINTS_F);
   buffers.tourCoordinates.bufferSubData(graph::POINTS_F);
 }

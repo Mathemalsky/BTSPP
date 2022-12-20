@@ -10,4 +10,4 @@
  * \details x_ij belongs to the column j* numberOfNodes +i
  * hereby we ommit th x_jj entries and store u_j in that place
  */
-std::vector<size_t> solveTSP(const Euclidean& euclidean);
+std::vector<unsigned int> solveTSP(const Euclidean& euclidean);

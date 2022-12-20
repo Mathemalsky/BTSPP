@@ -5,41 +5,39 @@
 #include <unordered_map>
 
 #include "graph/geometry.hpp"
+#include "graph/graph.hpp"
 
-#include "utility/datacontainer.hpp"
+#include "utility/utils.hpp"
 
 namespace graph {
-Data<Point2D> POINTS;
-Data<float> POINTS_F;
-std::vector<size_t> TOUR;
-std::vector<uint32_t> TOUR_32;
+Euclidean EUCLIDEAN;
+std::vector<float> POINTS_F;
+std::vector<unsigned int> TOUR;
+std::vector<unsigned int> TOUR_DRAW_CYCLE;
 
-void initPointsfFromPoints() {
-  float* pointsF = new float[2 * POINTS.size()];
-  for (size_t i = 0; i < POINTS.size(); ++i) {
-    pointsF[2 * i]     = (float) POINTS[i].x;
-    pointsF[2 * i + 1] = (float) POINTS[i].y;
-  }
-  POINTS_F.set(pointsF, 2 * POINTS.size(), true);
-}
-
-void updatePointsfFromPoints() {
-  for (size_t i = 0; i < POINTS.size(); ++i) {
-    POINTS_F[2 * i]     = (float) POINTS[i].x;
-    POINTS_F[2 * i + 1] = (float) POINTS[i].y;
+void updatePointsfFromEuclidean() {
+  const std::vector<Point2D> points = EUCLIDEAN.verteces();
+  for (size_t i = 0; i < points.size(); ++i) {
+    POINTS_F[2 * i]     = (float) points[i].x;
+    POINTS_F[2 * i + 1] = (float) points[i].y;
   }
 }
 
-void updateTour32FromTour() {
-  for (size_t i = 0; i < TOUR.size(); ++i) {
-    TOUR_32[i] = (uint32_t) TOUR[i];
-  }
+void initPointsfFromEuclidean() {
+  POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
+  updatePointsfFromEuclidean();
 }
 
-void initTour32FromTour() {
-  TOUR_32.resize(TOUR.size());
-  updateTour32FromTour();
+void updateTourDrawCycleFromTour() {
+  std::memcpy(TOUR_DRAW_CYCLE.data(), graph::TOUR.data(), bytes_of(graph::TOUR));
+  std::memcpy(TOUR_DRAW_CYCLE.data() + graph::TOUR.size(), graph::TOUR.data(), 3 * sizeof(unsigned int));
 }
+
+void initTourDrawCycleFromTour() {
+  TOUR_DRAW_CYCLE.resize(TOUR.size() + 3);
+  updateTourDrawCycleFromTour();
+}
+
 }  // namespace graph
 
 namespace imguiwindow {

@@ -31,7 +31,7 @@ private:
   const size_t pNumberOfNodes;
 };
 
-std::vector<size_t> solveTSP(const Euclidean& euclidean) {
+std::vector<unsigned int> solveTSP(const Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   Index index(numberOfNodes);
 
@@ -166,9 +166,9 @@ std::vector<size_t> solveTSP(const Euclidean& euclidean) {
   }
   */
 
-  std::vector<size_t> tour(numberOfNodes);
+  std::vector<unsigned int> tour(numberOfNodes);
   tour[0] = 0;  // circle starts by definition with node 0
-  for (size_t i = 1; i < numberOfNodes; ++i) {
+  for (unsigned int i = 1; i < numberOfNodes; ++i) {
     // round because solution might not exactly hit integers
     tour[std::round(solution.col_value[index.variableU(i)]) + 1] = i;
   }

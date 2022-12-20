@@ -29,5 +29,5 @@ Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
     point.x = distribution(generator);
     point.y = distribution(generator);
   }
-  return Euclidean(positions);
+  return Euclidean(std::move(positions));
 }
