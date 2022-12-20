@@ -44,7 +44,8 @@ static constexpr const char lineVertexShader[] = R"glsl(
       vec2 prev_direction = normalize(vertex[index[line_segment + 1]] - vertex[index[line_segment]]);
       vec2 prev_perpendicular = vec2(-prev_direction.y, prev_direction.x);
 
-      vec2 offset = u_thickness * line_perpendicular / u_resolution;
+      vec2 corner_direction = prev_perpendicular + line_perpendicular;
+      vec2 offset = u_thickness / dot(corner_direction, line_perpendicular) * corner_direction / u_resolution;
 
       pos = vertex[index[line_segment + 1]];
       if(triangle_vertex == 0) {
@@ -58,7 +59,8 @@ static constexpr const char lineVertexShader[] = R"glsl(
       vec2 succ_direction = normalize(vertex[index[line_segment + 3]] - vertex[index[line_segment + 2]]);
       vec2 succ_perpendicular = vec2(-succ_direction.y, succ_direction.x);
 
-      vec2 offset = u_thickness * line_perpendicular / u_resolution;
+      vec2 corner_direction = succ_perpendicular + line_perpendicular;
+      vec2 offset = u_thickness / dot(corner_direction, line_perpendicular) * corner_direction / u_resolution;
 
       pos = vertex[index[line_segment + 2]];
       if(triangle_vertex == 4) {
@@ -71,12 +73,6 @@ static constexpr const char lineVertexShader[] = R"glsl(
     gl_Position = vec4(pos, 0.0, 1.0);
   }
 )glsl";
-
-/*
-    vec2 corner_direction = normalize(prev_perpendicular + line_perpendicular);
-    float scalar = u_thickness / dot(corner_direction, line_perpendicular);
-    vec2 offset = scalar * corner_direction / u_resolution;
-    */
 
 static constexpr const char circleShaderSource[] = R"glsl(
   #version 440 core
@@ -92,7 +88,7 @@ static constexpr const char circleShaderSource[] = R"glsl(
     for(int i = 0; i < u_steps + 1; ++i) {
       float ang = 2.0 * PI * i / u_steps;
 
-      vec4 offset = vec4(cos(ang) * u_radius / 16.0, sin(ang) * u_radius / 9.0, 0.0, 0.0);
+      vec4 offset = vec4(cos(ang) * u_radius, sin(ang) * u_radius, 0.0, 0.0);
       gl_Position = gl_in[0].gl_Position + offset;
       EmitVertex();
     }
