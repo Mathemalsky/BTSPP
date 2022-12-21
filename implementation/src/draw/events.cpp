@@ -27,7 +27,7 @@ void keyCallback(
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-    slowEvents::SOLVE[Problem::TSP] = true;
+    slowEvents::SOLVE[ProblemType::TSP] = true;
   }
 }
 
@@ -72,16 +72,16 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
  *                                               slow events
  **********************************************************************************************************************/
 
-static void updateSolution(const Buffers& buffers) {
-  graph::TOUR = solveTSP(graph::EUCLIDEAN);
+static void updateSolution(const Buffers& buffers, const ProblemType& problemType) {
+  graph::TOUR = solve(graph::EUCLIDEAN, problemType);
   graph::updateTourDrawCycleFromTour();
   buffers.tour.bufferSubData(graph::TOUR_DRAW_CYCLE);
 }
 
 static void handleSlowEvents(const Buffers& buffers) {
-  if (slowEvents::SOLVE[Problem::TSP]) {
-    updateSolution(buffers);
-    slowEvents::SOLVE[Problem::TSP] = false;
+  if (slowEvents::SOLVE[ProblemType::TSP]) {
+    updateSolution(buffers, ProblemType::TSP);
+    slowEvents::SOLVE[ProblemType::TSP] = false;
   }
 }
 

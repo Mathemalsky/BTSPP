@@ -1,6 +1,11 @@
 #pragma once
 
-enum class Problem { BTSP, TSP };
+#include <array>
+
+enum class ProblemType { BTSP, TSP };
+namespace problemType {
+constexpr std::array<ProblemType, 2> PROBLEM_TYPES = {ProblemType::BTSP, ProblemType::TSP};
+}
 
 namespace drawing {
 constexpr float VETREX_RADIUS = 0.01f;

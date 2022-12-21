@@ -14,35 +14,7 @@ using Entry = Eigen::Triplet<double>;
 
 static constexpr double M_INFINITY = 1e32;
 
-class Index {
-public:
-  Index(size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
-
-  size_t variableX(const size_t i, const size_t j) const { return j * pNumberOfNodes + i; }
-  size_t variableU(const size_t i) const { return i * pNumberOfNodes + i; }
-
-  size_t constraintXin(const size_t j) const { return j; }
-  size_t constraintXout(const size_t j) const { return pNumberOfNodes + j; }
-  size_t constraintU(const size_t i, const size_t j) const {
-    return 2 * pNumberOfNodes + (j - 1) * (pNumberOfNodes - 2) + (i > j ? i - 2 : i - 1);
-  }
-
-private:
-  const size_t pNumberOfNodes;
-};
-
-std::vector<unsigned int> solveTSP(const Euclidean& euclidean) {
-  const size_t numberOfNodes = euclidean.numberOfNodes();
-  Index index(numberOfNodes);
-
-  HighsModel model;
-  model.lp_.num_col_ = numberOfNodes * numberOfNodes;
-  model.lp_.num_row_ = 2 * numberOfNodes + (numberOfNodes - 1) * (numberOfNodes - 2);
-  model.lp_.sense_   = ObjSense::kMinimize;
-  model.lp_.offset_  = 0;  // offset has no effect on optimization
-
-  // set costfunction
-  model.lp_.col_cost_.resize(model.lp_.num_col_);
+static void setTSPcost(HighsModel& model, const Index& index, const Euclidean& euclidean, const size_t numberOfNodes) {
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
       const double dist                          = euclidean.distance(i, j);
@@ -51,44 +23,38 @@ std::vector<unsigned int> solveTSP(const Euclidean& euclidean) {
     }
     model.lp_.col_cost_[index.variableU(j)] = 0.0;  // here we store u_j instead of x_jj
   }
+}
 
-  model.lp_.col_lower_ = std::vector(model.lp_.num_col_, 0.0);  // set lower bound to zero
+static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, const size_t numberOfNodes) {
+  model.lp_.col_lower_ = std::vector(model.lp_.num_col_, 0.0);  // set lower bound of variables to 0
+  const double p       = numberOfNodes;
 
   // iterate over all variables
-  const double bigM = numberOfNodes - 2;  //
-  model.lp_.col_upper_.resize(model.lp_.num_col_);
-  model.lp_.integrality_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
-      model.lp_.col_upper_[index.variableX(i, j)]   = 1.0;                     // bound by 1
+      model.lp_.col_upper_[index.variableX(i, j)]   = 1.0;                     // set upper bound of varibales to 1
       model.lp_.col_upper_[index.variableX(j, i)]   = 1.0;                     // exploiting symmetry
       model.lp_.integrality_[index.variableX(i, j)] = HighsVarType::kInteger;  // constrain x_ij to be \in {0,1}
       model.lp_.integrality_[index.variableX(j, i)] = HighsVarType::kInteger;  // exploiting symmetry
     }
-    model.lp_.col_upper_[index.variableU(j)]   = bigM;
-    model.lp_.integrality_[index.variableU(j)] = HighsVarType::kContinuous;
+    model.lp_.col_upper_[index.variableU(j)]   = p - 2;                      // set upper bound of u_ij to p-2
+    model.lp_.integrality_[index.variableU(j)] = HighsVarType::kContinuous;  // allow real numbers for u_ij
   }
 
   // iterate over all constraints
-  model.lp_.row_lower_.resize(model.lp_.num_row_);
-  model.lp_.row_upper_.resize(model.lp_.num_row_);
   // inequalities for fixing in and out degree to 1
-  for (size_t i = 0; i < 2 * numberOfNodes; ++i) {
+  for (size_t i = 0; i < index.xConstraints(); ++i) {
     model.lp_.row_lower_[i] = 1.0;
     model.lp_.row_upper_[i] = 1.0;
   }
   // inequalities for guaranteeing connectednes
-  const double p = numberOfNodes;
-  for (size_t i = 2 * numberOfNodes; i < (size_t) model.lp_.num_row_; ++i) {
-    model.lp_.row_lower_[i] = -M_INFINITY;  // lower bound -infinity
-    model.lp_.row_upper_[i] = p - 1;        // upper bound p-1
+  for (size_t i = 0; i < index.uConstraints(); ++i) {
+    model.lp_.row_lower_[index.xConstraints() + i] = -M_INFINITY;  // lower bound -infinity CAN BE SHARPENED
+    model.lp_.row_upper_[index.xConstraints() + i] = p - 1;        // upper bound p-1
   }
+}
 
-  // construct matrix A
-  // use handy fill function from eigen to populate the sparse matrix
-  std::vector<Entry> entries;
-  entries.reserve(2 * numberOfNodes * (numberOfNodes - 1) + 3 * (numberOfNodes - 1) * (numberOfNodes - 2));
-
+static void setMillerTuckerZemlinMatrix(std::vector<Entry>& entries, const Index& index, const size_t numberOfNodes) {
   // inequalities for fixing in and out degree to 1
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = 0; i < j; ++i) {
@@ -101,6 +67,7 @@ std::vector<unsigned int> solveTSP(const Euclidean& euclidean) {
     }
   }
   // inequalities for guaranteeing connectednes
+  const double p = numberOfNodes;
   for (size_t j = 1; j < numberOfNodes; ++j) {
     for (size_t i = 1; i < j; ++i) {
       entries.push_back(Entry(index.constraintU(i, j), index.variableU(i), 1.0));   // +u_i
@@ -112,6 +79,39 @@ std::vector<unsigned int> solveTSP(const Euclidean& euclidean) {
       entries.push_back(Entry(index.constraintU(i, j), index.variableU(j), -1.0));  // -u_j
       entries.push_back(Entry(index.constraintU(i, j), index.variableX(i, j), p));  // +px_ij
     }
+  }
+}
+
+std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType problemType) {
+  const size_t numberOfNodes = euclidean.numberOfNodes();
+  Index index(numberOfNodes);
+
+  HighsModel model;
+  model.lp_.num_col_ = index.numVariables();
+  model.lp_.num_row_ = index.numConstraints();
+  model.lp_.sense_   = ObjSense::kMinimize;
+  model.lp_.offset_  = 0;  // offset has no effect on optimization
+
+  model.lp_.col_cost_.resize(model.lp_.num_col_);
+  model.lp_.col_upper_.resize(model.lp_.num_col_);
+  model.lp_.integrality_.resize(model.lp_.num_col_);
+
+  model.lp_.row_lower_.resize(model.lp_.num_row_);
+  model.lp_.row_upper_.resize(model.lp_.num_row_);
+
+  std::vector<Entry> entries;
+  if (problemType == ProblemType::BTSP) {
+    // set BTSP cost
+    setMillerTuckerZemlinBounds(model, index, numberOfNodes);
+    // set max bounds
+    setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);
+    // set max constraints
+  }
+  else if (problemType == ProblemType::TSP) {
+    entries.reserve((numberOfNodes - 1) * index.xConstraints() + 3 * index.uConstraints());
+    setTSPcost(model, index, euclidean, numberOfNodes);          // set cost function
+    setMillerTuckerZemlinBounds(model, index, numberOfNodes);    // set bounds on variables and constraints
+    setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);  // set left hand side of constraints
   }
 
   Eigen::SparseMatrix<double> A(model.lp_.num_row_, model.lp_.num_col_);

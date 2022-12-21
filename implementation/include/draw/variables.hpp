@@ -42,5 +42,6 @@ extern int WIDTH;
 }  // namespace mainwindow
 
 namespace slowEvents {
-extern std::unordered_map<Problem, bool> SOLVE;
-}
+extern std::unordered_map<ProblemType, bool> SOLVE;
+extern std::unordered_map<ProblemType, bool> ACTIVE;
+}  // namespace slowEvents
