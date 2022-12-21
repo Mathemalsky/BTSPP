@@ -118,7 +118,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    handleFastEvents(window, buffers);
+    handleEvents(window, buffers);
 
     // draw the content
     draw(window, programs);

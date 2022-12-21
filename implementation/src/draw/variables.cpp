@@ -57,3 +57,7 @@ namespace mainwindow {
 int HEIGHT;
 int WIDTH;
 }  // namespace mainwindow
+
+namespace slowEvents {
+std::unordered_map<Problem, bool> SOLVE;
+}

@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "draw/definitions.hpp"
+
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
 
@@ -38,3 +40,7 @@ namespace mainwindow {
 extern int HEIGHT;
 extern int WIDTH;
 }  // namespace mainwindow
+
+namespace slowEvents {
+extern std::unordered_map<Problem, bool> SOLVE;
+}

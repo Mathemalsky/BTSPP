@@ -1,5 +1,11 @@
 #pragma once
 
+enum class Problem { BTSP, TSP };
+
+namespace drawing {
+constexpr float VETREX_RADIUS = 0.01f;
+}
+
 namespace imguiwindow {
 constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = false;
 }

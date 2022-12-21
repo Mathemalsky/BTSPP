@@ -17,4 +17,4 @@ inline Point2D transformCoordinates(const double x, const double y) {
   return Point2D{2.0 * x / mainwindow::WIDTH - 1.0, -2.0 * y / mainwindow::HEIGHT + 1.0};
 }
 
-void handleFastEvents(GLFWwindow* window, const Buffers& coordinates);
+void handleEvents(GLFWwindow* window, const Buffers& coordinates);

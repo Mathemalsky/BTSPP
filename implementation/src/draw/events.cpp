@@ -5,10 +5,11 @@
 
 #include "draw/buffers.hpp"
 #include "draw/definitions.hpp"
-#include "draw/openglerrors.hpp"
 #include "draw/variables.hpp"
 
-void toggleSettingsWindow() {
+#include "exactsolver.hpp"
+
+static void toggleSettingsWindow() {
   if (imguiwindow::SHOW_SETTINGS_WINDOW == true) {
     imguiwindow::SHOW_SETTINGS_WINDOW = false;
   }
@@ -23,10 +24,10 @@ void keyCallback(
     toggleSettingsWindow();
   }
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-    GL_CALL(glfwSetWindowShouldClose(window, GLFW_TRUE);)
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-    // update solution in separated detached thread
+    slowEvents::SOLVE[Problem::TSP] = true;
   }
 }
 
@@ -39,13 +40,17 @@ void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int ac
   }
 }
 
+/***********************************************************************************************************************
+ *                                               fast events
+ **********************************************************************************************************************/
+
 static void moveNode(GLFWwindow* window, const Buffers& buffers) {
   double x, y;
-  GL_CALL(glfwGetCursorPos(window, &x, &y);)
+  glfwGetCursorPos(window, &x, &y);
   const Point2D oldMousePos  = transformCoordinates(input::mouse::x, input::mouse::y);
   const Point2D diffMousePos = transformCoordinates(x, y) - oldMousePos;
   for (Point2D& point : graph::EUCLIDEAN.verteces()) {
-    if (norm2(point - oldMousePos) < 0.01) {  // MAGIC NUMBER
+    if (norm2(point - oldMousePos) < drawing::VETREX_RADIUS) {
       point += diffMousePos;
       break;  // move only one point at one at a time
     }
@@ -55,10 +60,32 @@ static void moveNode(GLFWwindow* window, const Buffers& buffers) {
   buffers.tourCoordinates.bufferSubData(graph::POINTS_F);
 }
 
-void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
-  GL_CALL(glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);)  // update window size
+static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
+  glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);  // update window size
   if (input::STATE[GLFW_MOUSE_BUTTON_LEFT]) {
     moveNode(window, buffers);
   }
-  GL_CALL(glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);)
+  glfwGetCursorPos(window, &input::mouse::x, &input::mouse::y);
+}
+
+/***********************************************************************************************************************
+ *                                               slow events
+ **********************************************************************************************************************/
+
+static void updateSolution(const Buffers& buffers) {
+  graph::TOUR = solveTSP(graph::EUCLIDEAN);
+  graph::updateTourDrawCycleFromTour();
+  buffers.tour.bufferSubData(graph::TOUR_DRAW_CYCLE);
+}
+
+static void handleSlowEvents(const Buffers& buffers) {
+  if (slowEvents::SOLVE[Problem::TSP]) {
+    updateSolution(buffers);
+    slowEvents::SOLVE[Problem::TSP] = false;
+  }
+}
+
+void handleEvents(GLFWwindow* window, const Buffers& buffers) {
+  handleFastEvents(window, buffers);
+  handleSlowEvents(buffers);
 }
