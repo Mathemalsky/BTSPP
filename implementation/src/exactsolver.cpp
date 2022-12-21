@@ -15,6 +15,7 @@ using Entry = Eigen::Triplet<double>;
 static constexpr double M_INFINITY = 1e32;
 
 static void setTSPcost(HighsModel& model, const Index& index, const Euclidean& euclidean, const size_t numberOfNodes) {
+  model.lp_.col_cost_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
       const double dist                          = euclidean.distance(i, j);
@@ -26,8 +27,12 @@ static void setTSPcost(HighsModel& model, const Index& index, const Euclidean& e
 }
 
 static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, const size_t numberOfNodes) {
+  const double p = numberOfNodes;
+
   model.lp_.col_lower_ = std::vector(model.lp_.num_col_, 0.0);  // set lower bound of variables to 0
-  const double p       = numberOfNodes;
+
+  model.lp_.col_upper_.resize(model.lp_.num_col_);
+  model.lp_.integrality_.resize(model.lp_.num_col_);
 
   // iterate over all variables
   for (size_t j = 0; j < numberOfNodes; ++j) {
@@ -41,6 +46,9 @@ static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, c
     model.lp_.integrality_[index.variableU(j)] = HighsVarType::kContinuous;  // allow real numbers for u_ij
   }
 
+  model.lp_.row_lower_.resize(model.lp_.num_row_);
+  model.lp_.row_upper_.resize(model.lp_.num_row_);
+
   // iterate over all constraints
   // inequalities for fixing in and out degree to 1
   for (size_t i = 0; i < index.xConstraints(); ++i) {
@@ -49,8 +57,8 @@ static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, c
   }
   // inequalities for guaranteeing connectednes
   for (size_t i = 0; i < index.uConstraints(); ++i) {
-    model.lp_.row_lower_[index.xConstraints() + i] = -M_INFINITY;  // lower bound -infinity CAN BE SHARPENED
-    model.lp_.row_upper_[index.xConstraints() + i] = p - 1;        // upper bound p-1
+    model.lp_.row_lower_[index.xConstraints() + i] = -(p - 1);  // lower bound -infinity sharpened to -(p - 1)
+    model.lp_.row_upper_[index.xConstraints() + i] = p - 1;     // upper bound p-1
   }
 }
 
@@ -82,9 +90,38 @@ static void setMillerTuckerZemlinMatrix(std::vector<Entry>& entries, const Index
   }
 }
 
+static void setBTSPcost(HighsModel& model, const Index& index) {
+  model.lp_.col_cost_                    = std::vector<double>(model.lp_.num_col_, 0.0);  // set vector to 0
+  model.lp_.col_cost_[index.variableC()] = 1.0;                                           // objective is c
+}
+
+static void setCBounds(HighsModel& model, const Index& index) {
+  model.lp_.col_upper_[index.variableC()] = M_INFINITY;
+  model.lp_.col_lower_[index.variableC()] = 0.0;
+
+  for (size_t i = index.xConstraints() + index.uConstraints(); i < index.numConstraints(); ++i) {
+    model.lp_.row_lower_[i] = 0.0;
+    model.lp_.row_upper_[i] = M_INFINITY;
+  }
+  model.lp_.integrality_[index.variableC()] = HighsVarType::kContinuous;
+}
+
+static void setCConstraints(std::vector<Entry>& entries, const Index& index, const Euclidean& euclidean) {
+  const size_t numberOfNodes = euclidean.numberOfNodes();
+  for (size_t j = 0; j < numberOfNodes; ++j) {
+    for (size_t i = j + 1; i < numberOfNodes; ++i) {
+      const double dist = euclidean.distance(i, j);
+      entries.push_back(Entry(index.constraintC(i, j), index.variableX(i, j), -dist));
+      entries.push_back(Entry(index.constraintC(i, j), index.variableC(), 1.0));
+      entries.push_back(Entry(index.constraintC(j, i), index.variableX(j, i), -dist));  // exploit symmetry
+      entries.push_back(Entry(index.constraintC(j, i), index.variableC(), 1.0));
+    }
+  }
+}
+
 std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType problemType) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
-  Index index(numberOfNodes);
+  const Index index(numberOfNodes, problemType);
 
   HighsModel model;
   model.lp_.num_col_ = index.numVariables();
@@ -92,20 +129,13 @@ std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType pr
   model.lp_.sense_   = ObjSense::kMinimize;
   model.lp_.offset_  = 0;  // offset has no effect on optimization
 
-  model.lp_.col_cost_.resize(model.lp_.num_col_);
-  model.lp_.col_upper_.resize(model.lp_.num_col_);
-  model.lp_.integrality_.resize(model.lp_.num_col_);
-
-  model.lp_.row_lower_.resize(model.lp_.num_row_);
-  model.lp_.row_upper_.resize(model.lp_.num_row_);
-
   std::vector<Entry> entries;
   if (problemType == ProblemType::BTSP) {
-    // set BTSP cost
+    setBTSPcost(model, index);
     setMillerTuckerZemlinBounds(model, index, numberOfNodes);
-    // set max bounds
     setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);
-    // set max constraints
+    setCBounds(model, index);
+    setCConstraints(entries, index, euclidean);
   }
   else if (problemType == ProblemType::TSP) {
     entries.reserve((numberOfNodes - 1) * index.xConstraints() + 3 * index.uConstraints());
@@ -133,7 +163,7 @@ std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType pr
 
   const HighsModelStatus& model_status = highs.getModelStatus();
   assert(model_status == HighsModelStatus::kOptimal);
-  // std::cout << "Model status: " << highs.modelStatusToString(model_status) << std::endl;
+  //  std::cout << "Model status: " << highs.modelStatusToString(model_status) << std::endl;
 
   const HighsInfo& info = highs.getInfo();
   std::cout << "Simplex iteration count : " << info.simplex_iteration_count << std::endl;
@@ -147,17 +177,15 @@ std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType pr
   // const HighsBasis& basis = highs.getBasis();
   // const HighsLp& lp = highs.getLp();  // get a const reference to the LP data in HiGHS
 
-  /*
   // Report the primal solution values
+  /*
   for (int col = 0; col < lp.num_col_; col++) {
     std::cout << "Column " << col;
     if (info.primal_solution_status)
       std::cout << "; value = " << solution.col_value[col];
     std::cout << std::endl;
   }
-  */
 
-  /*
   for (int row = 0; row < lp.num_row_; row++) {
     std::cout << "Row    " << row;
     if (info.primal_solution_status)

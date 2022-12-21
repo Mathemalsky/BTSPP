@@ -16,7 +16,7 @@ std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType pr
 
 class Index {
 public:
-  Index(size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
+  Index(const size_t numberOfNodes, const ProblemType type) : pNumberOfNodes(numberOfNodes), pType(type) {}
 
   size_t xVariables() const { return pNumberOfNodes * (pNumberOfNodes - 1); }
   size_t uVariables() const { return pNumberOfNodes - 1; }
@@ -31,14 +31,17 @@ public:
   size_t xOutConstraints() const { return pNumberOfNodes; }
   size_t xConstraints() const { return xInConstraints() + xOutConstraints(); }
   size_t uConstraints() const { return (pNumberOfNodes - 1) * (pNumberOfNodes - 2); }
-  size_t numConstraints() const {return xConstraints() + uConstraints();}
+  size_t cConstraints() const { return (pType == ProblemType::BTSP ? xVariables() : 0);}
+  size_t numConstraints() const {return xConstraints() + uConstraints() + cConstraints();}
 
   size_t constraintXin(const size_t j) const { return j; }
   size_t constraintXout(const size_t j) const { return pNumberOfNodes + j; }
   size_t constraintU(const size_t i, const size_t j) const {
     return xConstraints() + (j - 1) * (pNumberOfNodes - 2) + (i > j ? i - 2 : i - 1);
   }
+  size_t constraintC(const size_t i, const size_t j) const { return xConstraints() + uConstraints() + j * (pNumberOfNodes - 1) + (i>j ? i-1 : i);}
 
 private:
   const size_t pNumberOfNodes;
+  const ProblemType pType;
 };

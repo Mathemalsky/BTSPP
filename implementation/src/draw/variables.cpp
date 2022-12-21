@@ -42,7 +42,8 @@ void initTourDrawCycleFromTour() {
 
 namespace imguiwindow {
 bool SHOW_SETTINGS_WINDOW;
-}
+std::unordered_map<ProblemType, bool> ACTIVE;
+}  // namespace imguiwindow
 
 namespace input {
 std::unordered_map<int, bool> STATE;
@@ -60,5 +61,4 @@ int WIDTH;
 
 namespace slowEvents {
 std::unordered_map<ProblemType, bool> SOLVE;
-std::unordered_map<ProblemType, bool> ACTIVE;
 }  // namespace slowEvents

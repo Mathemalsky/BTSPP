@@ -16,6 +16,7 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   ImGui::CreateContext();
   ImGuiIO& io = ImGui::GetIO();
   (void) io;
+
   // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 
   // Setup Dear ImGui style
@@ -29,7 +30,9 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version) {
 
 void initImGuiWindows() {
   // settings window
-  imguiwindow::SHOW_SETTINGS_WINDOW = imguiwindow::INITIAL_SHOW_SETTINGS_WINDOW;
+  imguiwindow::SHOW_SETTINGS_WINDOW      = imguiwindow::INITIAL_SHOW_SETTINGS_WINDOW;
+  imguiwindow::ACTIVE[ProblemType::BTSP] = imguiwindow::INITIAL_ACTIVENESS_BTSP;
+  imguiwindow::ACTIVE[ProblemType::TSP]  = imguiwindow::INITIAL_ACTIVENESS_TSP;
 }
 
 void drawImgui() {
@@ -43,7 +46,8 @@ void drawImgui() {
     ImGui::Text("mouse y = %f", input::mouse::y);  // DBEUG
     ImGui::Text(
       "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    // if (ImGui::Button("Close")) {imGuiWindow::SHOW_SETTINGS_WINDOW = false};
+    ImGui::Checkbox("BTSP", &imguiwindow::ACTIVE[ProblemType::BTSP]);
+    ImGui::Checkbox("TSP", &imguiwindow::ACTIVE[ProblemType::TSP]);
     ImGui::End();
   }
 

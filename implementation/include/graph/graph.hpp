@@ -14,10 +14,9 @@ public:
 
   Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
-  virtual double distance(const size_t& u, const size_t& v) const = 0;
-  virtual bool adjacent(const size_t& u, const size_t& v) const   = 0;
-  virtual bool connected() const                                  = 0;
-  // virtual bool connected() const = 0;
+  virtual double distance(const size_t u, const size_t v) const = 0;
+  virtual bool adjacent(const size_t u, const size_t v) const   = 0;
+  virtual bool connected() const                                = 0;
 
   size_t numberOfNodes() const { return pNumberOfNodes; }
 
@@ -32,7 +31,7 @@ public:
 
   CompleteGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
 
-  bool adjacent([[maybe_unused]] const size_t& u, [[maybe_unused]] const size_t& v) const override { return true; }
+  bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
   bool connected() const override { return true; }
 };
 
@@ -44,9 +43,8 @@ public:
 
   ~Euclidean() = default;
 
-  double distance(const size_t& u, const size_t& v) const override { return dist(pPositions[u], pPositions[v]); }
-  Point2D position(const size_t& v) const { return pPositions[v]; }
-  // Point2D* pointer() { return &pPositions[0]; }
+  double distance(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
+  Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return this->pPositions; }
 
 private:

@@ -12,8 +12,10 @@ constexpr float VETREX_RADIUS = 0.01f;
 }
 
 namespace imguiwindow {
-constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = false;
-}
+constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = true;
+constexpr bool INITIAL_ACTIVENESS_BTSP      = true;
+constexpr bool INITIAL_ACTIVENESS_TSP       = false;
+}  // namespace imguiwindow
 
 namespace mainwindow {
 constexpr unsigned int INITIAL_HEIGHT = 960;

@@ -27,7 +27,11 @@ void keyCallback(
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-    slowEvents::SOLVE[ProblemType::TSP] = true;
+    for (const ProblemType& type : problemType::PROBLEM_TYPES) {
+      if (imguiwindow::ACTIVE[type]) {
+        slowEvents::SOLVE[ProblemType::TSP] = true;
+      }
+    }
   }
 }
 
@@ -79,9 +83,11 @@ static void updateSolution(const Buffers& buffers, const ProblemType& problemTyp
 }
 
 static void handleSlowEvents(const Buffers& buffers) {
-  if (slowEvents::SOLVE[ProblemType::TSP]) {
-    updateSolution(buffers, ProblemType::TSP);
-    slowEvents::SOLVE[ProblemType::TSP] = false;
+  for (const ProblemType& type : problemType::PROBLEM_TYPES) {
+    if (slowEvents::SOLVE[type]) {
+      slowEvents::SOLVE[type] = false;
+      updateSolution(buffers, type);
+    }
   }
 }
 
