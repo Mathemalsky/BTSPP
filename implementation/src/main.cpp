@@ -99,18 +99,18 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   // enable vsync
   glfwSwapInterval(1);
 
-  // setup Dear ImGui
-  setUpImgui(window, glsl_version);
-
-  // set initial state of the settings window
-  initImGuiWindows();
-
-  // set callbacks for keyboard and mouse
+  // set callbacks for keyboard and mouse, must be called before Imgui
   glfwSetKeyCallback(window, keyCallback);
   glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
   // set input mode
   // glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
+
+  // setup Dear ImGui
+  setUpImgui(window, glsl_version);
+
+  // set initial state of the settings window
+  initImGuiWindows();
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
