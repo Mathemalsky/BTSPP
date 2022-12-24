@@ -12,10 +12,10 @@
 namespace graph {
 Euclidean EUCLIDEAN;
 std::vector<float> POINTS_F;
-std::vector<unsigned int> TOUR;
-std::vector<unsigned int> TOUR_DRAW_CYCLE;
+std::unordered_map<ProblemType, std::vector<unsigned int>> ORDER;
 
 void updatePointsfFromEuclidean() {
+  POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
   const std::vector<Point2D> points = EUCLIDEAN.verteces();
   for (size_t i = 0; i < points.size(); ++i) {
     POINTS_F[2 * i]     = (float) points[i].x;
@@ -23,21 +23,13 @@ void updatePointsfFromEuclidean() {
   }
 }
 
-void initPointsfFromEuclidean() {
-  POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
-  updatePointsfFromEuclidean();
+void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
+  if (type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
+    ORDER[type].resize(order.size() + 3);
+  }
+  std::memcpy(ORDER[type].data(), order.data(), bytes_of(order));
+  std::memcpy(ORDER[type].data() + order.size(), order.data(), 3 * sizeof(unsigned int));
 }
-
-void updateTourDrawCycleFromTour() {
-  std::memcpy(TOUR_DRAW_CYCLE.data(), graph::TOUR.data(), bytes_of(graph::TOUR));
-  std::memcpy(TOUR_DRAW_CYCLE.data() + graph::TOUR.size(), graph::TOUR.data(), 3 * sizeof(unsigned int));
-}
-
-void initTourDrawCycleFromTour() {
-  TOUR_DRAW_CYCLE.resize(TOUR.size() + 3);
-  updateTourDrawCycleFromTour();
-}
-
 }  // namespace graph
 
 namespace imguiwindow {

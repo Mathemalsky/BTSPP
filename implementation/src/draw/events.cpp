@@ -29,7 +29,7 @@ void keyCallback(
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
     for (const ProblemType& type : problemType::PROBLEM_TYPES) {
       if (imguiwindow::ACTIVE[type]) {
-        slowEvents::SOLVE[ProblemType::TSP] = true;
+        slowEvents::SOLVE[type] = true;
       }
     }
   }
@@ -77,9 +77,8 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
  **********************************************************************************************************************/
 
 static void updateSolution(const Buffers& buffers, const ProblemType& problemType) {
-  graph::TOUR = solve(graph::EUCLIDEAN, problemType);
-  graph::updateTourDrawCycleFromTour();
-  buffers.tour.bufferSubData(graph::TOUR_DRAW_CYCLE);
+  graph::updateOrder(solve(graph::EUCLIDEAN, problemType), problemType);
+  buffers.tour.bufferSubData(graph::ORDER[problemType]);
 }
 
 static void handleSlowEvents(const Buffers& buffers) {

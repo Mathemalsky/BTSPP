@@ -74,9 +74,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   // generate random vertecis in euclidean plane
   graph::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(15));
-  graph::TOUR      = solve(graph::EUCLIDEAN, ProblemType::BTSP);
-  graph::initPointsfFromEuclidean();   // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
-  graph::initTourDrawCycleFromTour();  // append tour by copy of first 3 entries to make line_segment well defined
+  graph::updateOrder(solve(graph::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
+  graph::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
 
   const ShaderCollection collection;
   const ShaderProgram drawCircles      = collection.linkCircleDrawProgram();
@@ -85,9 +84,9 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   Buffers buffers;
   buffers.coordinates.bind();
-  buffers.coordinates.bufferData(graph::POINTS_F, 2);   // components per vertex
-  buffers.tourCoordinates.bufferData(graph::POINTS_F);  // copy vertex coordinates also into shader buffer
-  buffers.tour.bufferData(graph::TOUR_DRAW_CYCLE);      // copy indices of verteces in tour to shader buffer
+  buffers.coordinates.bufferData(graph::POINTS_F, 2);              // components per vertex
+  buffers.tourCoordinates.bufferData(graph::POINTS_F);             // copy vertex coordinates also into shader buffer
+  buffers.tour.bufferData(graph::ORDER[ProblemType::BTSP_exact]);  // copy indices of verteces in tour to shader buffer
 
   VertexArray vao;
   vao.bind();

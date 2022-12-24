@@ -130,14 +130,14 @@ std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType pr
   model.lp_.offset_  = 0;  // offset has no effect on optimization
 
   std::vector<Entry> entries;
-  if (problemType == ProblemType::BTSP) {
+  if (problemType == ProblemType::BTSP_exact) {
     setBTSPcost(model, index);
     setMillerTuckerZemlinBounds(model, index, numberOfNodes);
     setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);
     setCBounds(model, index);
     setCConstraints(entries, index, euclidean);
   }
-  else if (problemType == ProblemType::TSP) {
+  else if (problemType == ProblemType::TSP_exact) {
     entries.reserve((numberOfNodes - 1) * index.xConstraints() + 3 * index.uConstraints());
     setTSPcost(model, index, euclidean, numberOfNodes);          // set cost function
     setMillerTuckerZemlinBounds(model, index, numberOfNodes);    // set bounds on variables and constraints

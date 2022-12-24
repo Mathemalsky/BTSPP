@@ -31,7 +31,7 @@ public:
   size_t xOutConstraints() const { return pNumberOfNodes; }
   size_t xConstraints() const { return xInConstraints() + xOutConstraints(); }
   size_t uConstraints() const { return (pNumberOfNodes - 1) * (pNumberOfNodes - 2); }
-  size_t cConstraints() const { return (pType == ProblemType::BTSP ? xVariables() : 0);}
+  size_t cConstraints() const { return (pType == ProblemType::BTSP_exact ? xVariables() : 0);}
   size_t numConstraints() const {return xConstraints() + uConstraints() + cConstraints();}
 
   size_t constraintXin(const size_t j) const { return j; }

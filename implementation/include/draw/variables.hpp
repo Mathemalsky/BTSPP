@@ -11,16 +11,12 @@
 
 namespace graph {
 extern Euclidean EUCLIDEAN;
-;
 extern std::vector<float> POINTS_F;
-extern std::vector<unsigned int> TOUR;
-extern std::vector<unsigned int> TOUR_DRAW_CYCLE;
+extern std::unordered_map<ProblemType, std::vector<unsigned int>> ORDER;
 
 void updatePointsfFromEuclidean();
-void initPointsfFromEuclidean();
 
-void updateTourDrawCycleFromTour();
-void initTourDrawCycleFromTour();
+void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
 }  // namespace graph
 
 namespace imguiwindow {
