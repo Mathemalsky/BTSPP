@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/buffers.hpp"
 #include "draw/definitions.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
@@ -34,8 +35,14 @@ static void drawEdges(const ShaderProgram& drawLineSegments) {
   glDrawArrays(GL_TRIANGLES, 0, 6 * graph::EUCLIDEAN.numberOfNodes());
 }
 
-void draw(GLFWwindow* window, const ShaderProgramCollection& programs) {
+void draw(GLFWwindow* window, const ShaderProgramCollection& programs, Buffers& buffers) {
   clearWindow(window);
   drawVerteces(programs.drawCircles);
-  drawEdges(programs.drawLineSegments);
+
+  for (const ProblemType& type : problemType::PROBLEM_TYPES) {
+    if (imguiwindow::ACTIVE[type]) {
+      buffers.tour.bufferSubData(graph::ORDER[type]);
+      drawEdges(programs.drawLineSegments);
+    }
+  }
 }

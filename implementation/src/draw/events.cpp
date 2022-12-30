@@ -76,16 +76,11 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
  *                                               slow events
  **********************************************************************************************************************/
 
-static void updateSolution(const Buffers& buffers, const ProblemType& problemType) {
-  graph::updateOrder(solve(graph::EUCLIDEAN, problemType), problemType);
-  buffers.tour.bufferSubData(graph::ORDER[problemType]);
-}
-
-static void handleSlowEvents(const Buffers& buffers) {
+static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   for (const ProblemType& type : problemType::PROBLEM_TYPES) {
     if (slowEvents::SOLVE[type]) {
       slowEvents::SOLVE[type] = false;
-      updateSolution(buffers, type);
+      graph::updateOrder(solve(graph::EUCLIDEAN, type), type);
     }
   }
 }

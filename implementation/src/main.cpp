@@ -120,7 +120,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     handleEvents(window, buffers);
 
     // draw the content
-    draw(window, programs);
+    draw(window, programs, buffers);
 
     // draw the gui
     drawImgui();
