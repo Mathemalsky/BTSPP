@@ -22,6 +22,10 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
 namespace imguiwindow {
 extern bool SHOW_SETTINGS_WINDOW;
 extern std::unordered_map<ProblemType, bool> ACTIVE;
+extern std::unordered_map<ProblemType, std::array<float, 4>> COLOR;  // 4th float currently unused
+extern std::unordered_map<ProblemType, float> THICKNESS;
+extern std::array<float, 4> VERTEX_COLOR;  // 4th float currently unused
+
 }  // namespace imguiwindow
 
 namespace input {

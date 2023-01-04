@@ -17,6 +17,13 @@ constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = true;
 const std::unordered_map<ProblemType, bool> INITIAL_ACTIVENESS{
   {ProblemType::BTSP_exact, true},
   {ProblemType::TSP_exact, false}};
+const std::unordered_map<ProblemType, std::array<float, 4>> INITIAL_COLOR{
+  {ProblemType::BTSP_exact, {1.0f, 1.0f, 0.0f, 1.0f}},
+  {ProblemType::TSP_exact, {1.0f, 0.0f, 0.0f, 1.0f}}};
+const std::unordered_map<ProblemType, float> INITIAL_THICKNESS{
+  {ProblemType::BTSP_exact, 5.0f},
+  {ProblemType::TSP_exact, 3.0f}};
+constexpr std::array<float, 4> INITIAL_VERTEX_COLOR = {1.0f, 0.0f, 0.0f, 1.0f};
 }  // namespace imguiwindow
 
 namespace mainwindow {

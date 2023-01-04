@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -20,6 +22,7 @@ public:
   void setUniform(const char* name, const int value) const;
   void setUniform(const char* name, const float val1, const float val2) const;
   void setUniform(const char* name, const float val1, const float val2, const float val3, const float val4) const;
+  void setUniform(const char* name, const std::array<float, 4>& value) const;
 
   void use() const { GL_CALL(glUseProgram(pProgramID);) }
 

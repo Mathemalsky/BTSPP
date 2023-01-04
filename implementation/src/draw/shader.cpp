@@ -1,5 +1,6 @@
 #include "draw/shader.hpp"
 
+#include <array>
 #include <cassert>
 #include <iostream>
 
@@ -143,6 +144,12 @@ void ShaderProgram::setUniform(
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
   GL_CALL(glUniform4f(location, val1, val2, val3, val4);)
+}
+
+void ShaderProgram::setUniform(const char* name, const std::array<float, 4>& value) const {
+  GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
+  assert(location != -1 && "could not find uniform");
+  GL_CALL(glUniform4f(location, value[0], value[1], value[2], value[3]);)
 }
 
 static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource) {

@@ -20,16 +20,16 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
   drawCircles.use();  // need to call glUseProgram before setting uniforms
   drawCircles.setUniform("u_steps", 8);
   drawCircles.setUniform("u_radius", drawing::VETREX_RADIUS);
-  drawCircles.setUniform("u_color", 1.0f, 0.0f, 0.0f, 1.0f);
+  drawCircles.setUniform("u_color", imguiwindow::VERTEX_COLOR);
 
   glDrawArrays(GL_POINTS, 0, graph::EUCLIDEAN.numberOfNodes());  // start at index 0
 }
 
-static void drawEdges(const ShaderProgram& drawLineSegments) {
+static void drawEdges(const ShaderProgram& drawLineSegments, const ProblemType type) {
   drawLineSegments.use();
-  drawLineSegments.setUniform("u_thickness", 5.0f);  // thickness is a float
+  drawLineSegments.setUniform("u_thickness", imguiwindow::THICKNESS[type]);
   drawLineSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
-  drawLineSegments.setUniform("u_color", 1.0f, 1.0f, 0.0f, 1.0f);
+  drawLineSegments.setUniform("u_color", imguiwindow::COLOR[type]);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glDrawArrays(GL_TRIANGLES, 0, 6 * graph::EUCLIDEAN.numberOfNodes());
@@ -42,7 +42,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, Buffers& 
   for (const ProblemType& type : problemType::PROBLEM_TYPES) {
     if (imguiwindow::ACTIVE[type]) {
       buffers.tour.bufferSubData(graph::ORDER[type]);
-      drawEdges(programs.drawLineSegments);
+      drawEdges(programs.drawLineSegments, type);
     }
   }
 }

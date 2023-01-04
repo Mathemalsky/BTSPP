@@ -1,5 +1,6 @@
 #include "draw/variables.hpp"
 
+#include <array>
 #include <cstddef>
 #include <vector>
 #include <unordered_map>
@@ -26,15 +27,18 @@ void updatePointsfFromEuclidean() {
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
   if (type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
     ORDER[type].resize(order.size() + 3);
+    std::memcpy(ORDER[type].data(), order.data(), bytes_of(order));
+    std::memcpy(ORDER[type].data() + order.size(), order.data(), 3 * sizeof(unsigned int));
   }
-  std::memcpy(ORDER[type].data(), order.data(), bytes_of(order));
-  std::memcpy(ORDER[type].data() + order.size(), order.data(), 3 * sizeof(unsigned int));
 }
 }  // namespace graph
 
 namespace imguiwindow {
 bool SHOW_SETTINGS_WINDOW;
 std::unordered_map<ProblemType, bool> ACTIVE;
+std::unordered_map<ProblemType, std::array<float, 4>> COLOR;  // 4th float currently unused
+std::unordered_map<ProblemType, float> THICKNESS;
+std::array<float, 4> VERTEX_COLOR;  // 4th float currently unused
 }  // namespace imguiwindow
 
 namespace input {
