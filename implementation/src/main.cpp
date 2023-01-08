@@ -1,10 +1,25 @@
+#include <cassert>
 #include <cstdio>
+#include <iostream>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "definitions.hpp"
-#include "gui.hpp"
+#include "draw/buffers.hpp"
+#include "draw/definitions.hpp"
+#include "draw/draw.hpp"
+#include "draw/events.hpp"
+#include "draw/gui.hpp"
+#include "draw/openglerrors.hpp"
+#include "draw/shader.hpp"
+#include "draw/variables.hpp"
+
+#include "graph/graph.hpp"
+
+#include "utility/utils.hpp"
+
+#include "euclideandistancegraph.hpp"
+#include "exactsolver.hpp"
 
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {
@@ -35,28 +50,66 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
 #else
-  // GL 3.0 + GLSL 130
-  const char* glsl_version = "#version 130";
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-  // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // 3.0+ only
+  // GL 4.4 + GLSL 440
+  const char* glsl_version = "#version 440";
+  glfwWindowHint(GLFW_SAMPLES, 4);  // 4x antialiasing
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
 #endif
 
   // create window in specified size
   GLFWwindow* window =
     glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
   if (window == nullptr)
-    return 1;
+    return -1;
   glfwMakeContextCurrent(window);
-  glfwSwapInterval(1);  // enable vsync
 
-  // set initial state of the settings window
-  // initImGuiWindows();
-  // mainWindow::initMainWindow();
+  // initialize glew
+  glewExperimental = GL_TRUE;
+  if (glewInit()) {
+    std::cerr << "failed to initialize glew\n";
+    return -1;
+  }
+
+  // generate random vertecis in euclidean plane
+  graph::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(15));
+  graph::updateOrder(solve(graph::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
+  graph::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+
+  const ShaderCollection collection;
+  const ShaderProgram drawCircles      = collection.linkCircleDrawProgram();
+  const ShaderProgram drawLineSegments = collection.linkLineSegementDrawProgram();
+  const ShaderProgramCollection programs(drawCircles, drawLineSegments);
+
+  Buffers buffers;
+  buffers.coordinates.bind();
+  buffers.coordinates.bufferData(graph::POINTS_F, 2);              // components per vertex
+  buffers.tourCoordinates.bufferData(graph::POINTS_F);             // copy vertex coordinates also into shader buffer
+  buffers.tour.bufferData(graph::ORDER[ProblemType::BTSP_exact]);  // copy indices of verteces in tour to shader buffer
+
+  VertexArray vao;
+  vao.bind();
+  vao.mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
+  vao.enable(programs.drawCircles.id(), "vertexPosition");
+  vao.bindBufferBase(buffers.tourCoordinates, 0);
+  vao.bindBufferBase(buffers.tour, 1);
+
+  // enable vsync
+  glfwSwapInterval(1);
+
+  // set callbacks for keyboard and mouse, must be called before Imgui
+  glfwSetKeyCallback(window, keyCallback);
+  glfwSetMouseButtonCallback(window, mouseButtonCallback);
+
+  // set input mode
+  // glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
 
   // setup Dear ImGui
   setUpImgui(window, glsl_version);
+
+  // set initial state of the settings window
+  initImGuiWindows();
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
@@ -64,10 +117,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    // handleFastEvents();
+    handleEvents(window, buffers);
 
-    // draw the imgui over the fatou image
-    // drawImgui();
+    // draw the content
+    draw(window, programs, buffers);
+
+    // draw the gui
+    drawImgui();
 
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
