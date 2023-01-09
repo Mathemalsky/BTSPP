@@ -17,3 +17,11 @@ bool UndirectedGraph::connected() const {
   }
   return true;
 }
+
+bool UndirectedGraph::biconnected() const {
+  for (size_t i = 0; i < pNumberOfNodes; ++i) {
+    Eigen::SparseMatrix<EdgeCost> adjacencyMatrix = pAdjacencyMatrix;
+    // remove one column and one row from the matrix
+    // check if the graph is still connected
+  }
+}

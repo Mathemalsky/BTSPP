@@ -121,6 +121,7 @@ class UndirectedGraph : public SimpleGraph {
   }
 
   bool connected() const override;
+  bool biconnected() const;
 };
 
 class Digraph : public SimpleGraph {

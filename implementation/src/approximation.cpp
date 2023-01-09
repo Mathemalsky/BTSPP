@@ -8,6 +8,8 @@
 
 #include "graph/graph.hpp"
 
+using Entry = Eigen::Triplet<EdgeCost>;
+
 class Index {
 public:
   Index(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
@@ -29,11 +31,22 @@ private:
 std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemType problemType) {
   const Index index(euclidean.numberOfNodes());
   const size_t numberOfNodes = euclidean.numberOfNodes();
-  std::vector<unsigned int> edges(index.numberOfEdges());
-  std::iota(edges.begin(), edges.end(), 0);
-  std::sort(edges.begin(), edges.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
+  std::vector<unsigned int> edgeIndeces(index.numberOfEdges());
+  std::iota(edgeIndeces.begin(), edgeIndeces.end(), 0);
+  std::sort(edgeIndeces.begin(), edgeIndeces.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
     return euclidean.distance(index.edge(a)) < euclidean.distance(index.edge(b));
   });
+
+  // add the first numberOfNodes many edges
+  std::vector<Entry> entries;
+  entries.reserve(numberOfNodes);
+  for (unsigned int i = 0; i < numberOfNodes; ++i) {
+    const Edge e = index.edge(edgeIndeces[i]);
+    entries.push_back(Entry(e.u, e.v, euclidean.distance(e)));
+  }
+
+  Eigen::SparseMatrix<EdgeCost> adjacencyMatrix(numberOfNodes, numberOfNodes);
+  adjacencyMatrix.setFromTriplets(entries.begin(), entries.end());
 
   // check the graph is biconnected
   // calculate proper ear decomposition
