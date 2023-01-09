@@ -19,12 +19,12 @@ public:
 
   Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
+  size_t numberOfNodes() const { return pNumberOfNodes; }
+
   virtual double distance(const size_t u, const size_t v) const = 0;
   virtual double distance(const Edge e) const                   = 0;
   virtual bool adjacent(const size_t u, const size_t v) const   = 0;
   virtual bool connected() const                                = 0;
-
-  size_t numberOfNodes() const { return pNumberOfNodes; }
 
 protected:
   size_t pNumberOfNodes;
@@ -49,10 +49,11 @@ public:
 
   ~Euclidean() = default;
 
-  double distance(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
-  double distance(const Edge e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
   Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return this->pPositions; }
+
+  double distance(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
+  double distance(const Edge e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
 
 private:
   std::vector<Point2D> pPositions;
@@ -63,8 +64,11 @@ public:
   EdgeCost() = default;
   EdgeCost(const double cost) : pCost(cost) {}
 
+  double cost() const { return pCost; }
+
   double operator()() const { return pCost; }
   void operator=(const double cost) { pCost = cost; }
+  bool operator==(const double compare) { return pCost == compare; }
 
   EdgeCost operator+(const EdgeCost other) const { return std::min(pCost, other.pCost); }
   EdgeCost operator*(const EdgeCost other) const { return pCost + other.pCost; }
@@ -106,9 +110,10 @@ public:
 
   ~SimpleGraph();
 
-  // removal of a column and a row
+  void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }
 
-  virtual void addEdge(const size_t out, const size_t in, const EdgeCost edge) = 0;
+  virtual void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) = 0;
+  virtual void addEdge(const Edge& e, const EdgeCost edgeCost)                     = 0;
 
 protected:
   Eigen::SparseMatrix<EdgeCost> pAdjacencyMatrix;
@@ -116,12 +121,31 @@ protected:
 };
 
 class UndirectedGraph : public SimpleGraph {
-  void addEdge(const size_t out, const size_t in, const EdgeCost edge) override {
-    out > in ? pAdjacencyMatrix.insert(out, in) = edge : pAdjacencyMatrix.insert(in, out);
+public:
+  UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : SimpleGraph(tripletList) {}
+
+  bool adjacent(const size_t u, const size_t v) const override {
+    return (u > v ? pAdjacencyMatrix.coeff(u, v) == 0.0 : pAdjacencyMatrix.coeff(v, u) == 0.0);
   }
 
   bool connected() const override;
+  bool connectedWhithout(const size_t vertex) const;
   bool biconnected() const;
+
+  double distance(const size_t u, const size_t v) const override {
+    return (u > v ? pAdjacencyMatrix.coeff(u, v).cost() : pAdjacencyMatrix.coeff(v, u).cost());
+  }
+  double distance(const Edge e) const override {
+    return (e.u > e.v ? pAdjacencyMatrix.coeff(e.u, e.v).cost() : pAdjacencyMatrix.coeff(e.v, e.u).cost());
+  }
+
+  void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) override {
+    out > in ? pAdjacencyMatrix.insert(out, in) = edgeCost : pAdjacencyMatrix.insert(in, out) = edgeCost;
+  }
+
+  void addEdge(const Edge& e, const EdgeCost edgeCost) override {
+    e.u > e.v ? pAdjacencyMatrix.insert(e.u, e.v) = edgeCost : pAdjacencyMatrix.insert(e.u, e.v) = edgeCost;
+  }
 };
 
 class Digraph : public SimpleGraph {

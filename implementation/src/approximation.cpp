@@ -45,10 +45,19 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
     entries.push_back(Entry(e.u, e.v, euclidean.distance(e)));
   }
 
-  Eigen::SparseMatrix<EdgeCost> adjacencyMatrix(numberOfNodes, numberOfNodes);
-  adjacencyMatrix.setFromTriplets(entries.begin(), entries.end());
+  // create an undirected graph from that
+  UndirectedGraph graph(entries);
 
-  // check the graph is biconnected
+  // continue adding edges until it is biconnected
+  unsigned int edgeCounter = numberOfNodes;
+  while (!graph.biconnected()) {
+    const Edge e = index.edge(edgeCounter);
+    graph.addEdge(e, euclidean.distance(e));
+  }
+
+  // take the square of the graph
+  graph.square();
+
   // calculate proper ear decomposition
   // find approximation
 }
