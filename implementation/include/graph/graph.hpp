@@ -70,8 +70,12 @@ public:
   void operator=(const double cost) { pCost = cost; }
   bool operator==(const double compare) { return pCost == compare; }
 
-  EdgeCost operator+(const EdgeCost other) const { return std::min(pCost, other.pCost); }
-  EdgeCost operator*(const EdgeCost other) const { return pCost + other.pCost; }
+  EdgeCost operator+(const EdgeCost other) const { return EdgeCost(std::min(pCost, other.pCost)); }
+  EdgeCost operator*(const EdgeCost other) const { return EdgeCost(pCost + other.pCost); }
+  EdgeCost& operator+=(const EdgeCost other) {
+    this->pCost += other.pCost;
+    return *this;
+  }
 
 private:
   double pCost;
@@ -108,7 +112,7 @@ public:
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
-  ~SimpleGraph();
+  ~SimpleGraph() = default;
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }
 
@@ -122,7 +126,10 @@ protected:
 
 class UndirectedGraph : public SimpleGraph {
 public:
+  UndirectedGraph() = default;
   UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : SimpleGraph(tripletList) {}
+
+  ~UndirectedGraph() = default;
 
   bool adjacent(const size_t u, const size_t v) const override {
     return (u > v ? pAdjacencyMatrix.coeff(u, v) == 0.0 : pAdjacencyMatrix.coeff(v, u) == 0.0);
@@ -149,6 +156,9 @@ public:
 };
 
 class Digraph : public SimpleGraph {
+  Digraph()  = default;
+  ~Digraph() = default;
+
   void addEdge(size_t out, size_t in, const EdgeCost edge) override {
     if (out == in) {
       warnLoop(out);
