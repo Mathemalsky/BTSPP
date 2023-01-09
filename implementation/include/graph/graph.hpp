@@ -7,6 +7,11 @@
 
 #include "graph/geometry.hpp"
 
+struct Edge {
+  size_t u;
+  size_t v;
+};
+
 class Graph {
 public:
   Graph()  = default;
@@ -15,6 +20,7 @@ public:
   Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
   virtual double distance(const size_t u, const size_t v) const = 0;
+  virtual double distance(const Edge e) const                   = 0;
   virtual bool adjacent(const size_t u, const size_t v) const   = 0;
   virtual bool connected() const                                = 0;
 
@@ -44,6 +50,7 @@ public:
   ~Euclidean() = default;
 
   double distance(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
+  double distance(const Edge e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
   Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return this->pPositions; }
 

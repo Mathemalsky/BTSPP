@@ -8,6 +8,8 @@
 
 #include <Highs.h>
 
+#include "draw/definitions.hpp"
+
 #include "graph/graph.hpp"
 
 using Entry = Eigen::Triplet<double>;
