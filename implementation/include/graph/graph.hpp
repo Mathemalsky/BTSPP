@@ -73,7 +73,7 @@ public:
   EdgeCost operator+(const EdgeCost other) const { return EdgeCost(std::min(pCost, other.pCost)); }
   EdgeCost operator*(const EdgeCost other) const { return EdgeCost(pCost + other.pCost); }
   EdgeCost& operator+=(const EdgeCost other) {
-    this->pCost += other.pCost;
+    this->pCost = std::min(this->pCost, other.pCost);
     return *this;
   }
 
@@ -114,7 +114,7 @@ public:
 
   ~SimpleGraph() = default;
 
-  void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }
+  void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
   virtual void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) = 0;
   virtual void addEdge(const Edge& e, const EdgeCost edgeCost)                     = 0;

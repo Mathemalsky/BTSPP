@@ -29,35 +29,40 @@ private:
 };
 
 std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemType problemType) {
-  const Index index(euclidean.numberOfNodes());
-  const size_t numberOfNodes = euclidean.numberOfNodes();
-  std::vector<unsigned int> edgeIndeces(index.numberOfEdges());
-  std::iota(edgeIndeces.begin(), edgeIndeces.end(), 0);
-  std::sort(edgeIndeces.begin(), edgeIndeces.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
-    return euclidean.distance(index.edge(a)) < euclidean.distance(index.edge(b));
-  });
+  if (problemType == ProblemType::BTSP_approx) {
+    const Index index(euclidean.numberOfNodes());
+    const size_t numberOfNodes = euclidean.numberOfNodes();
+    std::vector<unsigned int> edgeIndeces(index.numberOfEdges());
+    std::iota(edgeIndeces.begin(), edgeIndeces.end(), 0);
+    std::sort(edgeIndeces.begin(), edgeIndeces.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
+      return euclidean.distance(index.edge(a)) < euclidean.distance(index.edge(b));
+    });
 
-  // add the first numberOfNodes many edges
-  std::vector<Entry> entries;
-  entries.reserve(numberOfNodes);
-  for (unsigned int i = 0; i < numberOfNodes; ++i) {
-    const Edge e = index.edge(edgeIndeces[i]);
-    entries.push_back(Entry(e.u, e.v, euclidean.distance(e)));
+    // add the first numberOfNodes many edges
+    std::vector<Entry> entries;
+    entries.reserve(numberOfNodes);
+    for (unsigned int i = 0; i < numberOfNodes; ++i) {
+      const Edge e = index.edge(edgeIndeces[i]);
+      entries.push_back(Entry(e.u, e.v, euclidean.distance(e)));
+    }
+
+    // create an undirected graph from that
+    UndirectedGraph graph(entries);
+
+    // continue adding edges until it is biconnected
+    unsigned int edgeCounter = numberOfNodes;
+    while (!graph.biconnected()) {
+      const Edge e = index.edge(edgeCounter);
+      graph.addEdge(e, euclidean.distance(e));
+    }
+
+    // take the square of the graph
+    graph.square();
+
+    // calculate proper ear decomposition
+    // find approximation
   }
 
-  // create an undirected graph from that
-  UndirectedGraph graph(entries);
-
-  // continue adding edges until it is biconnected
-  unsigned int edgeCounter = numberOfNodes;
-  while (!graph.biconnected()) {
-    const Edge e = index.edge(edgeCounter);
-    graph.addEdge(e, euclidean.distance(e));
-  }
-
-  // take the square of the graph
-  graph.square();
-
-  // calculate proper ear decomposition
-  // find approximation
+  std::vector<unsigned int> tour;
+  return tour;
 }

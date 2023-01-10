@@ -3,7 +3,7 @@
 #include <array>
 #include <unordered_map>
 
-enum class ProblemType { BTSP_exact, TSP_exact };
+enum class ProblemType { BTSP_approx, BTSP_exact, TSP_exact };
 namespace problemType {
 constexpr std::array<ProblemType, 2> PROBLEM_TYPES = {ProblemType::BTSP_exact, ProblemType::TSP_exact};
 }
