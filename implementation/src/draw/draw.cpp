@@ -27,9 +27,9 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
 
 static void drawEdges(const ShaderProgram& drawLineSegments, const ProblemType type) {
   drawLineSegments.use();
-  drawLineSegments.setUniform("u_thickness", imguiwindow::THICKNESS[type]);
+  drawLineSegments.setUniform("u_thickness", imguiwindow::THICKNESS[(unsigned int) type]);
   drawLineSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
-  drawLineSegments.setUniform("u_color", imguiwindow::COLOR[type]);
+  drawLineSegments.setUniform("u_color", imguiwindow::COLOR[(unsigned int) type]);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glDrawArrays(GL_TRIANGLES, 0, 6 * graph::EUCLIDEAN.numberOfNodes());
@@ -40,8 +40,8 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, Buffers& 
   drawVerteces(programs.drawCircles);
 
   for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-    if (imguiwindow::ACTIVE[type]) {
-      buffers.tour.bufferSubData(graph::ORDER[type]);
+    if (imguiwindow::ACTIVE[(unsigned int) type]) {
+      buffers.tour.bufferSubData(graph::ORDER[(unsigned int) type]);
       drawEdges(programs.drawLineSegments, type);
     }
   }

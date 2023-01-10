@@ -28,8 +28,8 @@ void keyCallback(
   }
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
     for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-      if (imguiwindow::ACTIVE[type]) {
-        slowEvents::SOLVE[type] = true;
+      if (imguiwindow::ACTIVE[(unsigned int) type]) {
+        slowEvents::SOLVE[(unsigned int) type] = true;
       }
     }
   }
@@ -78,8 +78,8 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
 
 static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-    if (slowEvents::SOLVE[type]) {
-      slowEvents::SOLVE[type] = false;
+    if (slowEvents::SOLVE[(unsigned int) type]) {
+      slowEvents::SOLVE[(unsigned int) type] = false;
       graph::updateOrder(solve(graph::EUCLIDEAN, type), type);
     }
   }

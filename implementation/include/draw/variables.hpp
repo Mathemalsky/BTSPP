@@ -12,7 +12,7 @@
 namespace graph {
 extern Euclidean EUCLIDEAN;
 extern std::vector<float> POINTS_F;
-extern std::unordered_map<ProblemType, std::vector<unsigned int>> ORDER;
+extern std::array<std::vector<unsigned int>, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> ORDER;
 
 void updatePointsfFromEuclidean();
 
@@ -21,11 +21,10 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
 
 namespace imguiwindow {
 extern bool SHOW_SETTINGS_WINDOW;
-extern std::unordered_map<ProblemType, bool> ACTIVE;
-extern std::unordered_map<ProblemType, std::array<float, 4>> COLOR;  // 4th float currently unused
-extern std::unordered_map<ProblemType, float> THICKNESS;
+extern std::array<bool, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> ACTIVE;
+extern std::array<std::array<float, 4>, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> COLOR;  // 4th flt crrntly unused
+extern std::array<float, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> THICKNESS;
 extern std::array<float, 4> VERTEX_COLOR;  // 4th float currently unused
-
 }  // namespace imguiwindow
 
 namespace input {
@@ -43,5 +42,5 @@ extern int WIDTH;
 }  // namespace mainwindow
 
 namespace slowEvents {
-extern std::unordered_map<ProblemType, bool> SOLVE;
+extern std::array<bool, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> SOLVE;
 }  // namespace slowEvents
