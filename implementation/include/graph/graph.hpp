@@ -103,16 +103,16 @@ struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
 };
 }  // namespace Eigen
 
-class SimpleGraph : public Graph {
+class AdjacencyMatrixGraph : public Graph {
 public:
-  SimpleGraph() = default;
-  SimpleGraph(const size_t numberOfNodes)
+  AdjacencyMatrixGraph() = default;
+  AdjacencyMatrixGraph(const size_t numberOfNodes)
     : Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeCost>(numberOfNodes, numberOfNodes)) {}
-  SimpleGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : Graph(tripletList.size()) {
+  AdjacencyMatrixGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : Graph(tripletList.size()) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
-  ~SimpleGraph() = default;
+  ~AdjacencyMatrixGraph() = default;
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
@@ -126,10 +126,10 @@ protected:
   void warnLoop(const size_t node) { std::cerr << "[Graph] Warning: inserting a loop on node " << node << std::endl; }
 };
 
-class UndirectedGraph : public SimpleGraph {
+class UndirectedGraph : public AdjacencyMatrixGraph {
 public:
   UndirectedGraph() = default;
-  UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : SimpleGraph(tripletList) {}
+  UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : AdjacencyMatrixGraph(tripletList) {}
 
   ~UndirectedGraph() = default;
 
@@ -157,7 +157,7 @@ public:
   }
 };
 
-class Digraph : public SimpleGraph {
+class Digraph : public AdjacencyMatrixGraph {
   Digraph()  = default;
   ~Digraph() = default;
 
@@ -169,12 +169,44 @@ class Digraph : public SimpleGraph {
   }
 };
 
-class Tree : public Graph {
+class AdjacencyListGraph : public Graph {
+  AdjacencyListGraph()  = default;
+  ~AdjacencyListGraph() = default;
+
+protected:
+  struct arc {
+    size_t neighboor;
+    double dist;
+  };
+  std::vector<std::vector<arc>> pAdjacencyList;
+};
+
+class Tree : public AdjacencyListGraph {
 public:
-  bool connected() const { return true; }
+  bool connected() const override { return true; }
 
 protected:
   size_t pRoot;
+};
+
+/*!
+ * \brief class FixTree
+ * \details This class is for trees where every node has exactly one parent. This allows to store the neighboors
+ * more efficient. The node 0 is assumed to be the root node.
+ */
+class FixTree : public Graph {
+  FixTree()  = default;
+  ~FixTree() = default;
+
+  FixTree(const size_t numberOfNodes) : Graph(numberOfNodes) { pAdjacencyList.resize(numberOfNodes - 1); }
+
+  bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyList[u - 1] == v; }
+  bool connected() const override { return true; }
+
+  size_t parent(const size_t u) const { return pAdjacencyList[u - 1]; }
+
+private:
+  std::vector<size_t> pAdjacencyList;
 };
 
 struct OpenEarDecomposition {
