@@ -1,5 +1,6 @@
 #include "graph/graph.hpp"
 
+#include <stack>
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -43,4 +44,21 @@ bool UndirectedGraph::biconnected() const {
     }
   }
   return true;
+}
+
+OpenEarDecomposition schmidt(const UndirectedGraph& graph) {
+  // dfs
+  std::vector<bool> visited(graph.numberOfNodes(), false);
+  std::stack<size_t> nodeStack;
+  nodeStack.push(0);  // w. l. o. g. the root node is 0
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    nodeStack.pop();
+    if (!visited[top]) {
+      visited[top] = true;
+      for (Eigen::SparseMatrix<EdgeCost>::InnerIterator it(graph.matrix(), top); it; ++it) {
+        nodeStack.push(it.index());
+      }
+    }
+  }
 }

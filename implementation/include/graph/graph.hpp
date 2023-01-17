@@ -119,6 +119,8 @@ public:
   virtual void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) = 0;
   virtual void addEdge(const Edge& e, const EdgeCost edgeCost)                     = 0;
 
+  const Eigen::SparseMatrix<EdgeCost>& matrix() const { return this->pAdjacencyMatrix; }
+
 protected:
   Eigen::SparseMatrix<EdgeCost> pAdjacencyMatrix;
   void warnLoop(const size_t node) { std::cerr << "[Graph] Warning: inserting a loop on node " << node << std::endl; }
@@ -166,3 +168,17 @@ class Digraph : public SimpleGraph {
     pAdjacencyMatrix.insert(out, in) = edge;
   }
 };
+
+class Tree : public Graph {
+public:
+  bool connected() const { return true; }
+
+protected:
+  size_t pRoot;
+};
+
+struct OpenEarDecomposition {
+  bool biconnected;
+};
+
+OpenEarDecomposition schmidt(const UndirectedGraph& graph);
