@@ -54,7 +54,7 @@ static void setTSPcost(HighsModel& model, const Index& index, const Euclidean& e
   model.lp_.col_cost_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
-      const double dist                          = euclidean.distance(i, j);
+      const double dist                          = euclidean.weight(i, j);
       model.lp_.col_cost_[index.variableX(i, j)] = dist;
       model.lp_.col_cost_[index.variableX(j, i)] = dist;  // exploiting symmetry
     }
@@ -146,7 +146,7 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
   const size_t numberOfNodes = euclidean.numberOfNodes();
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
-      const double dist = euclidean.distance(i, j);
+      const double dist = euclidean.weight(i, j);
       entries.push_back(Entry(index.constraintC(i, j), index.variableX(i, j), -dist));
       entries.push_back(Entry(index.constraintC(i, j), index.variableC(), 1.0));
       entries.push_back(Entry(index.constraintC(j, i), index.variableX(j, i), -dist));  // exploit symmetry
