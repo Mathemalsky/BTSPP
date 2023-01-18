@@ -65,7 +65,7 @@ static void setTSPcost(HighsModel& model, const Index& index, const Euclidean& e
 static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, const size_t numberOfNodes) {
   const double p = numberOfNodes;
 
-  model.lp_.col_lower_ = std::vector(model.lp_.num_col_, 0.0);  // set lower bound of variables to 0
+  model.lp_.col_lower_ = std::vector<double>(model.lp_.num_col_, 0.0);  // set lower bound of variables to 0
 
   model.lp_.col_upper_.resize(model.lp_.num_col_);
   model.lp_.integrality_.resize(model.lp_.num_col_);

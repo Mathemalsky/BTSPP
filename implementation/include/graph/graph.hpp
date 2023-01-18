@@ -23,6 +23,8 @@ public:
 
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
   virtual bool connected() const                              = 0;
+  virtual double weight(const size_t u, const size_t v) const { return (double) adjacent(u, v); }
+  virtual double weight(const Edge& e) const { return (double) adjacent(e.u, e.v); }
 
 protected:
   size_t pNumberOfNodes;
@@ -35,8 +37,8 @@ public:
 
   WeightedGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
 
-  virtual double distance(const size_t u, const size_t v) const = 0;
-  virtual double distance(const Edge e) const                   = 0;
+  virtual double weight(const size_t u, const size_t v) const = 0;
+  virtual double weight(const Edge& e) const                  = 0;
 };
 
 class CompleteGraph : public virtual Graph {
@@ -58,11 +60,11 @@ public:
   Euclidean(const std::vector<Point2D>& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
   Euclidean(std::vector<Point2D>&& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
 
+  double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
+  double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
+
   Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return this->pPositions; }
-
-  double distance(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
-  double distance(const Edge e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
 
 private:
   std::vector<Point2D> pPositions;
@@ -112,7 +114,12 @@ struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
 };
 }  // namespace Eigen
 
-class AdjacencyMatrixGraph : public WeightedGraph {
+class SimpleGraph : public virtual Graph {
+  virtual void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) = 0;
+  virtual void addEdge(const Edge& e, const EdgeCost edgeCost)                     = 0;
+};
+
+class AdjacencyMatrixGraph : public SimpleGraph {
 public:
   AdjacencyMatrixGraph()  = default;
   ~AdjacencyMatrixGraph() = default;
@@ -123,8 +130,23 @@ public:
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
-  virtual void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) = 0;
-  virtual void addEdge(const Edge& e, const EdgeCost edgeCost)                     = 0;
+  void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) override {
+    pAdjacencyMatrix.insert(out, in) = edgeCost;
+  }
+
+  virtual void addEdge(const Edge& e, const EdgeCost edgeCost) override {
+    pAdjacencyMatrix.insert(e.u, e.v) = edgeCost;
+  }
+
+  virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
+
+  bool connected() const override;
+
+  virtual double weight(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v).cost(); }
+  virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
+
+  bool connectedWhithout(const size_t vertex) const;
+  bool biconnected() const;
 
   const Eigen::SparseMatrix<EdgeCost>& matrix() const { return this->pAdjacencyMatrix; }
 
@@ -135,46 +157,40 @@ protected:
   void warnLoop(const size_t node) { std::cerr << "[Graph] Warning: inserting a loop on node " << node << std::endl; }
 };
 
-class UndirectedGraph : public AdjacencyMatrixGraph {
+template <class Storage>
+class UndirectedGraph : public SimpleGraph {
 public:
   UndirectedGraph()  = default;
   ~UndirectedGraph() = default;
 
-  UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : AdjacencyMatrixGraph(tripletList) {}
-
-  bool adjacent(const size_t u, const size_t v) const override {
-    return (u > v ? pAdjacencyMatrix.coeff(u, v) == 0.0 : pAdjacencyMatrix.coeff(v, u) == 0.0);
-  }
-
-  bool connected() const override;
-  bool connectedWhithout(const size_t vertex) const;
-  bool biconnected() const;
-
-  double distance(const size_t u, const size_t v) const override {
-    return (u > v ? pAdjacencyMatrix.coeff(u, v).cost() : pAdjacencyMatrix.coeff(v, u).cost());
-  }
-  double distance(const Edge e) const override {
-    return (e.u > e.v ? pAdjacencyMatrix.coeff(e.u, e.v).cost() : pAdjacencyMatrix.coeff(e.v, e.u).cost());
-  }
+  // UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : AdjacencyMatrixGraph(tripletList) {}
 
   void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) override {
-    out > in ? pAdjacencyMatrix.insert(out, in) = edgeCost : pAdjacencyMatrix.insert(in, out) = edgeCost;
+    out > in ? Storage::addEdge(out, in, edgeCost) : Storage::adEdge(in, out, edgeCost);
   }
 
   void addEdge(const Edge& e, const EdgeCost edgeCost) override {
-    e.u > e.v ? pAdjacencyMatrix.insert(e.u, e.v) = edgeCost : pAdjacencyMatrix.insert(e.u, e.v) = edgeCost;
+    e.u > e.v ? Storage::addEdge(e, edgeCost) : Storage::adEdge(e.v, e.u, edgeCost);
   }
+
+  bool adjacent(const size_t u, const size_t v) const override {
+    return (u > v ? Storage::adjacent(u, v) : Storage::adjacent(v, u));
+  }
+
+  double weight(const size_t u, const size_t v) const override {
+    return (u > v ? Storage::weight(u, v) : Storage::weight(v, u));
+  }
+
+  double weight(const Edge& e) const override { return (e.u > e.v ? Storage::weight(e) : Storage::weight(e.v, e.u)); }
 };
 
-class Digraph : public AdjacencyMatrixGraph {
+template <class Storage>
+class Digraph : public SimpleGraph {
   Digraph()  = default;
   ~Digraph() = default;
 
-  void addEdge(size_t out, size_t in, const EdgeCost edge) override {
-    if (out == in) {
-      warnLoop(out);
-    }
-    pAdjacencyMatrix.insert(out, in) = edge;
+  void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) override {
+    Storage::addEdge(out, in, edgeCost);
   }
 };
 
@@ -214,7 +230,7 @@ public:
   }
 
   bool adjacent(const size_t u, const size_t v) const override { return u == parent(v); }
-  constexpr bool connected() const override { return true; }
+  bool connected() const override { return true; }
 
   size_t index(const size_t u) const { return this->pIndeces[u]; }
   size_t& index(const size_t u) { return this->pIndeces[u]; }
@@ -231,4 +247,4 @@ struct OpenEarDecomposition {
   bool biconnected;
 };
 
-OpenEarDecomposition schmidt(const UndirectedGraph& graph);
+OpenEarDecomposition schmidt(const UndirectedGraph<AdjacencyMatrixGraph>& graph);

@@ -5,7 +5,7 @@
 
 #include <Eigen/SparseCore>
 
-bool UndirectedGraph::connected() const {
+bool AdjacencyMatrixGraph::connected() const {
   std::vector<bool> component(pNumberOfNodes, false);
   component[0] = true;  // without loss of generality we consider the connected component containing node 0
   for (int k = 0; k < pAdjacencyMatrix.outerSize(); ++k) {
@@ -19,7 +19,7 @@ bool UndirectedGraph::connected() const {
   return true;
 }
 
-bool UndirectedGraph::connectedWhithout(const size_t vertex) const {
+bool AdjacencyMatrixGraph::connectedWhithout(const size_t vertex) const {
   std::vector<bool> component(pNumberOfNodes, false);
   component[0] = true;         // without loss of generality we consider the connected component containing node 0
   component[1] = vertex == 0;  // if we check connectivity whithout 0, we start by one
@@ -37,7 +37,7 @@ bool UndirectedGraph::connectedWhithout(const size_t vertex) const {
   return true;
 }
 
-bool UndirectedGraph::biconnected() const {
+bool AdjacencyMatrixGraph::biconnected() const {
   for (size_t i = 0; i < pNumberOfNodes; ++i) {
     if (!connectedWhithout(i)) {
       return false;
@@ -46,11 +46,13 @@ bool UndirectedGraph::biconnected() const {
   return true;
 }
 
-OpenEarDecomposition schmidt(const UndirectedGraph& graph) {
+OpenEarDecomposition schmidt(const UndirectedGraph<AdjacencyMatrixGraph>& graph) {
   // dfs
-  DfsTree tree(graph.numberOfNodes());
+  const size_t numberOfNodes = graph.numberOfNodes();
+  DfsTree tree(numberOfNodes);
+  // graph with adjacency list
   size_t indexCounter = 0;
-  std::vector<bool> visited(graph.numberOfNodes(), false);
+  std::vector<bool> visited(numberOfNodes, false);
   std::stack<size_t> nodeStack;
   nodeStack.push(0);  // w. l. o. g. the root node is 0
   while (!nodeStack.empty()) {
@@ -71,4 +73,7 @@ OpenEarDecomposition schmidt(const UndirectedGraph& graph) {
 
   // decompose by iterating over every backedge outgoing from every node
   // for()
+  std::vector<std::vector<size_t>> ears;
+  for (size_t v = 0; v < numberOfNodes; ++v) {
+  }
 }
