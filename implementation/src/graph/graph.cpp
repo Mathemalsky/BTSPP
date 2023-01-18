@@ -48,6 +48,8 @@ bool UndirectedGraph::biconnected() const {
 
 OpenEarDecomposition schmidt(const UndirectedGraph& graph) {
   // dfs
+  DfsTree tree(graph.numberOfNodes());
+  size_t indexCounter = 0;
   std::vector<bool> visited(graph.numberOfNodes(), false);
   std::stack<size_t> nodeStack;
   nodeStack.push(0);  // w. l. o. g. the root node is 0
@@ -57,8 +59,16 @@ OpenEarDecomposition schmidt(const UndirectedGraph& graph) {
     if (!visited[top]) {
       visited[top] = true;
       for (Eigen::SparseMatrix<EdgeCost>::InnerIterator it(graph.matrix(), top); it; ++it) {
-        nodeStack.push(it.index());
+        if (!visited[it.index()]) {
+          nodeStack.push(it.index());     // do not push already visited nodes
+          tree.parent(it.index()) = top;  // update the parent
+        }
       }
+      tree.index(top) = indexCounter;
+      ++indexCounter;
     }
   }
+
+  // decompose by iterating over every backedge outgoing from every node
+  // for()
 }

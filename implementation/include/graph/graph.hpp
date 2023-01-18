@@ -21,16 +21,25 @@ public:
 
   size_t numberOfNodes() const { return pNumberOfNodes; }
 
-  virtual double distance(const size_t u, const size_t v) const = 0;
-  virtual double distance(const Edge e) const                   = 0;
-  virtual bool adjacent(const size_t u, const size_t v) const   = 0;
-  virtual bool connected() const                                = 0;
+  virtual bool adjacent(const size_t u, const size_t v) const = 0;
+  virtual bool connected() const                              = 0;
 
 protected:
   size_t pNumberOfNodes;
 };
 
-class CompleteGraph : public Graph {
+class WeightedGraph : public virtual Graph {
+public:
+  WeightedGraph()  = default;
+  ~WeightedGraph() = default;
+
+  WeightedGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
+
+  virtual double distance(const size_t u, const size_t v) const = 0;
+  virtual double distance(const Edge e) const                   = 0;
+};
+
+class CompleteGraph : public virtual Graph {
 public:
   CompleteGraph()  = default;
   ~CompleteGraph() = default;
@@ -41,13 +50,13 @@ public:
   bool connected() const override { return true; }
 };
 
-class Euclidean : public CompleteGraph {
+class Euclidean : public CompleteGraph, WeightedGraph {
 public:
-  Euclidean() = default;
+  Euclidean()  = default;
+  ~Euclidean() = default;
+
   Euclidean(const std::vector<Point2D>& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
   Euclidean(std::vector<Point2D>&& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
-
-  ~Euclidean() = default;
 
   Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return this->pPositions; }
@@ -103,23 +112,23 @@ struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
 };
 }  // namespace Eigen
 
-class AdjacencyMatrixGraph : public Graph {
+class AdjacencyMatrixGraph : public WeightedGraph {
 public:
-  AdjacencyMatrixGraph() = default;
+  AdjacencyMatrixGraph()  = default;
+  ~AdjacencyMatrixGraph() = default;
+
   AdjacencyMatrixGraph(const size_t numberOfNodes)
     : Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeCost>(numberOfNodes, numberOfNodes)) {}
   AdjacencyMatrixGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : Graph(tripletList.size()) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
-  ~AdjacencyMatrixGraph() = default;
-
-  void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
-
   virtual void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) = 0;
   virtual void addEdge(const Edge& e, const EdgeCost edgeCost)                     = 0;
 
   const Eigen::SparseMatrix<EdgeCost>& matrix() const { return this->pAdjacencyMatrix; }
+
+  void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
 protected:
   Eigen::SparseMatrix<EdgeCost> pAdjacencyMatrix;
@@ -128,10 +137,10 @@ protected:
 
 class UndirectedGraph : public AdjacencyMatrixGraph {
 public:
-  UndirectedGraph() = default;
-  UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : AdjacencyMatrixGraph(tripletList) {}
-
+  UndirectedGraph()  = default;
   ~UndirectedGraph() = default;
+
+  UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : AdjacencyMatrixGraph(tripletList) {}
 
   bool adjacent(const size_t u, const size_t v) const override {
     return (u > v ? pAdjacencyMatrix.coeff(u, v) == 0.0 : pAdjacencyMatrix.coeff(v, u) == 0.0);
@@ -194,19 +203,28 @@ protected:
  * \details This class is for trees where every node has exactly one parent. This allows to store the neighboors
  * more efficient. The node 0 is assumed to be the root node.
  */
-class FixTree : public Graph {
-  FixTree()  = default;
-  ~FixTree() = default;
+class DfsTree : public Graph {
+public:
+  DfsTree()  = default;
+  ~DfsTree() = default;
 
-  FixTree(const size_t numberOfNodes) : Graph(numberOfNodes) { pAdjacencyList.resize(numberOfNodes - 1); }
+  DfsTree(const size_t numberOfNodes) : Graph(numberOfNodes) {
+    pAdjacencyList.resize(numberOfNodes);
+    pIndeces.resize(numberOfNodes);
+  }
 
-  bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyList[u - 1] == v; }
-  bool connected() const override { return true; }
+  bool adjacent(const size_t u, const size_t v) const override { return u == parent(v); }
+  constexpr bool connected() const override { return true; }
 
-  size_t parent(const size_t u) const { return pAdjacencyList[u - 1]; }
+  size_t index(const size_t u) const { return this->pIndeces[u]; }
+  size_t& index(const size_t u) { return this->pIndeces[u]; }
+
+  size_t parent(const size_t u) const { return this->pAdjacencyList[u]; }
+  size_t& parent(const size_t u) { return this->pAdjacencyList[u]; }
 
 private:
   std::vector<size_t> pAdjacencyList;
+  std::vector<size_t> pIndeces;
 };
 
 struct OpenEarDecomposition {
