@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -54,25 +53,12 @@ protected:
 
 class WeightedGraph : public virtual Graph {
 public:
-  /*
-  WeightedGraph()  = default;
-  ~WeightedGraph() = default;
-
-  WeightedGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
-  */
   virtual double weight(const size_t u, const size_t v) const = 0;
   virtual double weight(const Edge& e) const                  = 0;
 };
 
 class CompleteGraph : public virtual Graph {
 public:
-  /*
-  CompleteGraph()  = default;
-  ~CompleteGraph() = default;
-
-  CompleteGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
-  */
-
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
   bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
   bool connected() const override { return true; }
@@ -160,7 +146,6 @@ public:
   virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
   virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
 
-  // double weight(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v).cost(); }
   virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
 
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
@@ -246,7 +231,7 @@ private:
   };
   std::vector<std::vector<arc>> pAdjacencyList;
 }
-*/
+
 
 template <Directionality Directed>
 class Tree : public AdjacencyListGraph<Directed> {
@@ -256,6 +241,7 @@ public:
 protected:
   size_t pRoot;
 };
+*/
 
 /*!
  * \brief class FixTree
