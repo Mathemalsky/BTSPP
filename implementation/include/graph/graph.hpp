@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iostream>
+#include <algorithm>
+#include <stack>
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -12,6 +13,28 @@ struct Edge {
   size_t v;
 };
 
+enum class Directionality { Undirected, Directed };
+
+template <Directionality DIRECT>
+static Edge orientation(const size_t u, const size_t v) {
+  if constexpr (DIRECT == Directionality::Undirected) {
+    return (u > v ? Edge{u, v} : Edge{v, u});
+  }
+  else {
+    return Edge{u, v};
+  }
+}
+
+template <Directionality DIRECT>
+static Edge orientation(const Edge& e) {
+  if constexpr (DIRECT == Directionality::Undirected) {
+    return (e.u > e.v ? e : Edge{e.v, e.u});
+  }
+  else {
+    return e;
+  }
+}
+
 class Graph {
 public:
   Graph()  = default;
@@ -19,50 +42,51 @@ public:
 
   Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
-  size_t numberOfNodes() const { return pNumberOfNodes; }
+  virtual bool adjacent(const size_t u, const size_t v) const = 0;
+  virtual bool adjacent(const Edge& e) const                  = 0;
+  virtual bool connected() const                              = 0;
 
-  virtual double distance(const size_t u, const size_t v) const = 0;
-  virtual double distance(const Edge e) const                   = 0;
-  virtual bool adjacent(const size_t u, const size_t v) const   = 0;
-  virtual bool connected() const                                = 0;
+  size_t numberOfNodes() const { return pNumberOfNodes; }
 
 protected:
   size_t pNumberOfNodes;
 };
 
-class CompleteGraph : public Graph {
+class WeightedGraph : public virtual Graph {
 public:
-  CompleteGraph()  = default;
-  ~CompleteGraph() = default;
+  virtual double weight(const size_t u, const size_t v) const = 0;
+  virtual double weight(const Edge& e) const                  = 0;
+};
 
-  CompleteGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
-
+class CompleteGraph : public virtual Graph {
+public:
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
+  bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
   bool connected() const override { return true; }
 };
 
-class Euclidean : public CompleteGraph {
+class Euclidean : public CompleteGraph, WeightedGraph {
 public:
-  Euclidean() = default;
-  Euclidean(const std::vector<Point2D>& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
-  Euclidean(std::vector<Point2D>&& positions) : CompleteGraph(positions.size()), pPositions(positions) {}
-
+  Euclidean()  = default;
   ~Euclidean() = default;
+
+  Euclidean(const std::vector<Point2D>& positions) : Graph(positions.size()), pPositions(positions) {}
+  Euclidean(std::vector<Point2D>&& positions) : Graph(positions.size()), pPositions(positions) {}
+
+  double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
+  double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
 
   Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return this->pPositions; }
-
-  double distance(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
-  double distance(const Edge e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
 
 private:
   std::vector<Point2D> pPositions;
 };
 
-class EdgeCost {
+class EdgeWeight {
 public:
-  EdgeCost() = default;
-  EdgeCost(const double cost) : pCost(cost) {}
+  EdgeWeight() = default;
+  EdgeWeight(const double cost) : pCost(cost) {}
 
   double cost() const { return pCost; }
 
@@ -70,9 +94,9 @@ public:
   void operator=(const double cost) { pCost = cost; }
   bool operator==(const double compare) { return pCost == compare; }
 
-  EdgeCost operator+(const EdgeCost other) const { return EdgeCost(std::min(pCost, other.pCost)); }
-  EdgeCost operator*(const EdgeCost other) const { return EdgeCost(pCost + other.pCost); }
-  EdgeCost& operator+=(const EdgeCost other) {
+  EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
+  EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
+  EdgeWeight& operator+=(const EdgeWeight other) {
     this->pCost = std::min(this->pCost, other.pCost);
     return *this;
   }
@@ -86,10 +110,10 @@ private:
  */
 namespace Eigen {
 template <>
-struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
-  typedef EdgeCost Real;
-  typedef EdgeCost NonInteger;
-  typedef EdgeCost Nested;
+struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
+  typedef EdgeWeight Real;
+  typedef EdgeWeight NonInteger;
+  typedef EdgeWeight Nested;
 
   enum {
     IsInteger             = 0,
@@ -103,82 +127,171 @@ struct NumTraits<EdgeCost> : GenericNumTraits<EdgeCost> {
 };
 }  // namespace Eigen
 
-class SimpleGraph : public Graph {
+class Modifyable : public virtual Graph {
+protected:
+  virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) = 0;
+  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
+};
+
+class AdjMatGraph : public virtual WeightedGraph, Modifyable {
 public:
-  SimpleGraph() = default;
-  SimpleGraph(const size_t numberOfNodes)
-    : Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeCost>(numberOfNodes, numberOfNodes)) {}
-  SimpleGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : Graph(tripletList.size()) {
+  AdjMatGraph()  = default;
+  ~AdjMatGraph() = default;
+
+  AdjMatGraph(const size_t numberOfNodes)
+    : Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {}
+  AdjMatGraph(const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) : Graph(tripletList.size()) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
-  ~SimpleGraph() = default;
+  virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
+  virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
+
+  virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
+
+  const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
-  virtual void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) = 0;
-  virtual void addEdge(const Edge& e, const EdgeCost edgeCost)                     = 0;
-
-  const Eigen::SparseMatrix<EdgeCost>& matrix() const { return this->pAdjacencyMatrix; }
-
 protected:
-  Eigen::SparseMatrix<EdgeCost> pAdjacencyMatrix;
-  void warnLoop(const size_t node) { std::cerr << "[Graph] Warning: inserting a loop on node " << node << std::endl; }
+  Eigen::SparseMatrix<EdgeWeight> pAdjacencyMatrix;
+
+  virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
+    pAdjacencyMatrix.insert(out, in) = edgeWeight;
+  }
+
+  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) override {
+    pAdjacencyMatrix.insert(e.u, e.v) = edgeWeight;
+  }
 };
 
-class UndirectedGraph : public SimpleGraph {
+template <Directionality DIRECT>
+class AdjacencyMatrixGraph : public AdjMatGraph {
 public:
-  UndirectedGraph() = default;
-  UndirectedGraph(const std::vector<Eigen::Triplet<EdgeCost>>& tripletList) : SimpleGraph(tripletList) {}
+  AdjacencyMatrixGraph()  = default;
+  ~AdjacencyMatrixGraph() = default;
 
-  ~UndirectedGraph() = default;
+  AdjacencyMatrixGraph(const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) : AdjMatGraph(tripletList) {}
+
+  void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
+    AdjMatGraph::addEdge(orientation<DIRECT>(out, in), edgeWeight);
+  }
+
+  void addEdge(const Edge& e, const EdgeWeight edgeWeight) override {
+    AdjMatGraph::addEdge(orientation<DIRECT>(e), edgeWeight);
+  }
 
   bool adjacent(const size_t u, const size_t v) const override {
-    return (u > v ? pAdjacencyMatrix.coeff(u, v) == 0.0 : pAdjacencyMatrix.coeff(v, u) == 0.0);
+    return AdjMatGraph::adjacent(orientation<DIRECT>(u, v));
   }
 
   bool connected() const override;
-  bool connectedWhithout(const size_t vertex) const;
+
+  double weight(const size_t u, const size_t v) const override {
+    return AdjMatGraph::weight(orientation<DIRECT>(u, v));
+  }
+
+  double weight(const Edge& e) const override { return AdjMatGraph::weight(orientation<DIRECT>(e)); }
+
   bool biconnected() const;
-
-  double distance(const size_t u, const size_t v) const override {
-    return (u > v ? pAdjacencyMatrix.coeff(u, v).cost() : pAdjacencyMatrix.coeff(v, u).cost());
-  }
-  double distance(const Edge e) const override {
-    return (e.u > e.v ? pAdjacencyMatrix.coeff(e.u, e.v).cost() : pAdjacencyMatrix.coeff(e.v, e.u).cost());
-  }
-
-  void addEdge(const size_t out, const size_t in, const EdgeCost edgeCost) override {
-    out > in ? pAdjacencyMatrix.insert(out, in) = edgeCost : pAdjacencyMatrix.insert(in, out) = edgeCost;
-  }
-
-  void addEdge(const Edge& e, const EdgeCost edgeCost) override {
-    e.u > e.v ? pAdjacencyMatrix.insert(e.u, e.v) = edgeCost : pAdjacencyMatrix.insert(e.u, e.v) = edgeCost;
-  }
+  bool connectedWhithout(const size_t vertex) const;
 };
 
-class Digraph : public SimpleGraph {
-  Digraph()  = default;
-  ~Digraph() = default;
-
-  void addEdge(size_t out, size_t in, const EdgeCost edge) override {
-    if (out == in) {
-      warnLoop(out);
-    }
-    pAdjacencyMatrix.insert(out, in) = edge;
-  }
-};
-
-class Tree : public Graph {
+template <Directionality DIRECT>
+class AdjacencyListGraph : public Modifyable {
 public:
-  bool connected() const { return true; }
+  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    const Edge e = orientation<DIRECT>(out, in);
+    pAdjacencyList[e.u].push_back(e.v);
+  }
 
-protected:
-  size_t pRoot;
+  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    const Edge newEdge = orientation<DIRECT>(e);
+    pAdjacencyList[newEdge.u].push_back(newEdge.v);
+  }
+
+  bool adjacent(const size_t u, const size_t v) const override {
+    const Edge e                         = orientation<DIRECT>(u, v);
+    const std::vector<size_t>& neighbour = pAdjacencyList[e.u];
+    const auto it                        = std::find(neighbour.begin(), neighbour.end(), e.v);
+    return it != neighbour.end();
+  }
+
+  bool adjacent(const Edge& e) const { return this->adjacent(e.u, e.v); }
+
+  bool connected() const override;
+
+  const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
+
+private:
+  std::vector<std::vector<size_t>> pAdjacencyList;
 };
+
+/*!
+ * \brief class FixTree
+ * \details This class is for trees where every node has exactly one parent. This allows to store the neighboors
+ * more efficient. The node 0 is assumed to be the root node.
+ */
+class DfsTree : public Graph {
+public:
+  DfsTree()  = default;
+  ~DfsTree() = default;
+
+  DfsTree(const size_t numberOfNodes) : Graph(numberOfNodes) {
+    pAdjacencyList.resize(numberOfNodes);
+    pIndeces.resize(numberOfNodes);
+  }
+
+  bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
+  bool adjacent(const Edge& e) const override { return e.v == parent(e.u); }
+  bool connected() const override { return true; }
+
+  size_t index(const size_t u) const { return this->pIndeces[u]; }
+  size_t& index(const size_t u) { return this->pIndeces[u]; }
+
+  size_t parent(const size_t u) const { return this->pAdjacencyList[u]; }
+  size_t& parent(const size_t u) { return this->pAdjacencyList[u]; }
+
+private:
+  std::vector<size_t> pAdjacencyList;
+  std::vector<size_t> pIndeces;
+};
+
+template <Directionality DIRECT>
+DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0);
 
 struct OpenEarDecomposition {
-  bool biconnected;
+  std::vector<std::vector<size_t>> ears;
 };
 
-OpenEarDecomposition schmidt(const UndirectedGraph& graph);
+OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
+
+/***********************************************************************************************************************
+ *                                          template implementation
+ **********************************************************************************************************************/
+
+template <Directionality DIRECT>
+DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
+  const size_t numberOfNodes = graph.numberOfNodes();
+  DfsTree tree(numberOfNodes);
+  size_t indexCounter = 0;
+  std::vector<bool> visited(numberOfNodes, false);
+  std::stack<size_t> nodeStack;
+  nodeStack.push(rootNode);
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    nodeStack.pop();
+    if (!visited[top]) {
+      visited[top] = true;
+      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
+        if (!visited[it.index()]) {
+          nodeStack.push(it.index());     // do not push already visited nodes
+          tree.parent(it.index()) = top;  // update the parent
+        }
+      }
+      tree.index(top) = indexCounter;
+      ++indexCounter;
+    }
+  }
+  return tree;
+}

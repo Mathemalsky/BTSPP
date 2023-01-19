@@ -8,7 +8,7 @@
 
 #include "graph/graph.hpp"
 
-using Entry = Eigen::Triplet<EdgeCost>;
+using Entry = Eigen::Triplet<EdgeWeight>;
 
 class Index {
 public:
@@ -35,7 +35,7 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
     std::vector<unsigned int> edgeIndeces(index.numberOfEdges());
     std::iota(edgeIndeces.begin(), edgeIndeces.end(), 0);
     std::sort(edgeIndeces.begin(), edgeIndeces.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
-      return euclidean.distance(index.edge(a)) < euclidean.distance(index.edge(b));
+      return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
     });
 
     // add the first numberOfNodes many edges
@@ -43,23 +43,24 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
     entries.reserve(numberOfNodes);
     for (unsigned int i = 0; i < numberOfNodes; ++i) {
       const Edge e = index.edge(edgeIndeces[i]);
-      entries.push_back(Entry(e.u, e.v, euclidean.distance(e)));
+      entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     }
 
     // create an undirected graph from that
-    UndirectedGraph graph(entries);
+    AdjacencyMatrixGraph<Directionality::Undirected> graph(entries);
 
     // continue adding edges until it is biconnected
     unsigned int edgeCounter = numberOfNodes;
     while (!graph.biconnected()) {
       const Edge e = index.edge(edgeCounter);
-      graph.addEdge(e, euclidean.distance(e));
+      graph.addEdge(e, euclidean.weight(e));
     }
 
     // take the square of the graph
-    graph.square();
+    // graph.square();
 
     // calculate proper ear decomposition
+    const OpenEarDecomposition ears = schmidt(graph);
     // find approximation
   }
 
