@@ -74,33 +74,10 @@ bool AdjacencyListGraph<Directionality::Directed>::connected() const {
   return true;
 }
 
-OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
-  // dfs
-  const size_t numberOfNodes = graph.numberOfNodes();
-  DfsTree tree(numberOfNodes);  // graph with adjacency list
-  size_t indexCounter = 0;
-  std::vector<bool> visited(numberOfNodes, false);
-  std::stack<size_t> nodeStack;
-  nodeStack.push(0);  // w. l. o. g. the root node is 0
-  while (!nodeStack.empty()) {
-    const size_t top = nodeStack.top();
-    nodeStack.pop();
-    if (!visited[top]) {
-      visited[top] = true;
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
-        if (!visited[it.index()]) {
-          nodeStack.push(it.index());     // do not push already visited nodes
-          tree.parent(it.index()) = top;  // update the parent
-        }
-      }
-      tree.index(top) = indexCounter;
-      ++indexCounter;
-    }
-  }
-
-  // compute G \ T
+AdjacencyListGraph<Directionality::Directed> findBackedges(
+  const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
   AdjacencyListGraph<Directionality::Directed> backedges;
-  for (size_t k = 0; k < numberOfNodes; ++k) {
+  for (size_t k = 0; k < graph.numberOfNodes(); ++k) {
     for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
       const size_t u = std::max(k, static_cast<size_t>(it.index()));
       const size_t v = std::min(k, static_cast<size_t>(it.index()));
@@ -109,13 +86,19 @@ OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirect
       }
     }
   }
+  return backedges;
+}
+
+OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
+  const DfsTree tree                                           = dfs(graph);
+  const AdjacencyListGraph<Directionality::Directed> backedges = findBackedges(graph, tree);
 
   // decompose by iterating over every backedge outgoing from every node
-  visited = std::vector<bool>(numberOfNodes, false);
+  const size_t numberOfNodes = graph.numberOfNodes();
+  std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
   for (size_t v = 0; v < numberOfNodes; ++v) {
-    // for every backedge starting at v
-    for (const size_t& u : backedges.neighbours(v)) {
+    for (const size_t& u : backedges.neighbours(v)) {  // for every backedge starting at v
       if (!visited[u]) {
         std::vector<size_t> chain{v, u};
         visited[v] = true;

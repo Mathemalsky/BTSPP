@@ -57,9 +57,10 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
     }
 
     // take the square of the graph
-    graph.square();
+    // graph.square();
 
     // calculate proper ear decomposition
+    const OpenEarDecomposition ears = schmidt(graph);
     // find approximation
   }
 
