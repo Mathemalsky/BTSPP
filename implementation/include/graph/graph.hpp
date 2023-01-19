@@ -160,13 +160,8 @@ public:
   virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
   virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
 
-  bool connected() const override;
-
   // double weight(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v).cost(); }
   virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
-
-  bool biconnected() const;
-  bool connectedWhithout(const size_t vertex) const;
 
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
@@ -204,11 +199,16 @@ public:
     return AdjMatGraph::adjacent(orientation<direct>(u, v));
   }
 
+  bool connected() const override;
+
   double weight(const size_t u, const size_t v) const override {
     return AdjMatGraph::weight(orientation<direct>(u, v));
   }
 
   double weight(const Edge& e) const override { return AdjMatGraph::weight(orientation<direct>(e)); }
+
+  bool biconnected() const;
+  bool connectedWhithout(const size_t vertex) const;
 };
 
 class AdjListGraph : public Modifyable {
