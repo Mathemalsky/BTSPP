@@ -1,5 +1,6 @@
 #include "graph/graph.hpp"
 
+#include <exception>
 #include <stack>
 #include <vector>
 
@@ -76,8 +77,7 @@ bool AdjacencyListGraph<Directionality::Directed>::connected() const {
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
   // dfs
   const size_t numberOfNodes = graph.numberOfNodes();
-  DfsTree tree(numberOfNodes);
-  // graph with adjacency list
+  DfsTree tree(numberOfNodes);  // graph with adjacency list
   size_t indexCounter = 0;
   std::vector<bool> visited(numberOfNodes, false);
   std::stack<size_t> nodeStack;
@@ -100,10 +100,37 @@ OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirect
 
   // compute G \ T
   AdjacencyListGraph<Directionality::Directed> backedges;
+  for (size_t k = 0; k < numberOfNodes; ++k) {
+    for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
+      const size_t u = std::max(k, static_cast<size_t>(it.index()));
+      const size_t v = std::min(k, static_cast<size_t>(it.index()));
+      if (!tree.adjacent(u, v)) {  // if edge (k, it.index()) not in T
+        backedges.addEdge(v, u);   // add the reverse directed edge to backedges
+      }
+    }
+  }
 
   // decompose by iterating over every backedge outgoing from every node
+  visited = std::vector<bool>(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
   for (size_t v = 0; v < numberOfNodes; ++v) {
     // for every backedge starting at v
+    for (const size_t& u : backedges.neighbours(v)) {
+      if (!visited[u]) {
+        std::vector<size_t> chain{v, u};
+        visited[v] = true;
+        size_t x   = u;
+        while (!visited[x]) {
+          chain.push_back(tree.parent(x));
+          visited[x] = true;
+          x          = tree.parent(x);
+        }
+        if (x == v && v != 0) {
+          throw std::runtime_error("Graph is not biconnected!");
+        }
+        ears.push_back(chain);
+      }
+    }
   }
+  return OpenEarDecomposition{ears};
 }

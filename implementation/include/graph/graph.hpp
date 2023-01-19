@@ -196,13 +196,8 @@ public:
   bool connectedWhithout(const size_t vertex) const;
 };
 
-class AdjListGraph : public Modifyable {
-public:
-  virtual bool adjacent(const size_t u, const size_t v) const;
-};
-
 template <Directionality direct>
-class AdjacencyListGraph : public AdjListGraph {
+class AdjacencyListGraph : public Modifyable {
 public:
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     const Edge e = orientation<direct>(out, in);
@@ -224,6 +219,8 @@ public:
   bool adjacent(const Edge& e) const { return this->adjacent(e.u, e.v); }
 
   bool connected() const override;
+
+  const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
 private:
   std::vector<std::vector<size_t>> pAdjacencyList;
@@ -272,8 +269,8 @@ public:
     pIndeces.resize(numberOfNodes);
   }
 
-  bool adjacent(const size_t u, const size_t v) const override { return u == parent(v); }
-  bool adjacent(const Edge& e) const override { return e.u == parent(e.v); }
+  bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
+  bool adjacent(const Edge& e) const override { return e.v == parent(e.u); }
   bool connected() const override { return true; }
 
   size_t index(const size_t u) const { return this->pIndeces[u]; }
@@ -288,7 +285,7 @@ private:
 };
 
 struct OpenEarDecomposition {
-  bool biconnected;
+  std::vector<std::vector<size_t>> ears;
 };
 
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
