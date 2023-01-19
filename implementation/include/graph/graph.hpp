@@ -25,7 +25,7 @@ static Edge orientation(const size_t u, const size_t v) {
 }
 
 template <Directionality direct>
-Edge orientation(const Edge& e) {
+static Edge orientation(const Edge& e) {
   if constexpr (direct == Directionality::Undirected) {
     return (e.u > e.v ? e : Edge{e.v, e.u});
   }
@@ -204,12 +204,26 @@ public:
 template <Directionality direct>
 class AdjacencyListGraph : public AdjListGraph {
 public:
+  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    const Edge e = orientation<direct>(out, in);
+    pAdjacencyList[e.u].push_back(e.v);
+  }
+
+  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    const Edge newEdge = orientation<direct>(e);
+    pAdjacencyList[newEdge.u].push_back(newEdge.v);
+  }
+
   bool adjacent(const size_t u, const size_t v) const override {
     const Edge e                         = orientation<direct>(u, v);
     const std::vector<size_t>& neighbour = pAdjacencyList[e.u];
     const auto it                        = std::find(neighbour.begin(), neighbour.end(), e.v);
     return it != neighbour.end();
   }
+
+  bool adjacent(const Edge& e) const { return this->adjacent(e.u, e.v); }
+
+  bool connected() const override;
 
 private:
   std::vector<std::vector<size_t>> pAdjacencyList;

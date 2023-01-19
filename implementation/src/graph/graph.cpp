@@ -49,6 +49,30 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
   return true;
 }
 
+template <>
+bool AdjacencyListGraph<Directionality::Directed>::connected() const {
+  std::vector<bool> component(pNumberOfNodes, false);
+  std::vector<size_t> nodesToCheck;
+  nodesToCheck.reserve(pNumberOfNodes);
+  nodesToCheck.push_back(0);  // we check if the component containing vertex 0 is the whole graph
+  while (!nodesToCheck.empty()) {
+    const size_t v = nodesToCheck.back();
+    nodesToCheck.pop_back();
+    component[v] = true;
+    for (const size_t& neighbour : pAdjacencyList[v]) {
+      if (!component[neighbour]) {
+        nodesToCheck.push_back(neighbour);
+      }
+    }
+  }
+  for (const bool& node : component) {
+    if (!node) {
+      return false;
+    }
+  }
+  return true;
+}
+
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
   // dfs
   const size_t numberOfNodes = graph.numberOfNodes();
@@ -74,9 +98,12 @@ OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirect
     }
   }
 
+  // compute G \ T
+  AdjacencyListGraph<Directionality::Directed> backedges;
+
   // decompose by iterating over every backedge outgoing from every node
-  // for()
   std::vector<std::vector<size_t>> ears;
   for (size_t v = 0; v < numberOfNodes; ++v) {
+    // for every backedge starting at v
   }
 }
