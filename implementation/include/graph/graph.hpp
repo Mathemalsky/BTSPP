@@ -258,7 +258,20 @@ private:
 };
 
 template <Directionality DIRECT>
-DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0) {
+DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0);
+
+struct OpenEarDecomposition {
+  std::vector<std::vector<size_t>> ears;
+};
+
+OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
+
+/***********************************************************************************************************************
+ *                                          template implementation
+ **********************************************************************************************************************/
+
+template <Directionality DIRECT>
+DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
   const size_t numberOfNodes = graph.numberOfNodes();
   DfsTree tree(numberOfNodes);
   size_t indexCounter = 0;
@@ -282,9 +295,3 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
   }
   return tree;
 }
-
-struct OpenEarDecomposition {
-  std::vector<std::vector<size_t>> ears;
-};
-
-OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
