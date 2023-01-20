@@ -12,7 +12,7 @@
 namespace graph {
 extern Euclidean EUCLIDEAN;
 extern std::vector<float> POINTS_F;
-extern std::array<std::vector<unsigned int>, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> ORDER;
+extern std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
 
 void updatePointsfFromEuclidean();
 
@@ -21,10 +21,11 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
 
 namespace imguiwindow {
 extern bool SHOW_SETTINGS_WINDOW;
-extern std::array<bool, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> ACTIVE;
-extern std::array<std::array<float, 4>, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> COLOR;  // 4th flt crrntly unused
-extern std::array<float, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> THICKNESS;
-extern std::array<float, 4> VERTEX_COLOR;  // 4th float currently unused
+extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
+extern std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)>
+    COLOUR;  // 4th flt crrntly unused
+extern std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+extern RGBA_COLOUR VERTEX_COLOUR;  // 4th float currently unused
 }  // namespace imguiwindow
 
 namespace input {
@@ -42,5 +43,5 @@ extern int WIDTH;
 }  // namespace mainwindow
 
 namespace slowEvents {
-extern std::array<bool, (unsigned int) ProblemType::NUMBER_OF_OPTIONS> SOLVE;
+extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
 }  // namespace slowEvents

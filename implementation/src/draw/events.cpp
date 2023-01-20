@@ -19,7 +19,8 @@ static void toggleSettingsWindow() {
 }
 
 void keyCallback(
-  [[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
+    [[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action,
+    [[maybe_unused]] int mods) {
   if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
     toggleSettingsWindow();
   }

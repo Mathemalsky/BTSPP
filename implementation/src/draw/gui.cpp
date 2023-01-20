@@ -32,10 +32,10 @@ void initImGuiWindows() {
   imguiwindow::SHOW_SETTINGS_WINDOW = imguiwindow::INITIAL_SHOW_SETTINGS_WINDOW;
   for (const ProblemType& type : problemType::PROBLEM_TYPES) {
     imguiwindow::ACTIVE[(unsigned int) type]    = imguiwindow::INITIAL_ACTIVENESS.at((unsigned int) type);
-    imguiwindow::COLOR[(unsigned int) type]     = imguiwindow::INITIAL_COLOR.at((unsigned int) type);
+    imguiwindow::COLOUR[(unsigned int) type]    = imguiwindow::INITIAL_COLOUR.at((unsigned int) type);
     imguiwindow::THICKNESS[(unsigned int) type] = imguiwindow::INITIAL_THICKNESS.at((unsigned int) type);
   }
-  imguiwindow::VERTEX_COLOR = imguiwindow::INITIAL_VERTEX_COLOR;
+  imguiwindow::VERTEX_COLOUR = imguiwindow::INITIAL_VERTEX_COLOR;
 }
 
 void drawImgui() {
@@ -48,20 +48,20 @@ void drawImgui() {
     ImGui::Text("mouse x = %f", input::mouse::x);  // DEBUG
     ImGui::Text("mouse y = %f", input::mouse::y);  // DEBUG
     ImGui::Text(
-      "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     ImGui::Spacing();
     ImGui::Checkbox("BTSP exact", &imguiwindow::ACTIVE[(unsigned int) ProblemType::BTSP_exact]);
     ImGui::SliderFloat(
-      "thickness##BTSP exact", &imguiwindow::THICKNESS[(unsigned int) ProblemType::BTSP_exact], 0.0f, 20.0f, "%.1f");
-    ImGui::ColorEdit3("##BTSP exact", (float*) &imguiwindow::COLOR[(unsigned int) ProblemType::BTSP_exact]);
+        "thickness##BTSP exact", &imguiwindow::THICKNESS[(unsigned int) ProblemType::BTSP_exact], 0.0f, 20.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSP exact", (float*) &imguiwindow::COLOUR[(unsigned int) ProblemType::BTSP_exact]);
 
     ImGui::Checkbox("TSP  exact", &imguiwindow::ACTIVE[(unsigned int) ProblemType::TSP_exact]);
-    ImGui::ColorEdit3("##TSP exact", (float*) &imguiwindow::COLOR[(unsigned int) ProblemType::TSP_exact]);
+    ImGui::ColorEdit3("##TSP exact", (float*) &imguiwindow::COLOUR[(unsigned int) ProblemType::TSP_exact]);
     ImGui::SliderFloat(
-      "thickness##TSP exact", &imguiwindow::THICKNESS[(unsigned int) ProblemType::TSP_exact], 0.0f, 30.0f);
+        "thickness##TSP exact", &imguiwindow::THICKNESS[(unsigned int) ProblemType::TSP_exact], 0.0f, 30.0f);
 
-    ImGui::ColorEdit3("vertex color", (float*) &imguiwindow::VERTEX_COLOR);
+    ImGui::ColorEdit3("vertex color", (float*) &imguiwindow::VERTEX_COLOUR);
     ImGui::End();
   }
 

@@ -170,7 +170,7 @@ BreakBeforeTernaryOperators: true
 # Constructor()
 #     : initializer1()
 #     , initializer2()
-BreakConstructorInitializers: BeforeComma
+BreakConstructorInitializers: AfterColon
 
 # Allow breaking string literals when formatting
 BreakStringLiterals: true
@@ -187,7 +187,7 @@ ConstructorInitializerIndentWidth: 2
 # int i =         //  VeryVeryVeryVeryVeryLongComment
 #   longFunction( // Again a long comment
 #     arg);
-ContinuationIndentWidth: 2
+ContinuationIndentWidth: 4
 
 # vector<int> x{1, 2, 3, 4};
 # vector<T> x{{}, {}, {}, {}};

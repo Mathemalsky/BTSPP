@@ -46,8 +46,8 @@ private:
 };
 
 struct ShaderProgramCollection {
-  ShaderProgramCollection(const ShaderProgram& drawCircles, const ShaderProgram& drawLineSegments)
-    : drawCircles(drawCircles), drawLineSegments(drawLineSegments) {}
+  ShaderProgramCollection(const ShaderProgram& drawCircles, const ShaderProgram& drawLineSegments) :
+    drawCircles(drawCircles), drawLineSegments(drawLineSegments) {}
   const ShaderProgram drawCircles;
   const ShaderProgram drawLineSegments;
 };

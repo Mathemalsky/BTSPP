@@ -60,7 +60,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 
   // create window in specified size
   GLFWwindow* window =
-    glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
+      glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
   if (window == nullptr)
     return -1;
   glfwMakeContextCurrent(window);
@@ -87,7 +87,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
   buffers.coordinates.bufferData(graph::POINTS_F, 2);   // components per vertex
   buffers.tourCoordinates.bufferData(graph::POINTS_F);  // copy vertex coordinates also into shader buffer
   buffers.tour.bufferData(
-    graph::ORDER[(unsigned int) ProblemType::BTSP_exact]);  // copy indices of verteces in tour to shader buffer
+      graph::ORDER[(unsigned int) ProblemType::BTSP_exact]);  // copy indices of verteces in tour to shader buffer
 
   VertexArray vao;
   vao.bind();

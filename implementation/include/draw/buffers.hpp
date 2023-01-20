@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
-#include <iostream>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -45,27 +45,6 @@ private:
   GLenum pType;
   GLuint pComponentsPerVertex;
 };
-
-template <typename Type>
-void VertexBuffer::bufferData(std::vector<Type>& dat, const GLuint componentsPerVertex) {
-  this->bind();
-  GL_CALL(glBufferData(GL_ARRAY_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
-
-  pComponentsPerVertex = componentsPerVertex;
-
-  if (std::is_same<Type, float>{}) {
-    pType = GL_FLOAT;
-  }
-  else {
-    std::cerr << "[Buffer Data] Type not yet supported.\n";
-  }
-}
-
-template <typename Type>
-void VertexBuffer::bufferSubData(std::vector<Type>& dat) const {
-  this->bind();
-  GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, bytes_of(dat), dat.data());)  // 0 for no offset
-}
 
 /***********************************************************************************************************************
  *                                               ShaderBuffer class
@@ -112,7 +91,7 @@ public:
    * \param dat data to be copied
    */
   template <typename Type>
-  void bufferSubData(std::vector<Type>& dat) const;
+  void bufferSubData(const std::vector<Type>& dat) const;
 
 private:
   GLuint pID; /**< OpenGL ID of this buffer */
@@ -150,13 +129,34 @@ struct Buffers {
  **********************************************************************************************************************/
 
 template <typename Type>
+void VertexBuffer::bufferData(std::vector<Type>& dat, const GLuint componentsPerVertex) {
+  this->bind();
+  GL_CALL(glBufferData(GL_ARRAY_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
+
+  pComponentsPerVertex = componentsPerVertex;
+
+  if (std::is_same<Type, float>{}) {
+    pType = GL_FLOAT;
+  }
+  else {
+    std::runtime_error("[Buffer Data] Type not yet supported.");
+  }
+}
+
+template <typename Type>
+void VertexBuffer::bufferSubData(std::vector<Type>& dat) const {
+  this->bind();
+  GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, bytes_of(dat), dat.data());)  // 0 for no offset
+}
+
+template <typename Type>
 void ShaderBuffer::bufferData(std::vector<Type>& dat) const {
   this->bind();
   GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
 }
 
 template <typename Type>
-void ShaderBuffer::bufferSubData(std::vector<Type>& dat) const {
+void ShaderBuffer::bufferSubData(const std::vector<Type>& dat) const {
   this->bind();
   GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, bytes_of(dat), dat.data());)  // 0 for no offset
 }
