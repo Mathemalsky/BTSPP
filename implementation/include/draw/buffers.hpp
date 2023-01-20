@@ -24,11 +24,24 @@
  *                                               VertexBuffer class
  **********************************************************************************************************************/
 
+/*!
+ * \brief VertexBuffer manages an OpenGL vertex buffer object
+ */
 class VertexBuffer {
 public:
+  /*!
+   * \brief constructor, invokes glGenBuffers
+   */
   VertexBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
+
+  /*!
+   * \brief desstructor, invokes glDeleteBuffers
+   */
   ~VertexBuffer() { GL_CALL(glDeleteBuffers(1, &pID);) }
 
+  /*!
+   * \brief binds this buffer as GL_ARRAY_BUFFER
+   */
   void bind() const { GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, pID);) }
 
   template <typename Type>
@@ -41,7 +54,7 @@ public:
   GLuint compPerVertex() const { return pComponentsPerVertex; }
 
 private:
-  GLuint pID;
+  GLuint pID; /**< this buffer's OpenGL ID */
   GLenum pType;
   GLuint pComponentsPerVertex;
 };
@@ -94,7 +107,7 @@ public:
   void bufferSubData(const std::vector<Type>& dat) const;
 
 private:
-  GLuint pID; /**< OpenGL ID of this buffer */
+  GLuint pID; /**< this buffer's OpenGL ID */
 };
 
 /***********************************************************************************************************************
@@ -118,10 +131,13 @@ private:
   GLuint pID;
 };
 
+/*!
+ * \brief Buffers bundles various buffers
+ */
 struct Buffers {
-  VertexBuffer coordinates;
-  ShaderBuffer tour;
-  ShaderBuffer tourCoordinates;
+  VertexBuffer coordinates;     /**< coordinates of graph vertices */
+  ShaderBuffer tour;            /**< vertex indeces in order as they appear in the tour */
+  ShaderBuffer tourCoordinates; /**< coordinates of graph vertices */
 };
 
 /***********************************************************************************************************************
