@@ -18,6 +18,8 @@
 
 #include "utility/utils.hpp"
 
+/*! \file buffers.hpp */
+
 /***********************************************************************************************************************
  *                                               VertexBuffer class
  **********************************************************************************************************************/
@@ -69,36 +71,52 @@ void VertexBuffer::bufferSubData(std::vector<Type>& dat) const {
  *                                               ShaderBuffer class
  **********************************************************************************************************************/
 
+/*!
+ * \brief ShaderBuffer manages an OpenGL shader buffer object
+ * \details ShaderBuffer is used to control the way of passing data to shader programs
+ */
 class ShaderBuffer {
 public:
+  /*!
+   * \brief constructor, invokes glGenBuffers
+   */
   ShaderBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
+
+  /*!
+   * \brief destructor, invokes glDeleteBuffers
+   */
   ~ShaderBuffer() { GL_CALL(glDeleteBuffers(1, &pID);) }
 
+  /*!
+   * \brief returns OpenGL's internal id for the shader buffer object
+   * \return OpenGL's internal id for the shader buffer object
+   */
   GLuint id() const { return pID; }
 
+  /*!
+   * \brief binds this buffer as GL_SHADER_STORAGE_BUFFER
+   */
   void bind() const { GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, pID);) }
 
+  /*!
+   * \brief copies dat to OpenGL
+   * \details calls bind(), copies dat whith hint GL_DYNAMIC_DRAW to a new memory block associated with this buffer
+   * \param dat data to be copied
+   */
   template <typename Type>
   void bufferData(std::vector<Type>& dat) const;
 
+  /*!
+   * \brief replaces data in OpenGL with dat
+   * \details calls bind(), copies dat into existing memory block associated with this buffer
+   * \param dat data to be copied
+   */
   template <typename Type>
   void bufferSubData(std::vector<Type>& dat) const;
 
 private:
-  GLuint pID;
+  GLuint pID; /**< OpenGL ID of this buffer */
 };
-
-template <typename Type>
-void ShaderBuffer::bufferData(std::vector<Type>& dat) const {
-  this->bind();
-  GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
-}
-
-template <typename Type>
-void ShaderBuffer::bufferSubData(std::vector<Type>& dat) const {
-  this->bind();
-  GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, bytes_of(dat), dat.data());)  // 0 for no offset
-}
 
 /***********************************************************************************************************************
  *                                               VertexArray class
@@ -126,3 +144,19 @@ struct Buffers {
   ShaderBuffer tour;
   ShaderBuffer tourCoordinates;
 };
+
+/***********************************************************************************************************************
+ *                                          template implementation
+ **********************************************************************************************************************/
+
+template <typename Type>
+void ShaderBuffer::bufferData(std::vector<Type>& dat) const {
+  this->bind();
+  GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
+}
+
+template <typename Type>
+void ShaderBuffer::bufferSubData(std::vector<Type>& dat) const {
+  this->bind();
+  GL_CALL(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, bytes_of(dat), dat.data());)  // 0 for no offset
+}
