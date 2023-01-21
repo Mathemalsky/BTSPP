@@ -44,6 +44,11 @@ public:
    */
   void bind() const { GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, pID);) }
 
+  /*!
+   * \brief copies dat to OpenGL
+   * \details calls bind(), copies dat whith hint GL_DYNAMIC_DRAW to a new memory block associated with this buffer
+   * \param dat data to be copied
+   */
   template <typename Type>
   void bufferData(std::vector<Type>& dat, const GLuint componentsPerVertex);
 

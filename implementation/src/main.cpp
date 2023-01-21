@@ -72,7 +72,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     return -1;
   }
 
-  // generate random vertecis in euclidean plane
+  // generate random vertices in euclidean plane
   graph::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(15));
   graph::updateOrder(solve(graph::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
   graph::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
