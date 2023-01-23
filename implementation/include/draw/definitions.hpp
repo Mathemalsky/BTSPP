@@ -2,7 +2,7 @@
 
 #include <array>
 
-using RGBA_COLOUR = std::array<float, 4>;
+using RGBA_COLOUR = std::array<float, 4>;  // 4th float currently unused
 
 enum class ProblemType : unsigned int { BTSP_approx, BTSP_exact, TSP_exact, NUMBER_OF_OPTIONS };
 namespace problemType {
@@ -11,15 +11,12 @@ constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_
 }
 
 namespace drawing {
-constexpr float VETREX_RADIUS = 0.01f;
-}
-
-namespace imguiwindow {
 constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = true;
+constexpr float VETREX_RADIUS               = 0.01f;
 
 constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_ACTIVENESS{
     false,  // BTSP_approx
-    true,   // BTSP_exact
+    false,  // BTSP_exact
     false   // TSP_exact
 };
 
@@ -36,7 +33,7 @@ constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPT
 };
 
 constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 0.0f, 0.0f, 1.0f};
-}  // namespace imguiwindow
+}  // namespace drawing
 
 namespace mainwindow {
 constexpr unsigned int INITIAL_HEIGHT = 960;

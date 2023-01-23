@@ -10,11 +10,11 @@
 #include "exactsolver.hpp"
 
 static void toggleSettingsWindow() {
-  if (imguiwindow::SHOW_SETTINGS_WINDOW == true) {
-    imguiwindow::SHOW_SETTINGS_WINDOW = false;
+  if (drawing::SHOW_SETTINGS_WINDOW == true) {
+    drawing::SHOW_SETTINGS_WINDOW = false;
   }
   else {
-    imguiwindow::SHOW_SETTINGS_WINDOW = true;
+    drawing::SHOW_SETTINGS_WINDOW = true;
   }
 }
 
@@ -29,7 +29,7 @@ void keyCallback(
   }
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
     for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-      if (imguiwindow::ACTIVE[(unsigned int) type]) {
+      if (drawing::ACTIVE[(unsigned int) type]) {
         slowEvents::SOLVE[(unsigned int) type] = true;
       }
     }
@@ -54,15 +54,15 @@ static void moveNode(GLFWwindow* window, const Buffers& buffers) {
   glfwGetCursorPos(window, &x, &y);
   const Point2D oldMousePos  = transformCoordinates(input::mouse::x, input::mouse::y);
   const Point2D diffMousePos = transformCoordinates(x, y) - oldMousePos;
-  for (Point2D& point : graph::EUCLIDEAN.verteces()) {
+  for (Point2D& point : drawing::EUCLIDEAN.verteces()) {
     if (norm2(point - oldMousePos) < drawing::VETREX_RADIUS) {
       point += diffMousePos;
       break;  // move only one point at one at a time
     }
   }
-  graph::updatePointsfFromEuclidean();
-  buffers.coordinates.bufferSubData(graph::POINTS_F);
-  buffers.tourCoordinates.bufferSubData(graph::POINTS_F);
+  drawing::updatePointsfFromEuclidean();
+  buffers.coordinates.bufferSubData(drawing::POINTS_F);
+  buffers.tourCoordinates.bufferSubData(drawing::POINTS_F);
 }
 
 static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
@@ -81,7 +81,7 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   for (const ProblemType& type : problemType::PROBLEM_TYPES) {
     if (slowEvents::SOLVE[(unsigned int) type]) {
       slowEvents::SOLVE[(unsigned int) type] = false;
-      graph::updateOrder(solve(graph::EUCLIDEAN, type), type);
+      drawing::updateOrder(solve(drawing::EUCLIDEAN, type), type);
     }
   }
 }

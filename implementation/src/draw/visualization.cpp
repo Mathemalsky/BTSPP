@@ -22,7 +22,18 @@ static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
-int visualize() {
+static void initDrawingVariables() {
+  drawing::SHOW_SETTINGS_WINDOW = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
+  drawing::ACTIVE               = drawing::INITIAL_ACTIVENESS;
+  drawing::COLOUR               = drawing::INITIAL_COLOUR;
+  drawing::ORDER_INITIALIZED    = drawing::INITIAL_ACTIVENESS;
+  drawing::THICKNESS            = drawing::INITIAL_THICKNESS;
+  drawing::VERTEX_COLOUR        = drawing::INITIAL_VERTEX_COLOUR;
+}
+
+
+
+int visualize(const unsigned int numberOfNodes) {
   // set error colback function
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {
@@ -69,9 +80,9 @@ int visualize() {
   }
 
   // generate random vertices in euclidean plane
-  graph::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(15));
-  graph::updateOrder(solve(graph::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
-  graph::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+  drawing::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(numberOfNodes));
+  drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+  drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
 
   const ShaderCollection collection;
   const ShaderProgram drawCircles      = collection.linkCircleDrawProgram();
@@ -80,10 +91,10 @@ int visualize() {
 
   Buffers buffers;
   buffers.coordinates.bind();
-  buffers.coordinates.bufferData(graph::POINTS_F, 2);   // components per vertex
-  buffers.tourCoordinates.bufferData(graph::POINTS_F);  // copy vertex coordinates also into shader buffer
+  buffers.coordinates.bufferData(drawing::POINTS_F, 2);   // components per vertex
+  buffers.tourCoordinates.bufferData(drawing::POINTS_F);  // copy vertex coordinates also into shader buffer
   buffers.tour.bufferData(
-      graph::ORDER[(unsigned int) ProblemType::BTSP_exact]);  // copy indices of verteces in tour to shader buffer
+      drawing::ORDER[(unsigned int) ProblemType::BTSP_exact]);  // copy indices of verteces in tour to shader buffer
 
   VertexArray vao;
   vao.bind();
@@ -106,7 +117,7 @@ int visualize() {
   setUpImgui(window, glsl_version);
 
   // set initial state of the settings window
-  initImGuiWindows();
+  initDrawingVariables();
 
   // main loop
   while (!glfwWindowShouldClose(window)) {

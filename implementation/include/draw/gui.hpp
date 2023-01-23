@@ -11,11 +11,6 @@
 void setUpImgui(GLFWwindow* window, const char* glsl_version);
 
 /*!
- * \brief initImGuiWindows asignes initial values to the elements
- */
-void initImGuiWindows();
-
-/*!
  * \brief drawImgui draws the updated gui for every frame
  */
 void drawImgui();

@@ -9,24 +9,21 @@
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
 
-namespace graph {
+namespace drawing {
 extern Euclidean EUCLIDEAN;
 extern std::vector<float> POINTS_F;
+extern bool SHOW_SETTINGS_WINDOW;
+extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
+extern std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 extern std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
+extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER_INITIALIZED;
+extern std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+extern RGBA_COLOUR VERTEX_COLOUR;
 
 void updatePointsfFromEuclidean();
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
-}  // namespace graph
-
-namespace imguiwindow {
-extern bool SHOW_SETTINGS_WINDOW;
-extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
-extern std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)>
-    COLOUR;  // 4th flt crrntly unused
-extern std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
-extern RGBA_COLOUR VERTEX_COLOUR;  // 4th float currently unused
-}  // namespace imguiwindow
+}  // namespace drawing
 
 namespace input {
 extern std::unordered_map<int, bool> STATE;

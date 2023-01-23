@@ -1,3 +1,3 @@
 #pragma once
 
-int visualize();
+int visualize(const unsigned int numberOfNodes);
