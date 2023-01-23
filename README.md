@@ -30,3 +30,10 @@ mkdir build && cd build
 cmake ..
 make
 ```
+
+### running
+key   | function
+------|-------------
+`ESC` | close application
+`F3`  | toggle visibility of settings window
+`R`   | recompute solution(s)

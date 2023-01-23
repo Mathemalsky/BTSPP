@@ -101,10 +101,10 @@ static constexpr const char fragmentShaderSource[] = R"glsl(
   #version 440 core
   layout (location = 0) out vec4 fragColor;
 
-  uniform vec4 u_color;
+  uniform vec4 u_colour;
 
   void main() {
-    fragColor = u_color;
+    fragColor = u_colour;
   }
 )glsl";
 
@@ -140,7 +140,7 @@ void ShaderProgram::setUniform(const char* name, const float val1, const float v
 }
 
 void ShaderProgram::setUniform(
-  const char* name, const float val1, const float val2, const float val3, const float val4) const {
+    const char* name, const float val1, const float val2, const float val3, const float val4) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
   GL_CALL(glUniform4f(location, val1, val2, val3, val4);)
@@ -167,11 +167,11 @@ static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource)
   return shader;
 }
 
-ShaderCollection::ShaderCollection()
-  : pVertexShader(compileShader(GL_VERTEX_SHADER, vertexShaderSource))
-  , pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource))
-  , pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource))
-  , pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShader)) {
+ShaderCollection::ShaderCollection() :
+  pVertexShader(compileShader(GL_VERTEX_SHADER, vertexShaderSource)),
+  pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource)),
+  pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource)),
+  pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShader)) {
 }
 
 ShaderCollection::~ShaderCollection() {

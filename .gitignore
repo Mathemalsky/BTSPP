@@ -15,6 +15,7 @@
 
 # allow basic scripts
 !implementation/.clang-format
+!implementation/Doxyfile
 !implementation/format.sh
 
 # allow implementation

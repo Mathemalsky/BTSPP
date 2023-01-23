@@ -75,7 +75,7 @@ bool AdjacencyListGraph<Directionality::Directed>::connected() const {
 }
 
 AdjacencyListGraph<Directionality::Directed> findBackedges(
-  const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
+    const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
   AdjacencyListGraph<Directionality::Directed> backedges;
   for (size_t k = 0; k < graph.numberOfNodes(); ++k) {
     for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
