@@ -10,4 +10,4 @@
  * \brief draw draws the content on the screen
  * \param window pointer to the glfw window
  */
-void draw(GLFWwindow* window, const ShaderProgramCollection& programs, Buffers& buffers);
+void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers);

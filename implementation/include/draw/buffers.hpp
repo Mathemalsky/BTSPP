@@ -32,7 +32,23 @@ public:
   /*!
    * \brief constructor, invokes glGenBuffers
    */
-  VertexBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
+  // VertexBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
+
+  VertexBuffer(VertexBuffer&)                  = delete;
+  VertexBuffer& operator=(const VertexBuffer&) = delete;
+
+  VertexBuffer(VertexBuffer&&);
+  VertexBuffer& operator=(VertexBuffer&&);
+
+  /*!
+   * \brief constructor, copies dat to OpenGL
+   * \details calls bind(), copies dat whith hint GL_DYNAMIC_DRAW to a new memory block associated with this buffer
+   * \param dat data to be copied
+   * \param componentsPerVertex stores how variables of type Type belong to each vertex. This is needed in
+   * VertexArray::mapBufferToAttribute().
+   */
+  template <typename Type>
+  VertexBuffer(const std::vector<Type>& dat, const GLuint componentsPerVertex);
 
   /*!
    * \brief desstructor, invokes glDeleteBuffers
@@ -51,8 +67,10 @@ public:
    * \param componentsPerVertex stores how variables of type Type belong to each vertex. This is needed in
    * VertexArray::mapBufferToAttribute().
    */
+  /*
   template <typename Type>
-  void bufferData(std::vector<Type>& dat, const GLuint componentsPerVertex);
+  void bufferData(const std::vector<Type>& dat, const GLuint componentsPerVertex);
+  */
 
   /*!
    * \brief replaces data in OpenGL with dat
@@ -60,7 +78,7 @@ public:
    * \param dat data to be copied
    */
   template <typename Type>
-  void bufferSubData(std::vector<Type>& dat) const;
+  void bufferSubData(const std::vector<Type>& dat) const;
 
   /*!
    * \brief compPerVertex returns the number of basic variables per vertex
@@ -75,9 +93,9 @@ public:
   GLenum type() const { return pType; }
 
 private:
-  GLuint pID;                  /**< this buffer's OpenGL ID */
-  GLuint pComponentsPerVertex; /**< number of variables per vertex*/
-  GLenum pType;                /**< data type of variables in the buffer */
+  GLuint pID;                        /**< this buffer's OpenGL ID */
+  const GLuint pComponentsPerVertex; /**< number of variables per vertex*/
+  const GLenum pType;                /**< data type of variables in the buffer */
 };
 
 /***********************************************************************************************************************
@@ -96,6 +114,15 @@ public:
   ShaderBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
 
   /*!
+   * \brief constructor, invokes glGenBuffers, calls bufferData()
+   */
+  template <typename Type>
+  ShaderBuffer(const std::vector<Type>& dat) {
+    GL_CALL(glGenBuffers(1, &pID);)
+    bufferData<Type>(dat);
+  }
+
+  /*!
    * \brief destructor, invokes glDeleteBuffers
    */
   ~ShaderBuffer() { GL_CALL(glDeleteBuffers(1, &pID);) }
@@ -111,7 +138,7 @@ public:
    * \param dat data to be copied
    */
   template <typename Type>
-  void bufferData(std::vector<Type>& dat) const;
+  void bufferData(const std::vector<Type>& dat) const;
 
   /*!
    * \brief replaces data in OpenGL with dat
@@ -162,7 +189,7 @@ public:
    * the data \param shaderProgramID id of shaderprogram with attribute, which needs the data \param name the attributes
    * name
    */
-  void mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name);
+  void mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) const;
 
   /*!
    * \brief enables the given attribute in given shaderprogram
@@ -187,17 +214,18 @@ private:
  * \brief Buffers bundles various buffers
  */
 struct Buffers {
-  VertexBuffer coordinates;     /**< coordinates of graph vertices */
-  ShaderBuffer tour;            /**< vertex indeces in order as they appear in the tour */
-  ShaderBuffer tourCoordinates; /**< coordinates of graph vertices */
+  const VertexBuffer& coordinates;     /**< coordinates of graph vertices */
+  const ShaderBuffer& tour;            /**< vertex indeces in order as they appear in the tour */
+  const ShaderBuffer& tourCoordinates; /**< coordinates of graph vertices */
 };
 
 /***********************************************************************************************************************
  *                                          template implementation
  **********************************************************************************************************************/
 
+/*
 template <typename Type>
-void VertexBuffer::bufferData(std::vector<Type>& dat, const GLuint componentsPerVertex) {
+void VertexBuffer::bufferData(const std::vector<Type>& dat, const GLuint componentsPerVertex) {
   this->bind();
   GL_CALL(glBufferData(GL_ARRAY_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
 
@@ -210,15 +238,16 @@ void VertexBuffer::bufferData(std::vector<Type>& dat, const GLuint componentsPer
     std::runtime_error("[Buffer Data] Type not yet supported.");
   }
 }
+*/
 
 template <typename Type>
-void VertexBuffer::bufferSubData(std::vector<Type>& dat) const {
+void VertexBuffer::bufferSubData(const std::vector<Type>& dat) const {
   this->bind();
   GL_CALL(glBufferSubData(GL_ARRAY_BUFFER, 0, bytes_of(dat), dat.data());)  // 0 for no offset
 }
 
 template <typename Type>
-void ShaderBuffer::bufferData(std::vector<Type>& dat) const {
+void ShaderBuffer::bufferData(const std::vector<Type>& dat) const {
   this->bind();
   GL_CALL(glBufferData(GL_SHADER_STORAGE_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
 }

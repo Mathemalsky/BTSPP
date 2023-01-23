@@ -31,7 +31,18 @@ static void initDrawingVariables() {
   drawing::VERTEX_COLOUR        = drawing::INITIAL_VERTEX_COLOUR;
 }
 
+static Buffers setUpMemory(const unsigned int numberOfNodes) {
+  // generate random vertices in euclidean plane
+  drawing::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(numberOfNodes));
+  drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+  drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
 
+  const VertexBuffer coordinates(drawing::POINTS_F, 2);   // components per vertex
+  const ShaderBuffer tourCoordinates(drawing::POINTS_F);  // copy vertex coordinates also into shader buffer
+  const ShaderBuffer tour(std::vector<unsigned int>(numberOfNodes + 3));  // just allocate memory
+
+  return Buffers{coordinates, tour, tourCoordinates};
+}
 
 int visualize(const unsigned int numberOfNodes) {
   // set error colback function
@@ -79,22 +90,12 @@ int visualize(const unsigned int numberOfNodes) {
     return -1;
   }
 
-  // generate random vertices in euclidean plane
-  drawing::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(numberOfNodes));
-  drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
-  drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
-
   const ShaderCollection collection;
   const ShaderProgram drawCircles      = collection.linkCircleDrawProgram();
   const ShaderProgram drawLineSegments = collection.linkLineSegementDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawLineSegments);
 
-  Buffers buffers;
-  buffers.coordinates.bind();
-  buffers.coordinates.bufferData(drawing::POINTS_F, 2);   // components per vertex
-  buffers.tourCoordinates.bufferData(drawing::POINTS_F);  // copy vertex coordinates also into shader buffer
-  buffers.tour.bufferData(
-      drawing::ORDER[(unsigned int) ProblemType::BTSP_exact]);  // copy indices of verteces in tour to shader buffer
+  const Buffers buffers = setUpMemory(numberOfNodes);
 
   VertexArray vao;
   vao.bind();

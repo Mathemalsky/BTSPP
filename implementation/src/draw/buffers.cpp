@@ -1,6 +1,14 @@
 #include "draw/buffers.hpp"
 
-void VertexArray::mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) {
+template <>
+VertexBuffer::VertexBuffer(const std::vector<float>& dat, const GLuint componentsPerVertex) :
+  pComponentsPerVertex(componentsPerVertex), pType(GL_FLOAT) {
+  GL_CALL(glGenBuffers(1, &pID);)
+  this->bind();
+  GL_CALL(glBufferData(GL_ARRAY_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
+}
+
+void VertexArray::mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) const {
   this->bind();
   vbo.bind();
   GL_CALL(const GLint vertexAttribLocation = glGetAttribLocation(shaderProgramID, name);)
