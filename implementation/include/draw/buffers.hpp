@@ -48,20 +48,36 @@ public:
    * \brief copies dat to OpenGL
    * \details calls bind(), copies dat whith hint GL_DYNAMIC_DRAW to a new memory block associated with this buffer
    * \param dat data to be copied
+   * \param componentsPerVertex stores how variables of type Type belong to each vertex. This is needed in
+   * VertexArray::mapBufferToAttribute().
    */
   template <typename Type>
   void bufferData(std::vector<Type>& dat, const GLuint componentsPerVertex);
 
+  /*!
+   * \brief replaces data in OpenGL with dat
+   * \details calls bind(), copies dat into existing memory block associated with this buffer
+   * \param dat data to be copied
+   */
   template <typename Type>
   void bufferSubData(std::vector<Type>& dat) const;
 
-  GLenum type() const { return pType; }
+  /*!
+   * \brief compPerVertex returns the number of basic variables per vertex
+   * \return number of basic variables per vertex
+   */
   GLuint compPerVertex() const { return pComponentsPerVertex; }
 
+  /*!
+   * \brief type returns the buffers generic type
+   * \return type of data stored in the buffer (usually float or unsigned int)
+   */
+  GLenum type() const { return pType; }
+
 private:
-  GLuint pID; /**< this buffer's OpenGL ID */
-  GLenum pType;
-  GLuint pComponentsPerVertex;
+  GLuint pID;                  /**< this buffer's OpenGL ID */
+  GLuint pComponentsPerVertex; /**< number of variables per vertex*/
+  GLenum pType;                /**< data type of variables in the buffer */
 };
 
 /***********************************************************************************************************************
@@ -85,12 +101,6 @@ public:
   ~ShaderBuffer() { GL_CALL(glDeleteBuffers(1, &pID);) }
 
   /*!
-   * \brief returns OpenGL's internal id for the shader buffer object
-   * \return OpenGL's internal id for the shader buffer object
-   */
-  GLuint id() const { return pID; }
-
-  /*!
    * \brief binds this buffer as GL_SHADER_STORAGE_BUFFER
    */
   void bind() const { GL_CALL(glBindBuffer(GL_SHADER_STORAGE_BUFFER, pID);) }
@@ -111,6 +121,12 @@ public:
   template <typename Type>
   void bufferSubData(const std::vector<Type>& dat) const;
 
+  /*!
+   * \brief returns OpenGL's internal id for the shader buffer object
+   * \return OpenGL's internal id for the shader buffer object
+   */
+  GLuint id() const { return pID; }
+
 private:
   GLuint pID; /**< this buffer's OpenGL ID */
 };
@@ -119,21 +135,52 @@ private:
  *                                               VertexArray class
  **********************************************************************************************************************/
 
+/*!
+ * \brief The VertexArray class mamanages an OpenGL vertex array object
+ */
 class VertexArray {
 public:
+  /*!
+   * \brief constructor, invokes glGenVertexArrays
+   */
   VertexArray() { GL_CALL(glGenVertexArrays(1, &pID);) }
+
+  /*!
+   * \brief destructor, invokes glDeleteVertexArrays
+   */
   ~VertexArray() { GL_CALL(glDeleteVertexArrays(1, &pID);) }
 
+  /*!
+   * \brief binds this VertexArray
+   */
   void bind() const { GL_CALL(glBindVertexArray(pID);) }
 
+  /*!
+   * \brief mapBufferToAttribute maps data from vbo to an attribute of shaderprogram
+   * \details calls VertexBuffer::bind() on the vertex buffer object vbo, finds location of attribute name from
+   * shaderprogram with id shaderProgramID and maps data from vbo there \param vbo vertex buffer object that contains
+   * the data \param shaderProgramID id of shaderprogram with attribute, which needs the data \param name the attributes
+   * name
+   */
   void mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name);
 
+  /*!
+   * \brief enables the given attribute in given shaderprogram
+   * \param shaderProgramID id of shaderprogram
+   * \param name the attributes name
+   */
   void enable(const GLuint shaderProgramID, const char* name) const;
 
+  /*!
+   * \brief bindBufferBase calls glBindBufferBase
+   * \details calls ShaderBuffer::bind() on shaderBuffer, and the calls glBindBufferBase with the shaderBuffers ID and
+   * bindingpoint as parameters \param shaderBuffer the ShaderBuffer to bind \param bindingPoint position to bind the
+   * buffer (like an address)
+   */
   void bindBufferBase(const ShaderBuffer& shaderBuffer, const GLuint bindingPoint) const;
 
 private:
-  GLuint pID;
+  GLuint pID; /**< this buffers OpenGL ID */
 };
 
 /*!
