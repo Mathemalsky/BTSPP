@@ -35,7 +35,7 @@ void initImGuiWindows() {
     imguiwindow::COLOUR[(unsigned int) type]    = imguiwindow::INITIAL_COLOUR.at((unsigned int) type);
     imguiwindow::THICKNESS[(unsigned int) type] = imguiwindow::INITIAL_THICKNESS.at((unsigned int) type);
   }
-  imguiwindow::VERTEX_COLOUR = imguiwindow::INITIAL_VERTEX_COLOR;
+  imguiwindow::VERTEX_COLOUR = imguiwindow::INITIAL_VERTEX_COLOUR;
 }
 
 void drawImgui() {
@@ -61,7 +61,7 @@ void drawImgui() {
     ImGui::SliderFloat(
         "thickness##TSP exact", &imguiwindow::THICKNESS[(unsigned int) ProblemType::TSP_exact], 0.0f, 30.0f);
 
-    ImGui::ColorEdit3("vertex color", (float*) &imguiwindow::VERTEX_COLOUR);
+    ImGui::ColorEdit3("vertex colour", (float*) &imguiwindow::VERTEX_COLOUR);
     ImGui::End();
   }
 

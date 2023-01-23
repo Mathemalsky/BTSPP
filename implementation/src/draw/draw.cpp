@@ -35,7 +35,7 @@ static void drawCycle(
   drawLineSegments.setUniform("u_colour", colour);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-  glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - 3));
+  glDrawArrays(GL_TRIANGLES, 0, 6 * graph::EUCLIDEAN.numberOfNodes());
 }
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, Buffers& buffers) {

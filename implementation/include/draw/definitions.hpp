@@ -24,9 +24,9 @@ constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTI
 };
 
 constexpr std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_COLOUR{
-    std::array<float, 4>{0.0f, 1.0f, 0.0f, 1.0f},  // BTSP_approx
-    std::array<float, 4>{1.0f, 1.0f, 0.0f, 1.0f},  // BTSP_exact
-    std::array<float, 4>{1.0f, 0.0f, 0.0f, 1.0f}   // TSP_exact
+    RGBA_COLOUR{0.0f, 1.0f, 0.0f, 1.0f},  // BTSP_approx
+    RGBA_COLOUR{1.0f, 1.0f, 0.0f, 1.0f},  // BTSP_exact
+    RGBA_COLOUR{1.0f, 0.0f, 0.0f, 1.0f}   // TSP_exact
 };
 
 constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_THICKNESS{
@@ -35,7 +35,7 @@ constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPT
     3.0f   // TSP_exact
 };
 
-constexpr RGBA_COLOUR INITIAL_VERTEX_COLOR = {1.0f, 0.0f, 0.0f, 1.0f};
+constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 0.0f, 0.0f, 1.0f};
 }  // namespace imguiwindow
 
 namespace mainwindow {
