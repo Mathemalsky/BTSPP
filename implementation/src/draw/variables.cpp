@@ -11,10 +11,17 @@
 
 #include "utility/utils.hpp"
 
-namespace graph {
+namespace drawing {
 Euclidean EUCLIDEAN;
 std::vector<float> POINTS_F;
 std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
+std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER_INITIALIZED;
+
+bool SHOW_SETTINGS_WINDOW;
+std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
+std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+RGBA_COLOUR VERTEX_COLOUR;
 
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
@@ -31,17 +38,9 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
     std::memcpy(ORDER[(unsigned int) type].data(), order.data(), bytes_of(order));
     std::memcpy(ORDER[(unsigned int) type].data() + order.size(), order.data(), 3 * sizeof(unsigned int));
   }
+  ORDER_INITIALIZED[static_cast<unsigned int>(type)] = true;
 }
-}  // namespace graph
-
-namespace imguiwindow {
-bool SHOW_SETTINGS_WINDOW;
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
-std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)>
-    COLOUR;  // 4th float currently unused
-std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
-RGBA_COLOUR VERTEX_COLOUR;  // 4th float currently unused
-}  // namespace imguiwindow
+}  // namespace drawing
 
 namespace input {
 std::unordered_map<int, bool> STATE;

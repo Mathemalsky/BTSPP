@@ -20,9 +20,9 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
   drawCircles.use();  // need to call glUseProgram before setting uniforms
   drawCircles.setUniform("u_steps", 8);
   drawCircles.setUniform("u_radius", drawing::VETREX_RADIUS);
-  drawCircles.setUniform("u_colour", imguiwindow::VERTEX_COLOUR);
+  drawCircles.setUniform("u_colour", drawing::VERTEX_COLOUR);
 
-  glDrawArrays(GL_POINTS, 0, graph::EUCLIDEAN.numberOfNodes());  // start at index 0
+  glDrawArrays(GL_POINTS, 0, drawing::EUCLIDEAN.numberOfNodes());  // start at index 0
 }
 
 static void drawCycle(
@@ -44,10 +44,10 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, Buffers& 
 
   for (const ProblemType& type : problemType::PROBLEM_TYPES) {
     const unsigned int typeInt = static_cast<unsigned int>(type);
-    if (imguiwindow::ACTIVE[typeInt]) {
+    if (drawing::ACTIVE[typeInt] && drawing::ORDER_INITIALIZED[typeInt]) {
       drawCycle(
-          programs.drawLineSegments, buffers.tour, graph::ORDER[typeInt], imguiwindow::THICKNESS[typeInt],
-          imguiwindow::COLOUR[typeInt]);
+          programs.drawLineSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
+          drawing::COLOUR[typeInt]);
     }
   }
 }
