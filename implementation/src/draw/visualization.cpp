@@ -79,7 +79,8 @@ int visualize(const unsigned int numberOfNodes) {
   const ShaderCollection collection;
   const ShaderProgram drawCircles       = collection.linkCircleDrawProgram();
   const ShaderProgram drawCycleSegments = collection.linkCycleSegementDrawProgram();
-  const ShaderProgramCollection programs(drawCircles, drawCycleSegments);
+  const ShaderProgram drawLineProgram   = collection.linkLineDrawProgram();
+  const ShaderProgramCollection programs(drawCircles, drawCycleSegments, drawLineProgram);
 
   const Buffers& buffers = setUpBufferMemory(numberOfNodes);
   const VertexArray& vao = bindBufferMemory(buffers, programs);

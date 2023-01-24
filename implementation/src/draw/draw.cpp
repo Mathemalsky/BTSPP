@@ -41,8 +41,10 @@ static void drawCycle(
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - 3));
 }
 
+/*
 void drawEdge(const Edge& e, const float thickness, const RGBA_COLOUR& colour) {
 }
+*/
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
   clearWindow(window);
