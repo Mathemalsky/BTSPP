@@ -1,10 +1,6 @@
 #pragma once
 
-#include <cassert>
 #include <cstddef>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <GL/glew.h>
@@ -30,17 +26,6 @@
 class VertexBuffer {
 public:
   /*!
-   * \brief constructor, invokes glGenBuffers
-   */
-  // VertexBuffer() { GL_CALL(glGenBuffers(1, &pID);) }
-
-  VertexBuffer(VertexBuffer&)                  = delete;
-  VertexBuffer& operator=(const VertexBuffer&) = delete;
-
-  VertexBuffer(VertexBuffer&&);
-  VertexBuffer& operator=(VertexBuffer&&);
-
-  /*!
    * \brief constructor, copies dat to OpenGL
    * \details calls bind(), copies dat whith hint GL_DYNAMIC_DRAW to a new memory block associated with this buffer
    * \param dat data to be copied
@@ -59,18 +44,6 @@ public:
    * \brief binds this buffer as GL_ARRAY_BUFFER
    */
   void bind() const { GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, pID);) }
-
-  /*!
-   * \brief copies dat to OpenGL
-   * \details calls bind(), copies dat whith hint GL_DYNAMIC_DRAW to a new memory block associated with this buffer
-   * \param dat data to be copied
-   * \param componentsPerVertex stores how variables of type Type belong to each vertex. This is needed in
-   * VertexArray::mapBufferToAttribute().
-   */
-  /*
-  template <typename Type>
-  void bufferData(const std::vector<Type>& dat, const GLuint componentsPerVertex);
-  */
 
   /*!
    * \brief replaces data in OpenGL with dat
@@ -222,23 +195,6 @@ struct Buffers {
 /***********************************************************************************************************************
  *                                          template implementation
  **********************************************************************************************************************/
-
-/*
-template <typename Type>
-void VertexBuffer::bufferData(const std::vector<Type>& dat, const GLuint componentsPerVertex) {
-  this->bind();
-  GL_CALL(glBufferData(GL_ARRAY_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
-
-  pComponentsPerVertex = componentsPerVertex;
-
-  if (std::is_same<Type, float>{}) {
-    pType = GL_FLOAT;
-  }
-  else {
-    std::runtime_error("[Buffer Data] Type not yet supported.");
-  }
-}
-*/
 
 template <typename Type>
 void VertexBuffer::bufferSubData(const std::vector<Type>& dat) const {
