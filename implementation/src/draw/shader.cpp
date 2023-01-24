@@ -75,6 +75,44 @@ static constexpr const char cycleVertexShader[] = R"glsl(
   }
 )glsl";
 
+static constexpr const char lineShaderSource[] = R"glsl(
+  #version 440 core
+
+  uniform vec4 u_ends;
+  uniform float u_thickness;
+  uniform vec2 u_resolution;
+
+  void main() {
+    int triangle_vertex  = gl_VertexID % 6;
+    vec2 begin = ends.xy;
+    vec2 end   = ends.zw;
+    vec2 direction = normalize(end - begin);
+    vec2 perpendicular = vec2(-direction.y, direction.x);
+    vec2 offset = u_thickness * perpendicular / u_resolution;
+
+    vec2 pos;
+    if(triangle_vertex == 0 || triangle_vertex == 2 || triangle_vertex == 5) {
+      pos = begin;
+      if(triangle_vertex == 0) {
+        pos -= offset;
+      }
+      else {
+        pos += offset;
+      }
+    }
+    else {
+      pos = end;
+      if(triangle_vertex == 4) {
+        pos += offset;
+      }
+      else {
+        pos -= offset;
+      }
+    }
+    gl_Position = vec4(pos, 0.0, 1.0);
+  }
+)glsl";
+
 static constexpr const char circleShaderSource[] = R"glsl(
   #version 440 core
   layout(points) in;
