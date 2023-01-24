@@ -31,17 +31,26 @@ static void initDrawingVariables() {
   drawing::VERTEX_COLOUR        = drawing::INITIAL_VERTEX_COLOUR;
 }
 
-static Buffers setUpMemory(const unsigned int numberOfNodes) {
+static const Buffers& setUpBufferMemory(const unsigned int numberOfNodes) {
   // generate random vertices in euclidean plane
   drawing::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(numberOfNodes));
   drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
-  drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
 
-  const VertexBuffer coordinates(drawing::POINTS_F, 2);   // components per vertex
-  const ShaderBuffer tourCoordinates(drawing::POINTS_F);  // copy vertex coordinates also into shader buffer
-  const ShaderBuffer tour(std::vector<unsigned int>(numberOfNodes + 3));  // just allocate memory
+  const VertexBuffer& coordinates     = *new VertexBuffer(drawing::POINTS_F, 2);  // components per vertex
+  const ShaderBuffer& tourCoordinates = *new ShaderBuffer(drawing::POINTS_F);     // copy vertex coords to shader buffer
+  const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(numberOfNodes + 3));  // just allocate memory
 
-  return Buffers{coordinates, tour, tourCoordinates};
+  return *new Buffers{coordinates, tour, tourCoordinates};
+}
+
+static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {
+  const VertexArray& vao = *new VertexArray;
+  vao.bind();
+  vao.mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
+  vao.enable(programs.drawCircles.id(), "vertexPosition");
+  vao.bindBufferBase(buffers.tourCoordinates, 0);
+  vao.bindBufferBase(buffers.tour, 1);
+  return vao;
 }
 
 int visualize(const unsigned int numberOfNodes) {
@@ -95,14 +104,8 @@ int visualize(const unsigned int numberOfNodes) {
   const ShaderProgram drawLineSegments = collection.linkLineSegementDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawLineSegments);
 
-  const Buffers buffers = setUpMemory(numberOfNodes);
-
-  VertexArray vao;
-  vao.bind();
-  vao.mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
-  vao.enable(programs.drawCircles.id(), "vertexPosition");
-  vao.bindBufferBase(buffers.tourCoordinates, 0);
-  vao.bindBufferBase(buffers.tour, 1);
+  const Buffers& buffers = setUpBufferMemory(numberOfNodes);
+  const VertexArray& vao = bindBufferMemory(buffers, programs);
 
   // enable vsync
   glfwSwapInterval(1);
@@ -110,9 +113,6 @@ int visualize(const unsigned int numberOfNodes) {
   // set callbacks for keyboard and mouse, must be called before Imgui
   glfwSetKeyCallback(window, keyCallback);
   glfwSetMouseButtonCallback(window, mouseButtonCallback);
-
-  // set input mode
-  // glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
 
   // setup Dear ImGui
   setUpImgui(window, glsl_version);
@@ -137,6 +137,10 @@ int visualize(const unsigned int numberOfNodes) {
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
   }
+
+  // clean up memory
+  delete &vao;
+  delete &buffers;
 
   // clean up Dear ImGui
   cleanUpImgui();
