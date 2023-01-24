@@ -8,6 +8,8 @@
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
+#include "graph/graph.hpp"
+
 static void clearWindow(GLFWwindow* window) {
   int display_w, display_h;
   glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -16,6 +18,7 @@ static void clearWindow(GLFWwindow* window) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+// the vertex buffer object needs to be bound and the attribute vertex_position needs to be enabled
 static void drawVerteces(const ShaderProgram& drawCircles) {
   drawCircles.use();  // need to call glUseProgram before setting uniforms
   drawCircles.setUniform("u_steps", 8);
@@ -26,16 +29,19 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
 }
 
 static void drawCycle(
-    const ShaderProgram& drawLineSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
+    const ShaderProgram& drawCycleSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
     const float thickness, const RGBA_COLOUR& colour) {
   shaderBuffer.bufferSubData(order);
-  drawLineSegments.use();
-  drawLineSegments.setUniform("u_thickness", thickness);
-  drawLineSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
-  drawLineSegments.setUniform("u_colour", colour);
+  drawCycleSegments.use();
+  drawCycleSegments.setUniform("u_thickness", thickness);
+  drawCycleSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
+  drawCycleSegments.setUniform("u_colour", colour);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - 3));
+}
+
+void drawEdge(const Edge& e, const float thickness, const RGBA_COLOUR& colour) {
 }
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
@@ -46,11 +52,13 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
     const unsigned int typeInt = static_cast<unsigned int>(type);
     if (drawing::ACTIVE[typeInt] && drawing::ORDER_INITIALIZED[typeInt]) {
       drawCycle(
-          programs.drawLineSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
+          programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
           drawing::COLOUR[typeInt]);
     }
   }
 }
 
+/*
 void drawGraph(const Graph& graph) {
 }
+*/
