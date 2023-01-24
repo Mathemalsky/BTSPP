@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <numeric>
 #include <stack>
 #include <vector>
 
@@ -45,6 +46,7 @@ public:
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
   virtual bool adjacent(const Edge& e) const                  = 0;
   virtual bool connected() const                              = 0;
+  virtual size_t numberOfEdges() const                        = 0;
 
   size_t numberOfNodes() const { return pNumberOfNodes; }
 
@@ -63,6 +65,7 @@ public:
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
   bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
   bool connected() const override { return true; }
+  size_t numberOfEdges() const override { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
 };
 
 class Euclidean : public CompleteGraph, WeightedGraph {
@@ -149,6 +152,8 @@ public:
 
   virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
 
+  size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
+
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
@@ -221,6 +226,12 @@ public:
 
   bool connected() const override;
 
+  size_t numberOfEdges() const override {
+    return std::accumulate(
+        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
+  }
+
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
 private:
@@ -245,6 +256,8 @@ public:
   bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
   bool adjacent(const Edge& e) const override { return e.v == parent(e.u); }
   bool connected() const override { return true; }
+
+  size_t numberOfEdges() const override { return pNumberOfNodes - 1; }
 
   size_t index(const size_t u) const { return this->pIndeces[u]; }
   size_t& index(const size_t u) { return this->pIndeces[u]; }
