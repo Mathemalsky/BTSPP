@@ -11,6 +11,16 @@
 #include "draw/definitions.hpp"
 #include "draw/variables.hpp"
 
+const char* imguiVersionHints() {
+  // GL 4.4 + GLSL 440
+  const char* glsl_version = "#version 440";
+  glfwWindowHint(GLFW_SAMPLES, 4);  // 4x antialiasing
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+  return glsl_version;
+}
+
 void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();

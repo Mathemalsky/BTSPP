@@ -4,6 +4,13 @@
 #include <GLFW/glfw3.h>
 
 /*!
+ * \brief imguiVersionHints sets version of opengl
+ * \details specify opengl version and glsl version
+ * \return glsl version
+ */
+const char* imguiVersionHints();
+
+/*!
  * \brief setUpImgui performs checks and sets up the imgui elements
  * \param window asociated instance of glfw window
  * \param glsl_version
