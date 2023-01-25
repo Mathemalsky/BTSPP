@@ -238,12 +238,17 @@ private:
   std::vector<std::vector<size_t>> pAdjacencyList;
 };
 
+class Tree : public virtual Graph {
+  bool connected() const override { return true; }
+  size_t numberOfEdges() const override { return pNumberOfNodes - 1; }
+};
+
 /*!
  * \brief class FixTree
  * \details This class is for trees where every node has exactly one parent. This allows to store the neighboors
  * more efficient. The node 0 is assumed to be the root node.
  */
-class DfsTree : public Graph {
+class DfsTree : public Tree {
 public:
   DfsTree()  = default;
   ~DfsTree() = default;
@@ -255,9 +260,6 @@ public:
 
   bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
   bool adjacent(const Edge& e) const override { return e.v == parent(e.u); }
-  bool connected() const override { return true; }
-
-  size_t numberOfEdges() const override { return pNumberOfNodes - 1; }
 
   size_t index(const size_t u) const { return this->pIndeces[u]; }
   size_t& index(const size_t u) { return this->pIndeces[u]; }
