@@ -14,10 +14,53 @@ struct Edge {
   size_t v;
 };
 
+class EdgeWeight {
+public:
+  EdgeWeight() = default;
+  EdgeWeight(const double cost) : pCost(cost) {}
+
+  double cost() const { return pCost; }
+
+  double operator()() const { return pCost; }
+  void operator=(const double cost) { pCost = cost; }
+  bool operator==(const double compare) { return pCost == compare; }
+
+  EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
+  EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
+  EdgeWeight& operator+=(const EdgeWeight other) {
+    this->pCost = std::min(this->pCost, other.pCost);
+    return *this;
+  }
+
+private:
+  double pCost;
+};
+
+/*
+ * Eigen needs some hints to deal with the custom type.
+ */
+namespace Eigen {
+template <>
+struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
+  typedef EdgeWeight Real;
+  typedef EdgeWeight NonInteger;
+  typedef EdgeWeight Nested;
+
+  enum {
+    IsInteger             = 0,
+    IsSigned              = 1,
+    IsComplex             = 0,
+    RequireInitialization = 0,
+    ReadCost              = 5,
+    AddCost               = 1,
+    MulCost               = 1
+  };
+};
+}  // namespace Eigen
+
 class EdgeIterator {
 public:
-  using Pointer   = double*;  // adjust
-  using Reference = double&;  // adjust
+  using Pointer = EdgeWeight*;
   EdgeIterator(Pointer ptr) : pPtr(ptr) {}
 
   EdgeIterator& operator++() {
@@ -31,7 +74,7 @@ public:
     return tmp;
   }
 
-  Reference operator*() const { return *pPtr; }  // adjust
+  const Edge& operator*() const;
 
   bool operator==(const EdgeIterator& other) const { return pPtr == other.pPtr; }
 
@@ -112,50 +155,6 @@ public:
 private:
   std::vector<Point2D> pPositions;
 };
-
-class EdgeWeight {
-public:
-  EdgeWeight() = default;
-  EdgeWeight(const double cost) : pCost(cost) {}
-
-  double cost() const { return pCost; }
-
-  double operator()() const { return pCost; }
-  void operator=(const double cost) { pCost = cost; }
-  bool operator==(const double compare) { return pCost == compare; }
-
-  EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
-  EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
-  EdgeWeight& operator+=(const EdgeWeight other) {
-    this->pCost = std::min(this->pCost, other.pCost);
-    return *this;
-  }
-
-private:
-  double pCost;
-};
-
-/*
- * Eigen needs some hints to deal with the custom type.
- */
-namespace Eigen {
-template <>
-struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
-  typedef EdgeWeight Real;
-  typedef EdgeWeight NonInteger;
-  typedef EdgeWeight Nested;
-
-  enum {
-    IsInteger             = 0,
-    IsSigned              = 1,
-    IsComplex             = 0,
-    RequireInitialization = 0,
-    ReadCost              = 5,
-    AddCost               = 1,
-    MulCost               = 1
-  };
-};
-}  // namespace Eigen
 
 class Modifyable : public virtual Graph {
 protected:

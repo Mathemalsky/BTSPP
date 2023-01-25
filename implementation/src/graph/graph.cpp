@@ -6,6 +6,9 @@
 
 #include <Eigen/SparseCore>
 
+const Edge& EdgeIterator::operator*() const {
+}
+
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
   std::vector<bool> component(pNumberOfNodes, false);
