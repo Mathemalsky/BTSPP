@@ -58,32 +58,6 @@ struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
 };
 }  // namespace Eigen
 
-class EdgeIterator {
-public:
-  using Pointer = EdgeWeight*;
-  EdgeIterator(Pointer ptr) : pPtr(ptr) {}
-
-  EdgeIterator& operator++() {
-    ++pPtr;
-    return *this;
-  }
-
-  EdgeIterator operator++(int) {
-    EdgeIterator tmp = *this;
-    ++(*this);
-    return tmp;
-  }
-
-  const Edge& operator*() const;
-
-  bool operator==(const EdgeIterator& other) const { return pPtr == other.pPtr; }
-
-  bool operator!=(const EdgeIterator& other) const { return !(pPtr == other.pPtr); }
-
-private:
-  Pointer pPtr;
-};
-
 enum class Directionality { Undirected, Directed };
 
 template <Directionality DIRECT>

@@ -41,10 +41,24 @@ static void drawCycle(
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - 3));
 }
 
-/*
-void drawEdge(const Edge& e, const float thickness, const RGBA_COLOUR& colour) {
+static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float thickness, const RGBA_COLOUR& colour) {
+  const std::array<float, 4> coords{
+      drawing::POINTS_F[2 * e.u], drawing::POINTS_F[2 * e.u + 1], drawing::POINTS_F[2 * e.v],
+      drawing::POINTS_F[2 * e.v + 1]};
+  drawLine.use();
+  drawLine.setUniform("u_ends", coords);
+  drawLine.setUniform("u_thickness", thickness);
+  drawLine.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
+  drawLine.setUniform("u_colour", colour);
 }
-*/
+
+void drawGraph(const ShaderProgram& drawLine, const AdjacencyMatrixGraph<Directionality::Directed>& graph) {
+  for (unsigned int k = 0; k < graph.numberOfNodes(); ++k) {
+    for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
+      drawEdge(drawLine, Edge{(size_t) it.row(), (size_t) it.col()}, 5.0f, RGBA_COLOUR{1.0, 0.0, 1.0, 1.0});
+    }
+  }
+}
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
   clearWindow(window);
@@ -59,8 +73,3 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
     }
   }
 }
-
-/*
-void drawGraph(const Graph& graph) {
-}
-*/
