@@ -50,6 +50,9 @@ static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float t
   drawLine.setUniform("u_thickness", thickness);
   drawLine.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
   drawLine.setUniform("u_colour", colour);
+
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void drawGraph(const ShaderProgram& drawLine, const AdjacencyMatrixGraph<Directionality::Directed>& graph) {
@@ -64,12 +67,17 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
   clearWindow(window);
   drawVerteces(programs.drawCircles);
 
-  for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-    const unsigned int typeInt = static_cast<unsigned int>(type);
-    if (drawing::ACTIVE[typeInt] && drawing::ORDER_INITIALIZED[typeInt]) {
-      drawCycle(
-          programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
-          drawing::COLOUR[typeInt]);
-    }
+  unsigned int typeInt = static_cast<unsigned int>(ProblemType::BTSP_exact);
+  if (drawing::ACTIVE[typeInt] && drawing::ORDER_INITIALIZED[typeInt]) {
+    drawCycle(
+        programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
+        drawing::COLOUR[typeInt]);
+    drawEdge(programs.drawLine, drawing::BOTTLENECK_EDGE, drawing::THICKNESS[typeInt] * 1.5f, drawing::COLOUR[typeInt]);
+  }
+  typeInt = static_cast<unsigned int>(ProblemType::TSP_exact);
+  if (drawing::ACTIVE[typeInt] && drawing::ORDER_INITIALIZED[typeInt]) {
+    drawCycle(
+        programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
+        drawing::COLOUR[typeInt]);
   }
 }

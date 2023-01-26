@@ -94,6 +94,7 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;
     exactsolver::Result res = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
     drawing::updateOrder(res.tour, ProblemType::BTSP_exact);
+    drawing::BOTTLENECK_EDGE = res.bottleneckEdge;
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)] = false;

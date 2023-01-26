@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -157,6 +158,24 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
   }
 }
 
+Edge findBottleneck(const Euclidean& euclidean, const std::vector<unsigned int>& tour) {
+  unsigned int bottleneckEdgeEnd = 0;
+  double bottleneckWeight        = euclidean.weight(tour.back(), tour[0]);
+  for (unsigned int i = 1; i < euclidean.numberOfNodes(); ++i) {
+    if (euclidean.weight(tour[i - 1], tour[i]) > bottleneckWeight) {
+      bottleneckEdgeEnd = i;
+      bottleneckWeight  = euclidean.weight(tour[i - 1], tour[i]);
+    }
+  }
+
+  if (bottleneckEdgeEnd == 0) {
+    return Edge{tour.back(), 0};
+  }
+  else {
+    return Edge{tour[bottleneckEdgeEnd - 1], tour[bottleneckEdgeEnd]};
+  }
+}
+
 Result solve(const Euclidean& euclidean, const ProblemType problemType) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   const Index index(numberOfNodes, problemType);
@@ -239,6 +258,14 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
     tour[std::round(solution.col_value[index.variableU(i)]) + 1] = i;
   }
 
-  return Result{};  // CONTINUE HERE
+  if (problemType == ProblemType::BTSP_exact) {
+    return Result{tour, info.objective_function_value, findBottleneck(euclidean, tour)};
+  }
+  else if (problemType == ProblemType::TSP_exact) {
+    return Result{tour, info.objective_function_value, Edge{0, 0}};
+  }
+  else {
+    throw std::runtime_error("Unknown problem type.");
+  }
 }
 }  // namespace exactsolver

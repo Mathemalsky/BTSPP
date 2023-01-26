@@ -8,6 +8,8 @@
 
 #include "graph/graph.hpp"
 
+namespace approximation {
+
 using Entry = Eigen::Triplet<EdgeWeight>;
 
 class Index {
@@ -67,3 +69,4 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
   std::vector<unsigned int> tour;
   return tour;
 }
+}  // namespace approximation

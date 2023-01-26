@@ -14,6 +14,10 @@ struct Edge {
   size_t v;
 };
 
+inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
+  return os << "(" << edge.u << ", " << edge.v << ") ";
+}
+
 class EdgeWeight {
 public:
   EdgeWeight() = default;
