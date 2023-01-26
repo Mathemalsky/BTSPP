@@ -12,6 +12,8 @@
 
 #include "graph/graph.hpp"
 
+namespace exactsolver {
+
 using Entry = Eigen::Triplet<double>;
 
 static constexpr double M_INFINITY = 1e32;
@@ -155,7 +157,7 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
   }
 }
 
-std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType problemType) {
+Result solve(const Euclidean& euclidean, const ProblemType problemType) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   const Index index(numberOfNodes, problemType);
 
@@ -237,5 +239,6 @@ std::vector<unsigned int> solve(const Euclidean& euclidean, const ProblemType pr
     tour[std::round(solution.col_value[index.variableU(i)]) + 1] = i;
   }
 
-  return tour;
+  return Result{};  // CONTINUE HERE
 }
+}  // namespace exactsolver

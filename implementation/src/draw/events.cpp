@@ -92,11 +92,13 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
 static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;
-    drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
+    exactsolver::Result res = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
+    drawing::updateOrder(res.tour, ProblemType::BTSP_exact);
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)] = false;
-    drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::TSP_exact), ProblemType::TSP_exact);
+    exactsolver::Result res = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
+    drawing::updateOrder(res.tour, ProblemType::TSP_exact);
   }
 }
 
