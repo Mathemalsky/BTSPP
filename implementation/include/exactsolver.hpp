@@ -6,6 +6,11 @@
 
 #include "graph/graph.hpp"
 
+struct Result {
+  std::vector<unsigned int> tour;
+  Edge bottleneck;
+};
+
 /*!
  * \brief solveExact solve the tsp to optimality using Miller-Tucker-Zemlin formulation
  * \param euclidean

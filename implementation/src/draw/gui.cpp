@@ -44,8 +44,8 @@ void drawImgui() {
 
   if (drawing::SHOW_DEBUG_WINDOW) {
     ImGui::Begin("Debug", &drawing::SHOW_DEBUG_WINDOW);
-    ImGui::Text("mouse x = %f", input::mouse::x);  // DEBUG
-    ImGui::Text("mouse y = %f", input::mouse::y);  // DEBUG
+    ImGui::Text("mouse x = %f", input::mouse::x);
+    ImGui::Text("mouse y = %f", input::mouse::y);
     ImGui::Text(
         "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
@@ -53,7 +53,12 @@ void drawImgui() {
 
   if (drawing::SHOW_SETTINGS_WINDOW) {
     ImGui::Begin("Settings", &drawing::SHOW_SETTINGS_WINDOW);
-    ImGui::Spacing();
+
+    ImGui::Checkbox("BTSP approx", &drawing::ACTIVE[(unsigned int) ProblemType::BTSP_approx]);
+    ImGui::ColorEdit3("##BTSP approx", (float*) &drawing::COLOUR[(unsigned int) ProblemType::BTSP_approx]);
+    ImGui::SliderFloat(
+        "thickness##BTSP approx", &drawing::THICKNESS[(unsigned int) ProblemType::BTSP_approx], 0.0f, 30.0f, "%.1f");
+
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[(unsigned int) ProblemType::BTSP_exact]);
     ImGui::SliderFloat(
         "thickness##BTSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::BTSP_exact], 0.0f, 20.0f, "%.1f");
@@ -61,7 +66,8 @@ void drawImgui() {
 
     ImGui::Checkbox("TSP  exact", &drawing::ACTIVE[(unsigned int) ProblemType::TSP_exact]);
     ImGui::ColorEdit3("##TSP exact", (float*) &drawing::COLOUR[(unsigned int) ProblemType::TSP_exact]);
-    ImGui::SliderFloat("thickness##TSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::TSP_exact], 0.0f, 30.0f);
+    ImGui::SliderFloat(
+        "thickness##TSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::TSP_exact], 0.0f, 30.0f, "%.1f");
 
     ImGui::ColorEdit3("vertex colour", (float*) &drawing::VERTEX_COLOUR);
     ImGui::End();

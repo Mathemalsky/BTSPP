@@ -90,11 +90,13 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
  **********************************************************************************************************************/
 
 static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
-  for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-    if (slowEvents::SOLVE[(unsigned int) type]) {
-      slowEvents::SOLVE[(unsigned int) type] = false;
-      drawing::updateOrder(solve(drawing::EUCLIDEAN, type), type);
-    }
+  if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)]) {
+    slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;
+    drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact), ProblemType::BTSP_exact);
+  }
+  if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)]) {
+    slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)] = false;
+    drawing::updateOrder(solve(drawing::EUCLIDEAN, ProblemType::TSP_exact), ProblemType::TSP_exact);
   }
 }
 

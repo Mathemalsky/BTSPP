@@ -23,6 +23,8 @@ extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS
 extern std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 extern RGBA_COLOUR VERTEX_COLOUR;
 
+extern Edge BOTTLENECK_EDGE;
+
 void updatePointsfFromEuclidean();
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);

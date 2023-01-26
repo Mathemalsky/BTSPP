@@ -25,6 +25,8 @@ std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDE
 std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 RGBA_COLOUR VERTEX_COLOUR;
 
+Edge BOTTLENECK_EDGE;
+
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
   const std::vector<Point2D> points = EUCLIDEAN.verteces();
