@@ -12,7 +12,10 @@
 namespace drawing {
 extern Euclidean EUCLIDEAN;
 extern std::vector<float> POINTS_F;
+
 extern bool SHOW_SETTINGS_WINDOW;
+extern bool SHOW_DEBUG_WINDOW;
+
 extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
 extern std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 extern std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;

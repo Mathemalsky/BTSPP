@@ -23,6 +23,7 @@ static void glfw_error_callback(int error, const char* description) {
 }
 
 static void initDrawingVariables() {
+  drawing::SHOW_DEBUG_WINDOW    = drawing::INITIAL_SHOW_DEBUG_WINDOW;
   drawing::SHOW_SETTINGS_WINDOW = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
   drawing::ACTIVE               = drawing::INITIAL_ACTIVENESS;
   drawing::COLOUR               = drawing::INITIAL_COLOUR;

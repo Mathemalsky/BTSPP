@@ -14,12 +14,14 @@
 namespace drawing {
 Euclidean EUCLIDEAN;
 std::vector<float> POINTS_F;
-std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER_INITIALIZED;
 
+bool SHOW_DEBUG_WINDOW;
 bool SHOW_SETTINGS_WINDOW;
+
 std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
 std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
+std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER_INITIALIZED;
 std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 RGBA_COLOUR VERTEX_COLOUR;
 

@@ -12,6 +12,7 @@ constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_
 
 namespace drawing {
 constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = true;
+constexpr bool INITIAL_SHOW_DEBUG_WINDOW    = false;
 constexpr float VETREX_RADIUS               = 0.01f;
 
 constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_ACTIVENESS{

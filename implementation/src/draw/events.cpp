@@ -10,7 +10,7 @@
 #include "exactsolver.hpp"
 
 static void toggleSettingsWindow() {
-  if (drawing::SHOW_SETTINGS_WINDOW == true) {
+  if (drawing::SHOW_SETTINGS_WINDOW) {
     drawing::SHOW_SETTINGS_WINDOW = false;
   }
   else {
@@ -18,9 +18,21 @@ static void toggleSettingsWindow() {
   }
 }
 
+static void toggleDebugWindow() {
+  if (drawing::SHOW_DEBUG_WINDOW) {
+    drawing::SHOW_DEBUG_WINDOW = false;
+  }
+  else {
+    drawing::SHOW_DEBUG_WINDOW = true;
+  }
+}
+
 void keyCallback(
     [[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action,
     [[maybe_unused]] int mods) {
+  if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
+    toggleDebugWindow();
+  }
   if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
     toggleSettingsWindow();
   }

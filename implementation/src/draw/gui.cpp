@@ -42,13 +42,17 @@ void drawImgui() {
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  if (drawing::SHOW_SETTINGS_WINDOW) {
-    ImGui::Begin("Settings", &drawing::SHOW_SETTINGS_WINDOW);
+  if (drawing::SHOW_DEBUG_WINDOW) {
+    ImGui::Begin("Debug", &drawing::SHOW_DEBUG_WINDOW);
     ImGui::Text("mouse x = %f", input::mouse::x);  // DEBUG
     ImGui::Text("mouse y = %f", input::mouse::y);  // DEBUG
     ImGui::Text(
         "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+  }
 
+  if (drawing::SHOW_SETTINGS_WINDOW) {
+    ImGui::Begin("Settings", &drawing::SHOW_SETTINGS_WINDOW);
     ImGui::Spacing();
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[(unsigned int) ProblemType::BTSP_exact]);
     ImGui::SliderFloat(
