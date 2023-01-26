@@ -9,9 +9,9 @@
 namespace exactsolver {
 
 struct Result {
-  const std::vector<unsigned int> tour;
-  const double opt;
-  const Edge bottleneckEdge;
+  std::vector<unsigned int> tour;
+  double opt;
+  Edge bottleneckEdge;
 };
 
 Result solve(const Euclidean& euclidean, const ProblemType problemType);

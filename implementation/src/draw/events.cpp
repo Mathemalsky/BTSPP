@@ -90,11 +90,15 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
  **********************************************************************************************************************/
 
 static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
+  if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_approx)]) {
+    slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_approx)] = false;
+    drawing::BTSP_APPROX_RESULT = approximation::approximate(drawing::EUCLIDEAN, ProblemType::BTSP_approx);
+  }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;
     exactsolver::Result res = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
     drawing::updateOrder(res.tour, ProblemType::BTSP_exact);
-    drawing::BOTTLENECK_EDGE = res.bottleneckEdge;
+    drawing::BTSP_EXACT_RESULT = res;
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)] = false;

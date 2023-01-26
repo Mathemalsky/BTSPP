@@ -2,11 +2,15 @@
 
 #include <cmath>
 #include <numeric>
+#include <stdexcept>
 #include <vector>
 
 #include "draw/definitions.hpp"
 
 #include "graph/graph.hpp"
+
+// DEBUG
+#include <iostream>
 
 namespace approximation {
 
@@ -30,7 +34,7 @@ private:
   const size_t pNumberOfNodes;
 };
 
-std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemType problemType) {
+Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
   if (problemType == ProblemType::BTSP_approx) {
     const Index index(euclidean.numberOfNodes());
     const size_t numberOfNodes = euclidean.numberOfNodes();
@@ -53,7 +57,14 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
 
     // continue adding edges until it is biconnected
     unsigned int edgeCounter = numberOfNodes;
+
+    // DEBUG
+    std::cerr << "loop not yet entered\n";
+
     while (!graph.biconnected()) {
+      // DEBUG
+      std::cerr << "loop entered\n";
+
       const Edge e = index.edge(edgeCounter);
       graph.addEdge(e, euclidean.weight(e));
     }
@@ -64,9 +75,11 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
     // calculate proper ear decomposition
     const OpenEarDecomposition ears = schmidt(graph);
     // find approximation
-  }
 
-  std::vector<unsigned int> tour;
-  return tour;
+    return Result{graph, ears};
+  }
+  else {
+    throw std::runtime_error("Unknown problem type");
+  }
 }
 }  // namespace approximation

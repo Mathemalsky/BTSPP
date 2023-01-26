@@ -148,6 +148,7 @@ public:
   AdjMatGraph(const size_t numberOfNodes) :
     Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {}
   AdjMatGraph(const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) : Graph(tripletList.size()) {
+    pAdjacencyMatrix = Eigen::SparseMatrix<EdgeWeight>(tripletList.size(), tripletList.size());
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 

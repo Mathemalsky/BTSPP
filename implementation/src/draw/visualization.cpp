@@ -27,7 +27,7 @@ static void initDrawingVariables() {
   drawing::SHOW_SETTINGS_WINDOW = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
   drawing::ACTIVE               = drawing::INITIAL_ACTIVENESS;
   drawing::COLOUR               = drawing::INITIAL_COLOUR;
-  drawing::ORDER_INITIALIZED    = drawing::INITIAL_ACTIVENESS;
+  drawing::INITIALIZED          = drawing::INITIAL_ACTIVENESS;
   drawing::THICKNESS            = drawing::INITIAL_THICKNESS;
   drawing::VERTEX_COLOUR        = drawing::INITIAL_VERTEX_COLOUR;
 }
