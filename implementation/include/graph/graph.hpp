@@ -87,8 +87,8 @@ static Edge orientation(const Edge& e) {
 
 class Graph {
 public:
-  Graph()  = default;
-  ~Graph() = default;
+  // Graph()          = default;
+  virtual ~Graph() = default;
 
   Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
@@ -105,25 +105,37 @@ protected:
 
 class WeightedGraph : public virtual Graph {
 public:
+  WeightedGraph()          = default;
+  virtual ~WeightedGraph() = default;
+
+  WeightedGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
+
   virtual double weight(const size_t u, const size_t v) const = 0;
   virtual double weight(const Edge& e) const                  = 0;
 };
 
 class CompleteGraph : public virtual Graph {
 public:
+  // CompleteGraph()          = default;
+  virtual ~CompleteGraph() = default;
+
+  CompleteGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
+
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
   bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
   bool connected() const override { return true; }
   size_t numberOfEdges() const override { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
 };
 
-class Euclidean : public CompleteGraph, WeightedGraph {
+class Euclidean : public CompleteGraph, public WeightedGraph {
 public:
-  Euclidean()  = default;
-  ~Euclidean() = default;
+  // Euclidean()          = default;
+  virtual ~Euclidean() = default;
 
-  Euclidean(const std::vector<Point2D>& positions) : Graph(positions.size()), pPositions(positions) {}
-  Euclidean(std::vector<Point2D>&& positions) : Graph(positions.size()), pPositions(positions) {}
+  Euclidean(const std::vector<Point2D>& positions) :
+    Graph(positions.size()), CompleteGraph(numberOfNodes()), pPositions(positions) {}
+  Euclidean(std::vector<Point2D>&& positions) :
+    Graph(positions.size()), CompleteGraph(numberOfNodes()), pPositions(positions) {}
 
   double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
@@ -137,6 +149,11 @@ private:
 
 class Modifyable : public virtual Graph {
 protected:
+  Modifyable()          = default;
+  virtual ~Modifyable() = default;
+
+  Modifyable(const size_t numberOfNodes) : Graph(numberOfNodes) {}
+
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) = 0;
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
 };
@@ -144,18 +161,22 @@ protected:
 // DBEUG
 #include <iostream>
 
-class AdjMatGraph : public Modifyable, WeightedGraph {
+class AdjMatGraph : public Modifyable, public WeightedGraph {
 public:
   AdjMatGraph()  = default;
   ~AdjMatGraph() = default;
 
-  AdjMatGraph(const size_t numberOfNodes) :
-    Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {}
-  AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) {
+  // AdjMatGraph(const size_t numberOfNodes) :
+  //  Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {}
+  AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
+    (numberOfNodes),
+    Modifyable(numberOfNodes),
+    WeightedGraph(numberOfNodes),
+    pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {
     // DEBUG
-    pNumberOfNodes = numberOfNodes;
+    // pNumberOfNodes = numberOfNodes;
 
-    pAdjacencyMatrix = Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes);
+    // pAdjacencyMatrix = Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes);
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
 
     // DEBUG
@@ -188,7 +209,7 @@ protected:
 };
 
 template <Directionality DIRECT>
-class AdjacencyMatrixGraph : public AdjMatGraph {
+class AdjacencyMatrixGraph : public virtual AdjMatGraph {
 public:
   AdjacencyMatrixGraph()  = default;
   ~AdjacencyMatrixGraph() = default;
