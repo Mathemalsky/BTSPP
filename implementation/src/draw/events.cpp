@@ -93,6 +93,7 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_approx)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_approx)] = false;
     drawing::BTSP_APPROX_RESULT = approximation::approximate(drawing::EUCLIDEAN, ProblemType::BTSP_approx);
+    drawing::INITIALIZED[static_cast<unsigned int>(ProblemType::BTSP_approx)] = true;
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;

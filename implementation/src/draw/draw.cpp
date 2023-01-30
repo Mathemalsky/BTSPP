@@ -55,10 +55,12 @@ static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float t
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void drawGraph(const ShaderProgram& drawLine, const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
+void drawGraph(
+    const ShaderProgram& drawLine, const AdjacencyMatrixGraph<Directionality::Undirected>& graph,
+    const RGBA_COLOUR& colour) {
   for (unsigned int k = 0; k < graph.numberOfNodes(); ++k) {
     for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
-      drawEdge(drawLine, Edge{(size_t) it.row(), (size_t) it.col()}, 5.0f, RGBA_COLOUR{1.0, 0.0, 1.0, 1.0});
+      drawEdge(drawLine, Edge{(size_t) it.row(), (size_t) it.col()}, 5.0f, colour);
     }
   }
 }
@@ -69,7 +71,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
 
   unsigned int typeInt = static_cast<unsigned int>(ProblemType::BTSP_approx);
   if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
-    drawGraph(programs.drawLine, drawing::BTSP_APPROX_RESULT.biconnectedGraph);
+    drawGraph(programs.drawLine, drawing::BTSP_APPROX_RESULT.biconnectedGraph, drawing::COLOUR[typeInt]);
   }
   typeInt = static_cast<unsigned int>(ProblemType::BTSP_exact);
   if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
