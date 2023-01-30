@@ -16,6 +16,11 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
+      for (unsigned int k = 0; k < top; ++k) {
+        if (pAdjacencyMatrix.coeff(k, top) != 0.0) {
+          nodeStack.push(k);
+        }
+      }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());
@@ -34,7 +39,9 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
 
 // DEBUG
 #include <iostream>
+#include "utility/utils.hpp"
 
+/*
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
   // DEBUG
@@ -67,6 +74,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
   }
   return true;
 }
+*/
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
@@ -77,15 +85,38 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
     nodeStack.pop();
+
+    // DEBUG
+    std::cerr << "top node: " << top << std::endl;
+
     if (!visited[top]) {
+      for (unsigned int k = 0; k < top; ++k) {
+          // DEBUG
+          std::cerr << "(" << k << ", " << top << ") " << pAdjacencyMatrix.coeff(top, k).cost() << std::endl;
+        if (pAdjacencyMatrix.coeff(top, k) != 0.0) {
+          nodeStack.push(k);
+
+          // DEBUG
+          std::cerr << "added node: " << k << " (row iterating)" << std::endl;
+        }
+      }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());
+
+          // DEBUG
+          std::cerr << "added node: " << it.index() << " (column iterating)" << std::endl;
         }
       }
       visited[top] = true;
     }
+
+    // DEBUG
+    std::cerr << "stack size: " << nodeStack.size() << std::endl;
   }
+
+  std::cerr << visited;
+
   for (const bool& test : visited) {
     if (!test) {
       return false;

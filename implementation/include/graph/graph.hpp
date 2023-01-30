@@ -28,6 +28,7 @@ public:
   double operator()() const { return pCost; }
   void operator=(const double cost) { pCost = cost; }
   bool operator==(const double compare) { return pCost == compare; }
+  bool operator!=(const double compare) { return pCost != compare; }
 
   EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
   EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
