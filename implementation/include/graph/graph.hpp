@@ -140,16 +140,27 @@ protected:
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
 };
 
-class AdjMatGraph : public virtual WeightedGraph, Modifyable {
+// DBEUG
+#include <iostream>
+
+class AdjMatGraph : public Modifyable, WeightedGraph {
 public:
   AdjMatGraph()  = default;
   ~AdjMatGraph() = default;
 
   AdjMatGraph(const size_t numberOfNodes) :
     Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {}
-  AdjMatGraph(const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) : Graph(tripletList.size()) {
-    pAdjacencyMatrix = Eigen::SparseMatrix<EdgeWeight>(tripletList.size(), tripletList.size());
+  AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) {
+    // DEBUG
+    pNumberOfNodes = numberOfNodes;
+
+    pAdjacencyMatrix = Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes);
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
+
+    // DEBUG
+    std::cerr << "#nodes in AdjMatGraphClass: " << pNumberOfNodes << std::endl;
+    std::cerr << "#matrix size in AdjMatGraphClass: " << pAdjacencyMatrix.rows() << "x" << pAdjacencyMatrix.cols()
+              << std::endl;
   }
 
   virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
@@ -181,7 +192,13 @@ public:
   AdjacencyMatrixGraph()  = default;
   ~AdjacencyMatrixGraph() = default;
 
-  AdjacencyMatrixGraph(const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) : AdjMatGraph(tripletList) {}
+  AdjacencyMatrixGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
+    AdjMatGraph(numberOfNodes, tripletList) {
+    // DEBUG
+    std::cerr << "#nodes in AdjacencyMatrixGraphClass: " << pNumberOfNodes << std::endl;
+    std::cerr << "#matrix size in AdjacencyMatrixGraphClass: " << pAdjacencyMatrix.rows() << "x"
+              << pAdjacencyMatrix.cols() << std::endl;
+  }
 
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     AdjMatGraph::addEdge(orientation<DIRECT>(out, in), edgeWeight);

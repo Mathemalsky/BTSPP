@@ -12,8 +12,8 @@
 
 Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
   std::array<uint_fast32_t, 2> random_data{3464821182, 3178290169};
-  std::random_device src;
-  std::generate(random_data.begin(), random_data.end(), std::ref(src));
+  // std::random_device src;
+  // std::generate(random_data.begin(), random_data.end(), std::ref(src));
 
   std::seed_seq seed(random_data.begin(), random_data.end());
   std::default_random_engine generator;

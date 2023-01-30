@@ -22,12 +22,12 @@ public:
 
   size_t numberOfEdges() const { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
   size_t edgeIndex(const size_t i, const size_t j) const {
-    return i > j ? 0.5 * (i * i + i) + j : 0.5 * (j * j + j) + i;
+    return i > j ? 0.5 * (i * i - i) + j : 0.5 * (j * j - j) + i;
   }
 
   Edge edge(const unsigned int k) const {
-    const unsigned int i = std::floor(std::sqrt(0.25 + 2 * k) - 0.5);
-    return Edge{i, k - (i * i + i) / 2};
+    const unsigned int i = std::floor(std::sqrt(0.25 + 2 * k) + 0.5);
+    return Edge{i, k - (i * i - i) / 2};
   }
 
 private:
@@ -49,23 +49,37 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     entries.reserve(numberOfNodes);
     for (unsigned int i = 0; i < numberOfNodes; ++i) {
       const Edge e = index.edge(edgeIndeces[i]);
+
+      // DEBUG
+      std::cerr << "addEdge " << e << std::endl;
+
       entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     }
 
+    // DEBUG
+    std::cerr << "#entries in approximate: " << entries.size() << std::endl;
+
+    // DEBUG
+    std::cerr << "#nodes in old graph: " << euclidean.numberOfNodes() << std::endl;
+
     // create an undirected graph from that
-    AdjacencyMatrixGraph<Directionality::Undirected> graph(entries);
+    AdjacencyMatrixGraph<Directionality::Undirected> graph(numberOfNodes, entries);
 
     // continue adding edges until it is biconnected
     unsigned int edgeCounter = numberOfNodes;
 
     // DEBUG
-    std::cerr << "loop not yet entered\n";
+    std::cerr << "#nodes in new graph: " << graph.numberOfNodes() << std::endl;
 
     while (!graph.biconnected()) {
-      // DEBUG
-      std::cerr << "loop entered\n";
+      assert(edgeCounter < euclidean.numberOfEdges() && "We cannot add more edges than existing.");
 
-      const Edge e = index.edge(edgeCounter);
+      const Edge e = index.edge(edgeIndeces[edgeCounter]);
+      ++edgeCounter;
+
+      // DEBUG
+      std::cerr << "addEdge " << e << std::endl;
+
       graph.addEdge(e, euclidean.weight(e));
     }
 

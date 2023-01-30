@@ -8,21 +8,37 @@
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
-  std::vector<bool> component(pNumberOfNodes, false);
-  component[0] = true;  // without loss of generality we consider the connected component containing node 0
-  for (int k = 0; k < pAdjacencyMatrix.outerSize(); ++k) {
-    if (!component[k]) {
-      return false;  // node k is not connected to any node < k, because adjacency matrix is lower triangular
+  std::vector<bool> visited(pNumberOfNodes, false);
+  std::stack<size_t> nodeStack;
+  const size_t rootNode = 0;
+  nodeStack.push(rootNode);
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    nodeStack.pop();
+    if (!visited[top]) {
+      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+        if (!visited[it.index()]) {
+          nodeStack.push(it.index());
+        }
+      }
+      visited[top] = true;
     }
-    for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, k); it; ++it) {
-      component[it.index()] = true;
+  }
+  for (const bool& test : visited) {
+    if (!test) {
+      return false;
     }
   }
   return true;
 }
 
+// DEBUG
+#include <iostream>
+
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
+  // DEBUG
+  std::cerr << "#nodes in connectedWithout: " << pNumberOfNodes << std::endl;
   std::vector<bool> component(pNumberOfNodes, false);
   component[0] = true;         // without loss of generality we consider the connected component containing node 0
   component[1] = vertex == 0;  // if we check connectivity whithout 0, we start by one
@@ -30,7 +46,19 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
   for (unsigned int k = 0; k < pAdjacencyMatrix.outerSize(); ++k) {
     if (k != vertex) {
       if (!component[k]) {
-        return false;  // node k is not connected to any node < k, because adjacency matrix is lower triangular
+        for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, k); it; ++it) {
+          if (component[it.index()]) {
+            component[k] = true;
+            break;
+          }
+        }
+
+        if (!component[k]) {
+          // DBEUG
+          std::cerr << "#smallest not connected index: " << k << std::endl;
+
+          return false;  // node k is not connected to any node < k, because adjacency matrix is lower triangular
+        }
       }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, k); it; ++it) {
         component[it.index()] = true;
@@ -41,9 +69,41 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
 }
 
 template <>
+bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
+  std::vector<bool> visited(pNumberOfNodes, false);
+  std::stack<size_t> nodeStack;
+  const size_t rootNode = (vertex != 0 ? 0 : 1);
+  nodeStack.push(rootNode);
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    nodeStack.pop();
+    if (!visited[top]) {
+      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+        if (!visited[it.index()]) {
+          nodeStack.push(it.index());
+        }
+      }
+      visited[top] = true;
+    }
+  }
+  for (const bool& test : visited) {
+    if (!test) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
+  // DEBUG
+  std::cerr << "#nodes in biconnected: " << pNumberOfNodes << std::endl;
+
   for (size_t i = 0; i < pNumberOfNodes; ++i) {
     if (!connectedWhithout(i)) {
+      // DEBUG
+      std::cerr << "cut vertex: " << i << std::endl;
+
       return false;
     }
   }
