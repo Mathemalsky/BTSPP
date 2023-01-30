@@ -53,20 +53,11 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
       entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     }
 
-    // DEBUG
-    std::cerr << "#entries in approximate: " << entries.size() << std::endl;
-
-    // DEBUG
-    std::cerr << "#nodes in old graph: " << euclidean.numberOfNodes() << std::endl;
-
     // create an undirected graph from that
     AdjacencyMatrixGraph<Directionality::Undirected> graph(numberOfNodes, entries);
 
     // continue adding edges until it is biconnected
     unsigned int edgeCounter = numberOfNodes;
-
-    // DEBUG
-    std::cerr << "#nodes in new graph: " << graph.numberOfNodes() << std::endl;
 
     while (!graph.biconnected()) {
       assert(edgeCounter < euclidean.numberOfEdges() && "We cannot add more edges than existing.");

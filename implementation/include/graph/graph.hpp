@@ -20,7 +20,9 @@ inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
 
 class EdgeWeight {
 public:
-  EdgeWeight() = default;
+  EdgeWeight()  = default;
+  ~EdgeWeight() = default;
+
   EdgeWeight(const double cost) : pCost(cost) {}
 
   double cost() const { return pCost; }
@@ -138,13 +140,13 @@ protected:
 
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 public:
-  AdjMatGraph() = default;
+  AdjMatGraph()  = default;
+  ~AdjMatGraph() = default;
+
   AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
-
-  ~AdjMatGraph() = default;
 
   virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
   virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
@@ -206,6 +208,11 @@ public:
 template <Directionality DIRECT>
 class AdjacencyListGraph : public Modifyable {
 public:
+  AdjacencyListGraph()  = default;
+  ~AdjacencyListGraph() = default;
+
+  AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     const Edge e = orientation<DIRECT>(out, in);
     pAdjacencyList[e.u].push_back(e.v);
