@@ -10,14 +10,13 @@ template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
   std::vector<bool> visited(pNumberOfNodes, false);
   std::stack<size_t> nodeStack;
-  const size_t rootNode = 0;
-  nodeStack.push(rootNode);
+  nodeStack.push(0);
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
       for (unsigned int k = 0; k < top; ++k) {
-        if (pAdjacencyMatrix.coeff(k, top) != 0.0) {
+        if (pAdjacencyMatrix.coeff(top, k) != 0.0) {
           nodeStack.push(k);
         }
       }
@@ -29,6 +28,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
       visited[top] = true;
     }
   }
+
   for (const bool& test : visited) {
     if (!test) {
       return false;
@@ -36,45 +36,6 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
   }
   return true;
 }
-
-// DEBUG
-#include <iostream>
-#include "utility/utils.hpp"
-
-/*
-template <>
-bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
-  // DEBUG
-  std::cerr << "#nodes in connectedWithout: " << pNumberOfNodes << std::endl;
-  std::vector<bool> component(pNumberOfNodes, false);
-  component[0] = true;         // without loss of generality we consider the connected component containing node 0
-  component[1] = vertex == 0;  // if we check connectivity whithout 0, we start by one
-
-  for (unsigned int k = 0; k < pAdjacencyMatrix.outerSize(); ++k) {
-    if (k != vertex) {
-      if (!component[k]) {
-        for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, k); it; ++it) {
-          if (component[it.index()]) {
-            component[k] = true;
-            break;
-          }
-        }
-
-        if (!component[k]) {
-          // DBEUG
-          std::cerr << "#smallest not connected index: " << k << std::endl;
-
-          return false;  // node k is not connected to any node < k, because adjacency matrix is lower triangular
-        }
-      }
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, k); it; ++it) {
-        component[it.index()] = true;
-      }
-    }
-  }
-  return true;
-}
-*/
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
@@ -85,40 +46,23 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
     nodeStack.pop();
-
-    // DEBUG
-    std::cerr << "top node: " << top << std::endl;
-
     if (!visited[top]) {
       for (unsigned int k = 0; k < top; ++k) {
-          // DEBUG
-          std::cerr << "(" << k << ", " << top << ") " << pAdjacencyMatrix.coeff(top, k).cost() << std::endl;
-        if (pAdjacencyMatrix.coeff(top, k) != 0.0) {
+        if (pAdjacencyMatrix.coeff(top, k) != 0.0 && !visited[k] && k != vertex) {
           nodeStack.push(k);
-
-          // DEBUG
-          std::cerr << "added node: " << k << " (row iterating)" << std::endl;
         }
       }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
-        if (!visited[it.index()]) {
+        if (!visited[it.index()] && (size_t) it.index() != vertex) {
           nodeStack.push(it.index());
-
-          // DEBUG
-          std::cerr << "added node: " << it.index() << " (column iterating)" << std::endl;
         }
       }
       visited[top] = true;
     }
-
-    // DEBUG
-    std::cerr << "stack size: " << nodeStack.size() << std::endl;
   }
 
-  std::cerr << visited;
-
-  for (const bool& test : visited) {
-    if (!test) {
+  for (size_t i = 0; i < visited.size(); ++i) {
+    if (!visited[i] && vertex != i) {
       return false;
     }
   }
@@ -127,14 +71,8 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
-  // DEBUG
-  std::cerr << "#nodes in biconnected: " << pNumberOfNodes << std::endl;
-
   for (size_t i = 0; i < pNumberOfNodes; ++i) {
     if (!connectedWhithout(i)) {
-      // DEBUG
-      std::cerr << "cut vertex: " << i << std::endl;
-
       return false;
     }
   }

@@ -50,9 +50,6 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     for (unsigned int i = 0; i < numberOfNodes; ++i) {
       const Edge e = index.edge(edgeIndeces[i]);
 
-      // DEBUG
-      std::cerr << "addEdge " << e << " " << euclidean.weight(e) << std::endl;
-
       entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     }
 
@@ -76,9 +73,6 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
 
       const Edge e = index.edge(edgeIndeces[edgeCounter]);
       ++edgeCounter;
-
-      // DEBUG
-      std::cerr << "addEdge " << e << " " << euclidean.weight(e) << std::endl;
 
       graph.addEdge(e, euclidean.weight(e));
     }
