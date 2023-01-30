@@ -8,7 +8,7 @@
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
-  std::vector<bool> visited(pNumberOfNodes, false);
+  std::vector<bool> visited(numberOfNodes(), false);
   std::stack<size_t> nodeStack;
   nodeStack.push(0);
   while (!nodeStack.empty()) {
@@ -39,7 +39,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
-  std::vector<bool> visited(pNumberOfNodes, false);
+  std::vector<bool> visited(numberOfNodes(), false);
   std::stack<size_t> nodeStack;
   const size_t rootNode = (vertex != 0 ? 0 : 1);
   nodeStack.push(rootNode);
@@ -71,7 +71,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
-  for (size_t i = 0; i < pNumberOfNodes; ++i) {
+  for (size_t i = 0; i < numberOfNodes(); ++i) {
     if (!connectedWhithout(i)) {
       return false;
     }
@@ -81,9 +81,9 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
 
 template <>
 bool AdjacencyListGraph<Directionality::Directed>::connected() const {
-  std::vector<bool> component(pNumberOfNodes, false);
+  std::vector<bool> component(numberOfNodes(), false);
   std::vector<size_t> nodesToCheck;
-  nodesToCheck.reserve(pNumberOfNodes);
+  nodesToCheck.reserve(numberOfNodes());
   nodesToCheck.push_back(0);  // we check if the component containing vertex 0 is the whole graph
   while (!nodesToCheck.empty()) {
     const size_t v = nodesToCheck.back();

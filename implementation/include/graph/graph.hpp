@@ -87,55 +87,38 @@ static Edge orientation(const Edge& e) {
 
 class Graph {
 public:
-  // Graph()          = default;
-  virtual ~Graph() = default;
-
-  Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
-
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
   virtual bool adjacent(const Edge& e) const                  = 0;
   virtual bool connected() const                              = 0;
   virtual size_t numberOfEdges() const                        = 0;
-
-  size_t numberOfNodes() const { return pNumberOfNodes; }
+  virtual size_t numberOfNodes() const                        = 0;
 
 protected:
-  size_t pNumberOfNodes;
 };
 
 class WeightedGraph : public virtual Graph {
 public:
-  WeightedGraph()          = default;
-  virtual ~WeightedGraph() = default;
-
-  WeightedGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
-
   virtual double weight(const size_t u, const size_t v) const = 0;
   virtual double weight(const Edge& e) const                  = 0;
 };
 
 class CompleteGraph : public virtual Graph {
 public:
-  // CompleteGraph()          = default;
-  virtual ~CompleteGraph() = default;
-
-  CompleteGraph(const size_t numberOfNodes) : Graph(numberOfNodes) {}
-
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
   bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
   bool connected() const override { return true; }
-  size_t numberOfEdges() const override { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
+  size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
 class Euclidean : public CompleteGraph, public WeightedGraph {
 public:
-  // Euclidean()          = default;
+  Euclidean()          = default;
   virtual ~Euclidean() = default;
 
-  Euclidean(const std::vector<Point2D>& positions) :
-    Graph(positions.size()), CompleteGraph(numberOfNodes()), pPositions(positions) {}
-  Euclidean(std::vector<Point2D>&& positions) :
-    Graph(positions.size()), CompleteGraph(numberOfNodes()), pPositions(positions) {}
+  Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) {}
+  Euclidean(std::vector<Point2D>&& positions) : pPositions(positions) {}
+
+  size_t numberOfNodes() const override { return pPositions.size(); }
 
   double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
@@ -149,41 +132,19 @@ private:
 
 class Modifyable : public virtual Graph {
 protected:
-  Modifyable()          = default;
-  virtual ~Modifyable() = default;
-
-  Modifyable(const size_t numberOfNodes) : Graph(numberOfNodes) {}
-
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) = 0;
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
 };
 
-// DBEUG
-#include <iostream>
-
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 public:
-  AdjMatGraph()  = default;
-  ~AdjMatGraph() = default;
-
-  // AdjMatGraph(const size_t numberOfNodes) :
-  //  Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {}
+  AdjMatGraph() = default;
   AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
-    (numberOfNodes),
-    Modifyable(numberOfNodes),
-    WeightedGraph(numberOfNodes),
     pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {
-    // DEBUG
-    // pNumberOfNodes = numberOfNodes;
-
-    // pAdjacencyMatrix = Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes);
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
-
-    // DEBUG
-    std::cerr << "#nodes in AdjMatGraphClass: " << pNumberOfNodes << std::endl;
-    std::cerr << "#matrix size in AdjMatGraphClass: " << pAdjacencyMatrix.rows() << "x" << pAdjacencyMatrix.cols()
-              << std::endl;
   }
+
+  ~AdjMatGraph() = default;
 
   virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
   virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
@@ -191,6 +152,7 @@ public:
   virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
 
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
+  size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
@@ -215,12 +177,7 @@ public:
   ~AdjacencyMatrixGraph() = default;
 
   AdjacencyMatrixGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
-    AdjMatGraph(numberOfNodes, tripletList) {
-    // DEBUG
-    std::cerr << "#nodes in AdjacencyMatrixGraphClass: " << pNumberOfNodes << std::endl;
-    std::cerr << "#matrix size in AdjacencyMatrixGraphClass: " << pAdjacencyMatrix.rows() << "x"
-              << pAdjacencyMatrix.cols() << std::endl;
-  }
+    AdjMatGraph(numberOfNodes, tripletList) {}
 
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     AdjMatGraph::addEdge(orientation<DIRECT>(out, in), edgeWeight);
@@ -275,6 +232,7 @@ public:
         pAdjacencyList.begin(), pAdjacencyList.end(), 0,
         [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
   }
+  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
@@ -284,7 +242,7 @@ private:
 
 class Tree : public virtual Graph {
   bool connected() const override { return true; }
-  size_t numberOfEdges() const override { return pNumberOfNodes - 1; }
+  size_t numberOfEdges() const override { return numberOfNodes() - 1; }
 };
 
 /*!
@@ -297,13 +255,15 @@ public:
   DfsTree()  = default;
   ~DfsTree() = default;
 
-  DfsTree(const size_t numberOfNodes) : Graph(numberOfNodes) {
+  DfsTree(const size_t numberOfNodes) {
     pAdjacencyList.resize(numberOfNodes);
     pIndeces.resize(numberOfNodes);
   }
 
   bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
   bool adjacent(const Edge& e) const override { return e.v == parent(e.u); }
+
+  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   size_t index(const size_t u) const { return this->pIndeces[u]; }
   size_t& index(const size_t u) { return this->pIndeces[u]; }
