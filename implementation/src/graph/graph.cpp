@@ -8,14 +8,30 @@
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
-  std::vector<bool> component(pNumberOfNodes, false);
-  component[0] = true;  // without loss of generality we consider the connected component containing node 0
-  for (int k = 0; k < pAdjacencyMatrix.outerSize(); ++k) {
-    if (!component[k]) {
-      return false;  // node k is not connected to any node < k, because adjacency matrix is lower triangular
+  std::vector<bool> visited(numberOfNodes(), false);
+  std::stack<size_t> nodeStack;
+  nodeStack.push(0);
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    nodeStack.pop();
+    if (!visited[top]) {
+      for (unsigned int k = 0; k < top; ++k) {
+        if (pAdjacencyMatrix.coeff(top, k) != 0.0) {
+          nodeStack.push(k);
+        }
+      }
+      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+        if (!visited[it.index()]) {
+          nodeStack.push(it.index());
+        }
+      }
+      visited[top] = true;
     }
-    for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, k); it; ++it) {
-      component[it.index()] = true;
+  }
+
+  for (const bool& test : visited) {
+    if (!test) {
+      return false;
     }
   }
   return true;
@@ -23,18 +39,31 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
-  std::vector<bool> component(pNumberOfNodes, false);
-  component[0] = true;         // without loss of generality we consider the connected component containing node 0
-  component[1] = vertex == 0;  // if we check connectivity whithout 0, we start by one
+  std::vector<bool> visited(numberOfNodes(), false);
+  std::stack<size_t> nodeStack;
+  const size_t rootNode = (vertex != 0 ? 0 : 1);
+  nodeStack.push(rootNode);
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    nodeStack.pop();
+    if (!visited[top]) {
+      for (unsigned int k = 0; k < top; ++k) {
+        if (pAdjacencyMatrix.coeff(top, k) != 0.0 && !visited[k] && k != vertex) {
+          nodeStack.push(k);
+        }
+      }
+      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+        if (!visited[it.index()] && (size_t) it.index() != vertex) {
+          nodeStack.push(it.index());
+        }
+      }
+      visited[top] = true;
+    }
+  }
 
-  for (unsigned int k = 0; k < pAdjacencyMatrix.outerSize(); ++k) {
-    if (k != vertex) {
-      if (!component[k]) {
-        return false;  // node k is not connected to any node < k, because adjacency matrix is lower triangular
-      }
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, k); it; ++it) {
-        component[it.index()] = true;
-      }
+  for (size_t i = 0; i < visited.size(); ++i) {
+    if (!visited[i] && vertex != i) {
+      return false;
     }
   }
   return true;
@@ -42,7 +71,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
-  for (size_t i = 0; i < pNumberOfNodes; ++i) {
+  for (size_t i = 0; i < numberOfNodes(); ++i) {
     if (!connectedWhithout(i)) {
       return false;
     }
@@ -52,9 +81,9 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
 
 template <>
 bool AdjacencyListGraph<Directionality::Directed>::connected() const {
-  std::vector<bool> component(pNumberOfNodes, false);
+  std::vector<bool> component(numberOfNodes(), false);
   std::vector<size_t> nodesToCheck;
-  nodesToCheck.reserve(pNumberOfNodes);
+  nodesToCheck.reserve(numberOfNodes());
   nodesToCheck.push_back(0);  // we check if the component containing vertex 0 is the whole graph
   while (!nodesToCheck.empty()) {
     const size_t v = nodesToCheck.back();
@@ -76,7 +105,7 @@ bool AdjacencyListGraph<Directionality::Directed>::connected() const {
 
 AdjacencyListGraph<Directionality::Directed> findBackedges(
     const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
-  AdjacencyListGraph<Directionality::Directed> backedges;
+  AdjacencyListGraph<Directionality::Directed> backedges(graph.numberOfNodes());
   for (size_t k = 0; k < graph.numberOfNodes(); ++k) {
     for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
       const size_t u = std::max(k, static_cast<size_t>(it.index()));

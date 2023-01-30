@@ -158,7 +158,7 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
   }
 }
 
-Edge findBottleneck(const Euclidean& euclidean, const std::vector<unsigned int>& tour) {
+static Edge findBottleneck(const Euclidean& euclidean, const std::vector<unsigned int>& tour) {
   unsigned int bottleneckEdgeEnd = 0;
   double bottleneckWeight        = euclidean.weight(tour.back(), tour[0]);
   for (unsigned int i = 1; i < euclidean.numberOfNodes(); ++i) {

@@ -20,7 +20,9 @@ inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
 
 class EdgeWeight {
 public:
-  EdgeWeight() = default;
+  EdgeWeight()  = default;
+  ~EdgeWeight() = default;
+
   EdgeWeight(const double cost) : pCost(cost) {}
 
   double cost() const { return pCost; }
@@ -28,6 +30,7 @@ public:
   double operator()() const { return pCost; }
   void operator=(const double cost) { pCost = cost; }
   bool operator==(const double compare) { return pCost == compare; }
+  bool operator!=(const double compare) { return pCost != compare; }
 
   EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
   EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
@@ -86,20 +89,13 @@ static Edge orientation(const Edge& e) {
 
 class Graph {
 public:
-  Graph()  = default;
-  ~Graph() = default;
-
-  Graph(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
-
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
   virtual bool adjacent(const Edge& e) const                  = 0;
   virtual bool connected() const                              = 0;
   virtual size_t numberOfEdges() const                        = 0;
-
-  size_t numberOfNodes() const { return pNumberOfNodes; }
+  virtual size_t numberOfNodes() const                        = 0;
 
 protected:
-  size_t pNumberOfNodes;
 };
 
 class WeightedGraph : public virtual Graph {
@@ -113,16 +109,18 @@ public:
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
   bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
   bool connected() const override { return true; }
-  size_t numberOfEdges() const override { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
+  size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
-class Euclidean : public CompleteGraph, WeightedGraph {
+class Euclidean : public CompleteGraph, public WeightedGraph {
 public:
-  Euclidean()  = default;
-  ~Euclidean() = default;
+  Euclidean()          = default;
+  virtual ~Euclidean() = default;
 
-  Euclidean(const std::vector<Point2D>& positions) : Graph(positions.size()), pPositions(positions) {}
-  Euclidean(std::vector<Point2D>&& positions) : Graph(positions.size()), pPositions(positions) {}
+  Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) {}
+  Euclidean(std::vector<Point2D>&& positions) : pPositions(positions) {}
+
+  size_t numberOfNodes() const override { return pPositions.size(); }
 
   double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
@@ -140,14 +138,13 @@ protected:
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
 };
 
-class AdjMatGraph : public virtual WeightedGraph, Modifyable {
+class AdjMatGraph : public Modifyable, public WeightedGraph {
 public:
   AdjMatGraph()  = default;
   ~AdjMatGraph() = default;
 
-  AdjMatGraph(const size_t numberOfNodes) :
-    Graph(numberOfNodes), pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {}
-  AdjMatGraph(const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) : Graph(tripletList.size()) {
+  AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
+    pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
@@ -157,6 +154,7 @@ public:
   virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
 
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
+  size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
@@ -175,12 +173,13 @@ protected:
 };
 
 template <Directionality DIRECT>
-class AdjacencyMatrixGraph : public AdjMatGraph {
+class AdjacencyMatrixGraph : public virtual AdjMatGraph {
 public:
   AdjacencyMatrixGraph()  = default;
   ~AdjacencyMatrixGraph() = default;
 
-  AdjacencyMatrixGraph(const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) : AdjMatGraph(tripletList) {}
+  AdjacencyMatrixGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
+    AdjMatGraph(numberOfNodes, tripletList) {}
 
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     AdjMatGraph::addEdge(orientation<DIRECT>(out, in), edgeWeight);
@@ -209,6 +208,11 @@ public:
 template <Directionality DIRECT>
 class AdjacencyListGraph : public Modifyable {
 public:
+  AdjacencyListGraph()  = default;
+  ~AdjacencyListGraph() = default;
+
+  AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     const Edge e = orientation<DIRECT>(out, in);
     pAdjacencyList[e.u].push_back(e.v);
@@ -235,6 +239,7 @@ public:
         pAdjacencyList.begin(), pAdjacencyList.end(), 0,
         [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
   }
+  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
@@ -244,7 +249,7 @@ private:
 
 class Tree : public virtual Graph {
   bool connected() const override { return true; }
-  size_t numberOfEdges() const override { return pNumberOfNodes - 1; }
+  size_t numberOfEdges() const override { return numberOfNodes() - 1; }
 };
 
 /*!
@@ -257,13 +262,15 @@ public:
   DfsTree()  = default;
   ~DfsTree() = default;
 
-  DfsTree(const size_t numberOfNodes) : Graph(numberOfNodes) {
+  DfsTree(const size_t numberOfNodes) {
     pAdjacencyList.resize(numberOfNodes);
     pIndeces.resize(numberOfNodes);
   }
 
   bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
   bool adjacent(const Edge& e) const override { return e.v == parent(e.u); }
+
+  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   size_t index(const size_t u) const { return this->pIndeces[u]; }
   size_t& index(const size_t u) { return this->pIndeces[u]; }

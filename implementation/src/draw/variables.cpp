@@ -11,6 +11,8 @@
 
 #include "utility/utils.hpp"
 
+#include "exactsolver.hpp"
+
 namespace drawing {
 Euclidean EUCLIDEAN;
 std::vector<float> POINTS_F;
@@ -21,11 +23,12 @@ bool SHOW_SETTINGS_WINDOW;
 std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
 std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER_INITIALIZED;
+std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
 std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 RGBA_COLOUR VERTEX_COLOUR;
 
-Edge BOTTLENECK_EDGE;
+approximation::Result BTSP_APPROX_RESULT;
+exactsolver::Result BTSP_EXACT_RESULT;
 
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
@@ -42,7 +45,7 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
     std::memcpy(ORDER[(unsigned int) type].data(), order.data(), bytes_of(order));
     std::memcpy(ORDER[(unsigned int) type].data() + order.size(), order.data(), 3 * sizeof(unsigned int));
   }
-  ORDER_INITIALIZED[static_cast<unsigned int>(type)] = true;
+  INITIALIZED[static_cast<unsigned int>(type)] = true;
 }
 }  // namespace drawing
 

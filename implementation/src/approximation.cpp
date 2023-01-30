@@ -2,11 +2,15 @@
 
 #include <cmath>
 #include <numeric>
+#include <stdexcept>
 #include <vector>
 
 #include "draw/definitions.hpp"
 
 #include "graph/graph.hpp"
+
+// DEBUG
+#include <iostream>
 
 namespace approximation {
 
@@ -18,19 +22,19 @@ public:
 
   size_t numberOfEdges() const { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
   size_t edgeIndex(const size_t i, const size_t j) const {
-    return i > j ? 0.5 * (i * i + i) + j : 0.5 * (j * j + j) + i;
+    return i > j ? 0.5 * (i * i - i) + j : 0.5 * (j * j - j) + i;
   }
 
   Edge edge(const unsigned int k) const {
-    const unsigned int i = std::floor(std::sqrt(0.25 + 2 * k) - 0.5);
-    return Edge{i, k - (i * i + i) / 2};
+    const unsigned int i = std::floor(std::sqrt(0.25 + 2 * k) + 0.5);
+    return Edge{i, k - (i * i - i) / 2};
   }
 
 private:
   const size_t pNumberOfNodes;
 };
 
-std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemType problemType) {
+Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
   if (problemType == ProblemType::BTSP_approx) {
     const Index index(euclidean.numberOfNodes());
     const size_t numberOfNodes = euclidean.numberOfNodes();
@@ -45,16 +49,22 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
     entries.reserve(numberOfNodes);
     for (unsigned int i = 0; i < numberOfNodes; ++i) {
       const Edge e = index.edge(edgeIndeces[i]);
+
       entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     }
 
     // create an undirected graph from that
-    AdjacencyMatrixGraph<Directionality::Undirected> graph(entries);
+    AdjacencyMatrixGraph<Directionality::Undirected> graph(numberOfNodes, entries);
 
     // continue adding edges until it is biconnected
     unsigned int edgeCounter = numberOfNodes;
+
     while (!graph.biconnected()) {
-      const Edge e = index.edge(edgeCounter);
+      assert(edgeCounter < euclidean.numberOfEdges() && "We cannot add more edges than existing.");
+
+      const Edge e = index.edge(edgeIndeces[edgeCounter]);
+      ++edgeCounter;
+
       graph.addEdge(e, euclidean.weight(e));
     }
 
@@ -64,9 +74,11 @@ std::vector<unsigned int> approximate(const Euclidean& euclidean, const ProblemT
     // calculate proper ear decomposition
     const OpenEarDecomposition ears = schmidt(graph);
     // find approximation
-  }
 
-  std::vector<unsigned int> tour;
-  return tour;
+    return Result{graph, ears};
+  }
+  else {
+    throw std::runtime_error("Unknown problem type");
+  }
 }
 }  // namespace approximation
