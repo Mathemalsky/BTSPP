@@ -258,6 +258,23 @@ class Tree : public virtual Graph {
  * more efficient. The node 0 is assumed to be the root node.
  */
 class DfsTree : public Tree {
+private:
+  class Iterator {
+  public:
+    Iterator(const size_t position, const std::vector<size_t>& adjacencyList) :
+      pPosition(position), pAdjacencyList(adjacencyList) {}
+    Edge operator*() const { return Edge{pPosition, pAdjacencyList[pPosition]}; }
+    Iterator& operator++() {
+      ++pPosition;
+      return *this;
+    }
+    bool operator!=(const Iterator& other) { return this->pPosition != other.pPosition; }
+
+  private:
+    size_t pPosition;
+    const std::vector<size_t>& pAdjacencyList;
+  };
+
 public:
   DfsTree()  = default;
   ~DfsTree() = default;
@@ -277,6 +294,9 @@ public:
 
   size_t parent(const size_t u) const { return this->pAdjacencyList[u]; }
   size_t& parent(const size_t u) { return this->pAdjacencyList[u]; }
+
+  Iterator begin() const { return Iterator(1, pAdjacencyList); }
+  Iterator end() const { return Iterator(pAdjacencyList.size(), pAdjacencyList); }
 
 private:
   std::vector<size_t> pAdjacencyList;

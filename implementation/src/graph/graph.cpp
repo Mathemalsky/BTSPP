@@ -118,6 +118,18 @@ AdjacencyListGraph<Directionality::Directed> findBackedges(
   return backedges;
 }
 
+// DBEUG
+#include <iostream>
+#include "utility/utils.hpp"
+
+std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
+  os << "Number of nodes: " << tree.numberOfNodes() << std::endl;
+  for (const Edge& e : tree) {
+    os << e << std::endl;
+  }
+  return os;
+}
+
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
   const DfsTree tree                                           = dfs(graph);
   const AdjacencyListGraph<Directionality::Directed> backedges = findBackedges(graph, tree);
@@ -144,5 +156,9 @@ OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirect
       }
     }
   }
+
+  // DEBUG
+  std::cerr << tree;
+  std::cerr << "ears\n" << ears;
   return OpenEarDecomposition{ears};
 }
