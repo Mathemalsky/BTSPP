@@ -7,6 +7,22 @@
 #include <Eigen/SparseCore>
 
 template <>
+Edge Iterator<DfsTree>::operator*() const {
+  return Edge{pPosition, pGraph.parent(pPosition)};
+}
+
+template <>
+Iterator<DfsTree>& Iterator<DfsTree>::operator++() {
+  ++pPosition;
+  return *this;
+}
+
+template <>
+bool Iterator<DfsTree>::operator!=(const Iterator<DfsTree>& other) const {
+  return pPosition == other.pPosition;
+}
+
+template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
   std::vector<bool> visited(numberOfNodes(), false);
   std::stack<size_t> nodeStack;
@@ -118,6 +134,18 @@ AdjacencyListGraph<Directionality::Directed> findBackedges(
   return backedges;
 }
 
+// DBEUG
+#include <iostream>
+#include "utility/utils.hpp"
+
+std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
+  os << "Number of nodes: " << tree.numberOfNodes() << std::endl;
+  for (const Edge& e : tree) {
+    os << e << std::endl;
+  }
+  return os;
+}
+
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
   const DfsTree tree                                           = dfs(graph);
   const AdjacencyListGraph<Directionality::Directed> backedges = findBackedges(graph, tree);
@@ -144,5 +172,9 @@ OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirect
       }
     }
   }
+
+  // DEBUG
+  std::cerr << tree;
+  std::cerr << "ears\n" << ears;
   return OpenEarDecomposition{ears};
 }
