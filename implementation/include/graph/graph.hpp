@@ -98,6 +98,20 @@ public:
 protected:
 };
 
+template <class T>
+class Iterator {
+public:
+  template <class G>
+  Iterator(G& graph, size_t position) : pGraph(graph), pPosition(position) {}
+  Edge operator*() const;
+  Iterator<T>& operator++();
+  bool operator!=(const Iterator<T>& other) const;
+
+private:
+  const Graph& pGraph;
+  size_t pPosition;
+};
+
 class WeightedGraph : public virtual Graph {
 public:
   virtual double weight(const size_t u, const size_t v) const = 0;
