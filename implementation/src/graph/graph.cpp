@@ -8,9 +8,7 @@
 
 template <>
 Edge Iterator<DfsTree>::operator*() const {
-  return Edge {
-    pPosition, pGraph.parent(pPosition);
-  }
+  return Edge{pPosition, pGraph.parent(pPosition)};
 }
 
 template <>

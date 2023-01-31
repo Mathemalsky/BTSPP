@@ -101,14 +101,13 @@ protected:
 template <class T>
 class Iterator {
 public:
-  template <class G>
-  Iterator(G& graph, size_t position) : pGraph(graph), pPosition(position) {}
+  Iterator(const T& graph, size_t position) : pGraph(graph), pPosition(position) {}
   Edge operator*() const;
   Iterator<T>& operator++();
   bool operator!=(const Iterator<T>& other) const;
 
 private:
-  const Graph& pGraph;
+  const T& pGraph;
   size_t pPosition;
 };
 
@@ -272,23 +271,6 @@ class Tree : public virtual Graph {
  * more efficient. The node 0 is assumed to be the root node.
  */
 class DfsTree : public Tree {
-private:
-  class Iterator {
-  public:
-    Iterator(const size_t position, const std::vector<size_t>& adjacencyList) :
-      pPosition(position), pAdjacencyList(adjacencyList) {}
-    Edge operator*() const { return Edge{pPosition, pAdjacencyList[pPosition]}; }
-    Iterator& operator++() {
-      ++pPosition;
-      return *this;
-    }
-    bool operator!=(const Iterator& other) { return this->pPosition != other.pPosition; }
-
-  private:
-    size_t pPosition;
-    const std::vector<size_t>& pAdjacencyList;
-  };
-
 public:
   DfsTree()  = default;
   ~DfsTree() = default;
@@ -309,8 +291,8 @@ public:
   size_t parent(const size_t u) const { return this->pAdjacencyList[u]; }
   size_t& parent(const size_t u) { return this->pAdjacencyList[u]; }
 
-  Iterator begin() const { return Iterator(1, pAdjacencyList); }
-  Iterator end() const { return Iterator(pAdjacencyList.size(), pAdjacencyList); }
+  Iterator<DfsTree> begin() const { return Iterator(*this, 1); }
+  Iterator<DfsTree> end() const { return Iterator(*this, pAdjacencyList.size()); }
 
 private:
   std::vector<size_t> pAdjacencyList;
