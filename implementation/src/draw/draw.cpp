@@ -1,5 +1,8 @@
 #include "draw/draw.hpp"
 
+#include <array>
+#include <vector>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -55,7 +58,7 @@ static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float t
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void drawGraph(
+static void drawGraph(
     const ShaderProgram& drawLine, const AdjacencyMatrixGraph<Directionality::Undirected>& graph,
     const RGBA_COLOUR& colour) {
   for (unsigned int k = 0; k < graph.numberOfNodes(); ++k) {
@@ -65,13 +68,26 @@ void drawGraph(
   }
 }
 
+static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const OpenEarDecomposition& openEarDecomp) {
+  for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
+    const std::vector<size_t>& chain = openEarDecomp.ears[i];
+    RGBA_COLOUR colour               = {0.0, (float) (i + 1) / openEarDecomp.ears.size(), 0.0, 1.0};
+    for (unsigned int j = chain.size() - 1; j > 0; --j) {
+      drawEdge(drawLine, Edge{chain[j], chain[j - 1]}, 5.0f, colour);
+    }
+  }
+}
+
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
   clearWindow(window);
   drawVerteces(programs.drawCircles);
 
   unsigned int typeInt = static_cast<unsigned int>(ProblemType::BTSP_approx);
-  if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
+  if (drawing::DRAW_BICONNECTED_GRAPH && drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
     drawGraph(programs.drawLine, drawing::BTSP_APPROX_RESULT.biconnectedGraph, drawing::COLOUR[typeInt]);
+  }
+  if (drawing::DRAW_OPEN_EAR_DECOMPOSITION && drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
+    drawOpenEarDecomposition(programs.drawLine, drawing::BTSP_APPROX_RESULT.openEarDecomposition);
   }
   typeInt = static_cast<unsigned int>(ProblemType::BTSP_exact);
   if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {

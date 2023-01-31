@@ -23,13 +23,15 @@ static void glfw_error_callback(int error, const char* description) {
 }
 
 static void initDrawingVariables() {
-  drawing::SHOW_DEBUG_WINDOW    = drawing::INITIAL_SHOW_DEBUG_WINDOW;
-  drawing::SHOW_SETTINGS_WINDOW = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
-  drawing::ACTIVE               = drawing::INITIAL_ACTIVENESS;
-  drawing::COLOUR               = drawing::INITIAL_COLOUR;
-  drawing::INITIALIZED          = drawing::INITIAL_ACTIVENESS;
-  drawing::THICKNESS            = drawing::INITIAL_THICKNESS;
-  drawing::VERTEX_COLOUR        = drawing::INITIAL_VERTEX_COLOUR;
+  drawing::SHOW_DEBUG_WINDOW           = drawing::INITIAL_SHOW_DEBUG_WINDOW;
+  drawing::SHOW_SETTINGS_WINDOW        = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
+  drawing::ACTIVE                      = drawing::INITIAL_ACTIVENESS;
+  drawing::COLOUR                      = drawing::INITIAL_COLOUR;
+  drawing::DRAW_BICONNECTED_GRAPH      = drawing::INITIAL_DRAW_BICONNECTED_GRAPH;
+  drawing::DRAW_OPEN_EAR_DECOMPOSITION = drawing::INITIAL_DRAW_OPEN_EAR_DECOMPOSITION;
+  drawing::INITIALIZED                 = drawing::INITIAL_ACTIVENESS;
+  drawing::THICKNESS                   = drawing::INITIAL_THICKNESS;
+  drawing::VERTEX_COLOUR               = drawing::INITIAL_VERTEX_COLOUR;
 }
 
 static const Buffers& setUpBufferMemory(const unsigned int numberOfNodes) {

@@ -59,6 +59,10 @@ void drawImgui() {
     ImGui::SliderFloat(
         "thickness##BTSP approx", &drawing::THICKNESS[(unsigned int) ProblemType::BTSP_approx], 0.0f, 30.0f, "%.1f");
 
+    ImGui::Checkbox("biconnectd graph", &drawing::DRAW_BICONNECTED_GRAPH);
+    ImGui::SameLine();
+    ImGui::Checkbox("open ear decomp.", &drawing::DRAW_OPEN_EAR_DECOMPOSITION);
+
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[(unsigned int) ProblemType::BTSP_exact]);
     ImGui::SliderFloat(
         "thickness##BTSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::BTSP_exact], 0.0f, 20.0f, "%.1f");
