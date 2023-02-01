@@ -13,10 +13,34 @@
 struct Edge {
   size_t u;
   size_t v;
+  Edge reverse() const { return Edge{v, u}; }
+  void invert() { std::swap(u, v); }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
   return os << "(" << edge.u << ", " << edge.v << ") ";
+}
+
+enum class Directionality { Undirected, Directed };
+
+template <Directionality DIRECT>
+static Edge orientation(const size_t u, const size_t v) {
+  if constexpr (DIRECT == Directionality::Undirected) {
+    return (u > v ? Edge{u, v} : Edge{v, u});
+  }
+  else {
+    return Edge{u, v};
+  }
+}
+
+template <Directionality DIRECT>
+static Edge orientation(const Edge& e) {
+  if constexpr (DIRECT == Directionality::Undirected) {
+    return (e.u > e.v ? e : Edge{e.v, e.u});
+  }
+  else {
+    return e;
+  }
 }
 
 /***********************************************************************************************************************
@@ -28,6 +52,8 @@ class GraphIt {
   virtual GraphIt& operator++()  = 0;
 };
 
+template <Directionality DIRECT>
+class AdjacencyListGraphIt;
 class AdjMatGraphIt;
 class DfsTreeIt;
 
@@ -81,28 +107,6 @@ struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
   };
 };
 }  // namespace Eigen
-
-enum class Directionality { Undirected, Directed };
-
-template <Directionality DIRECT>
-static Edge orientation(const size_t u, const size_t v) {
-  if constexpr (DIRECT == Directionality::Undirected) {
-    return (u > v ? Edge{u, v} : Edge{v, u});
-  }
-  else {
-    return Edge{u, v};
-  }
-}
-
-template <Directionality DIRECT>
-static Edge orientation(const Edge& e) {
-  if constexpr (DIRECT == Directionality::Undirected) {
-    return (e.u > e.v ? e : Edge{e.v, e.u});
-  }
-  else {
-    return e;
-  }
-}
 
 class Graph {
 public:
@@ -168,6 +172,57 @@ protected:
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
 };
 
+/*!
+ * \brief The AdjacencyListGraph class implements a modifyable graph with adjacency list as internal storage
+ * \details If the edge is directed, it is directed from vertex associated with outer storage index to vertex associated
+ * with inner storage index
+ */
+template <Directionality DIRECT>
+class AdjacencyListGraph : public Modifyable {
+public:
+  AdjacencyListGraph()  = default;
+  ~AdjacencyListGraph() = default;
+
+  AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
+  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    const Edge e = orientation<DIRECT>(out, in);
+    pAdjacencyList[e.u].push_back(e.v);
+  }
+
+  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    const Edge newEdge = orientation<DIRECT>(e);
+    pAdjacencyList[newEdge.u].push_back(newEdge.v);
+  }
+
+  bool adjacent(const size_t u, const size_t v) const override {
+    const Edge e                         = orientation<DIRECT>(u, v);
+    const std::vector<size_t>& neighbour = pAdjacencyList[e.u];
+    const auto it                        = std::find(neighbour.begin(), neighbour.end(), e.v);
+    return it != neighbour.end();
+  }
+
+  bool adjacent(const Edge& e) const { return this->adjacent(e.u, e.v); }
+
+  bool connected() const override;
+
+  size_t numberOfEdges() const override {
+    return std::accumulate(
+        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
+  }
+  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
+
+  AdjacencyListGraphIt<DIRECT> begin() const;
+  AdjacencyListGraphIt<DIRECT> end() const;
+
+  const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
+  size_t numberOfNeighbours(const size_t u) const { return pAdjacencyList[u].size(); }
+
+private:
+  std::vector<std::vector<size_t>> pAdjacencyList;
+};
+
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 public:
   AdjMatGraph()  = default;
@@ -186,13 +241,14 @@ public:
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
+  AdjMatGraphIt begin() const;
+  AdjMatGraphIt end() const;
+
   void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
+
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
-
-  AdjMatGraphIt begin() const;
-  AdjMatGraphIt end() const;
 
 protected:
   Eigen::SparseMatrix<EdgeWeight> pAdjacencyMatrix;
@@ -239,48 +295,6 @@ public:
   bool connectedWhithout(const size_t vertex) const;
 };
 
-template <Directionality DIRECT>
-class AdjacencyListGraph : public Modifyable {
-public:
-  AdjacencyListGraph()  = default;
-  ~AdjacencyListGraph() = default;
-
-  AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
-
-  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
-    const Edge e = orientation<DIRECT>(out, in);
-    pAdjacencyList[e.u].push_back(e.v);
-  }
-
-  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
-    const Edge newEdge = orientation<DIRECT>(e);
-    pAdjacencyList[newEdge.u].push_back(newEdge.v);
-  }
-
-  bool adjacent(const size_t u, const size_t v) const override {
-    const Edge e                         = orientation<DIRECT>(u, v);
-    const std::vector<size_t>& neighbour = pAdjacencyList[e.u];
-    const auto it                        = std::find(neighbour.begin(), neighbour.end(), e.v);
-    return it != neighbour.end();
-  }
-
-  bool adjacent(const Edge& e) const { return this->adjacent(e.u, e.v); }
-
-  bool connected() const override;
-
-  size_t numberOfEdges() const override {
-    return std::accumulate(
-        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
-        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
-  }
-  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
-
-  const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
-
-private:
-  std::vector<std::vector<size_t>> pAdjacencyList;
-};
-
 class Tree : public virtual Graph {
   bool connected() const override { return true; }
   size_t numberOfEdges() const override { return numberOfNodes() - 1; }
@@ -289,7 +303,7 @@ class Tree : public virtual Graph {
 /*!
  * \brief class FixTree
  * \details This class is for trees where every node has exactly one parent. This allows to store the neighboors
- * more efficient. The node 0 is assumed to be the root node.
+ * more efficient.
  */
 class DfsTree : public Tree {
 public:
@@ -298,7 +312,7 @@ public:
 
   DfsTree(const size_t numberOfNodes) {
     pAdjacencyList.resize(numberOfNodes);
-    pIndeces.resize(numberOfNodes);
+    pExplorationOrder.resize(numberOfNodes);
   }
 
   bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
@@ -306,18 +320,34 @@ public:
 
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
-  // size_t index(const size_t u) const { return this->pIndeces[u]; }
-  // size_t& index(const size_t u) { return this->pIndeces[u]; }
-
-  size_t parent(const size_t u) const { return this->pAdjacencyList[u]; }
-  size_t& parent(const size_t u) { return this->pAdjacencyList[u]; }
-
   DfsTreeIt begin() const;
   DfsTreeIt end() const;
 
+  /*!
+   * \brief true if v was explored later than v in the dfs() else false
+   * \param e directed edge u -> v
+   * \return true if v was explored later than v in the dfs() else false
+   */
+  bool down(const Edge& e) const { return pExplorationOrder[e.u] < pExplorationOrder[e.v]; }
+
+  size_t explorationIndex(const size_t u) const { return pExplorationOrder[u]; }
+  size_t& explorationIndex(const size_t u) { return pExplorationOrder[u]; }
+
+  size_t parent(const size_t u) const {
+    assert(
+        u != pExplorationOrder[0] && "You are trying to access the root nodes parent, which is uninitialized memory!");
+    return pAdjacencyList[u];
+  }
+
+  size_t& parent(const size_t u) {
+    assert(
+        u != pExplorationOrder[0] && "You are trying to access the root nodes parent, which is uninitialized memory!");
+    return pAdjacencyList[u];
+  }
+
 private:
   std::vector<size_t> pAdjacencyList;
-  std::vector<size_t> pIndeces;
+  std::vector<size_t> pExplorationOrder;
 };
 
 template <Directionality DIRECT>
@@ -332,6 +362,49 @@ OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirect
 /***********************************************************************************************************************
  *                                          iterator implementation
  **********************************************************************************************************************/
+
+struct AdjListPos {
+  size_t outerIndex;
+  size_t innerIndex;
+  bool operator!=(const AdjListPos& other) const { return outerIndex != other.outerIndex; }
+};
+
+template <Directionality DIRECT>
+class AdjacencyListGraphIt : public GraphIt {
+public:
+  AdjacencyListGraphIt(const AdjacencyListGraph<DIRECT>& graph, AdjListPos position) :
+    pGraph(graph), pPosition(position) {}
+
+  Edge operator*() const override {
+    return Edge{pPosition.outerIndex, pGraph.neighbours(pPosition.outerIndex)[pPosition.innerIndex]};
+  }
+
+  AdjacencyListGraphIt& operator++() override {
+    ++pPosition.innerIndex;
+    while (pPosition.innerIndex == pGraph.numberOfNeighbours(pPosition.outerIndex)
+           && pPosition.outerIndex < pGraph.numberOfNodes()) {
+      pPosition.innerIndex = 0;
+      ++pPosition.outerIndex;
+    }
+    return *this;
+  }
+
+  bool operator!=(const AdjacencyListGraphIt<DIRECT>& other) const { return pPosition != other.pPosition; }
+
+private:
+  const AdjacencyListGraph<DIRECT>& pGraph;
+  AdjListPos pPosition;
+};
+
+template <Directionality DIRECT>
+inline AdjacencyListGraphIt<DIRECT> AdjacencyListGraph<DIRECT>::begin() const {
+  return AdjacencyListGraphIt<DIRECT>(*this, AdjListPos{0, 0});
+}
+
+template <Directionality DIRECT>
+inline AdjacencyListGraphIt<DIRECT> AdjacencyListGraph<DIRECT>::end() const {
+  return AdjacencyListGraphIt(*this, AdjListPos{numberOfNodes(), 0});
+}
 
 class AdjMatGraphIt : public GraphIt {
 public:
@@ -422,17 +495,30 @@ inline std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
 }
 
 template <Directionality DIRECT>
+inline std::ostream& operator<<(std::ostream& os, const AdjacencyListGraph<DIRECT>& graph) {
+  os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
+  for (const Edge& e : graph) {
+    os << e << std::endl;
+  }
+  return os;
+}
+
+template <Directionality DIRECT>
 DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
   const size_t numberOfNodes = graph.numberOfNodes();
+  size_t explorationCounter  = 0;
+
   DfsTree tree(numberOfNodes);
   std::vector<bool> visited(numberOfNodes, false);
   std::stack<size_t> nodeStack;
+
   nodeStack.push(rootNode);
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      visited[top] = true;
+      visited[top]               = true;
+      tree.explorationIndex(top) = explorationCounter++;  // store order of node exploration
       for (unsigned int i = 0; i < top; ++i) {
         if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
           nodeStack.push(i);
