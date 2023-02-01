@@ -8,6 +8,7 @@
 #include <Eigen/SparseCore>
 
 #include "graph/geometry.hpp"
+//#include "graph/iterators.hpp"
 
 struct Edge {
   size_t u;
@@ -17,6 +18,22 @@ struct Edge {
 inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
   return os << "(" << edge.u << ", " << edge.v << ") ";
 }
+
+/***********************************************************************************************************************
+ *                                          iterator declaration
+ **********************************************************************************************************************/
+
+class GraphIt {
+  virtual Edge operator*() const = 0;
+  virtual GraphIt& operator++()  = 0;
+};
+
+class AdjMatGraphIt;
+class DfsTreeIt;
+
+/***********************************************************************************************************************
+ *                                             graph classes
+ **********************************************************************************************************************/
 
 class EdgeWeight {
 public:
@@ -98,19 +115,6 @@ public:
 protected:
 };
 
-template <class T>
-class Iterator {
-public:
-  Iterator(const T& graph, size_t position) : pGraph(graph), pPosition(position) {}
-  Edge operator*() const;
-  Iterator<T>& operator++();
-  bool operator!=(const Iterator<T>& other) const;
-
-private:
-  const T& pGraph;
-  size_t pPosition;
-};
-
 class WeightedGraph : public virtual Graph {
 public:
   virtual double weight(const size_t u, const size_t v) const = 0;
@@ -169,9 +173,13 @@ public:
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
+  void compressMatrix() {pAdjacencyMatrix.makeCompressed();}
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
+
+  AdjMatGraphIt begin() const;
+  AdjMatGraphIt end() const;
 
 protected:
   Eigen::SparseMatrix<EdgeWeight> pAdjacencyMatrix;
@@ -291,8 +299,8 @@ public:
   size_t parent(const size_t u) const { return this->pAdjacencyList[u]; }
   size_t& parent(const size_t u) { return this->pAdjacencyList[u]; }
 
-  Iterator<DfsTree> begin() const { return Iterator(*this, 1); }
-  Iterator<DfsTree> end() const { return Iterator(*this, pAdjacencyList.size()); }
+  DfsTreeIt begin() const;
+  DfsTreeIt end() const;
 
 private:
   std::vector<size_t> pAdjacencyList;
@@ -309,11 +317,96 @@ struct OpenEarDecomposition {
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
 
 /***********************************************************************************************************************
+ *                                          iterator implementation
+ **********************************************************************************************************************/
+
+class AdjMatGraphIt : public GraphIt {
+public:
+  struct SparseMatrixPos {
+    size_t innerIndex;
+    size_t outerIndex;
+    bool operator!=(const SparseMatrixPos& other) const {
+      return innerIndex != other.innerIndex;
+    }
+  };
+
+  AdjMatGraphIt(const AdjMatGraph& graph, SparseMatrixPos position) : pGraph(graph), pPosition(position) {}
+
+  Edge operator*() const override {
+    assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
+    const int* innerIndeces = pGraph.matrix().innerIndexPtr();
+    return Edge{(size_t) (innerIndeces[pPosition.innerIndex]), pPosition.outerIndex};
+  }
+
+  AdjMatGraphIt& operator++() override {
+    assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
+    const int* outerIndeces = pGraph.matrix().outerIndexPtr();
+    ++pPosition.innerIndex;
+    if (pPosition.innerIndex >= (size_t) outerIndeces[pPosition.outerIndex + 1]) {
+      ++pPosition.outerIndex;
+    }
+    return *this;
+  }
+
+  bool operator!=(const AdjMatGraphIt& other) const { return pPosition != other.pPosition; }
+
+private:
+  const AdjMatGraph& pGraph;
+  SparseMatrixPos pPosition;
+};
+
+inline AdjMatGraphIt AdjMatGraph::begin() const {
+  return AdjMatGraphIt(*this, AdjMatGraphIt::SparseMatrixPos{0, 0});
+}
+inline AdjMatGraphIt AdjMatGraph::end() const {
+  return AdjMatGraphIt(
+      *this, AdjMatGraphIt::SparseMatrixPos{(size_t) pAdjacencyMatrix.nonZeros(), (size_t) pAdjacencyMatrix.cols()});
+}
+
+class DfsTreeIt : public GraphIt {
+public:
+  DfsTreeIt(const DfsTree& tree, const size_t position) : pTree(tree), pPosition(position) {}
+
+  Edge operator*() const override { return Edge{pPosition, pTree.parent(pPosition)}; }
+
+  DfsTreeIt& operator++() override {
+    ++pPosition;
+    return *this;
+  }
+
+  bool operator!=(const DfsTreeIt& other) const { return pPosition != other.pPosition; }
+
+private:
+  const DfsTree& pTree;
+  size_t pPosition;
+};
+
+inline DfsTreeIt DfsTree::begin() const {
+  return DfsTreeIt(*this, (size_t) 1);
+}
+inline DfsTreeIt DfsTree::end() const {
+  return DfsTreeIt(*this, pAdjacencyList.size());
+}
+
+/***********************************************************************************************************************
  *                                          template implementation
  **********************************************************************************************************************/
 
+// DEBUG
+#include <iostream>
+inline std::ostream& operator<<(std::ostream& os, const AdjMatGraph& graph) {
+  os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
+  for (const Edge& e : graph) {
+    os << e << std::endl;
+  }
+  return os;
+}
+
 template <Directionality DIRECT>
 DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
+  // DEBUG
+  std::cerr << graph;
+
   const size_t numberOfNodes = graph.numberOfNodes();
   DfsTree tree(numberOfNodes);
   size_t indexCounter = 0;
