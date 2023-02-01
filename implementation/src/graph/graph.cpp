@@ -7,6 +7,22 @@
 #include <Eigen/SparseCore>
 
 template <>
+Edge Iterator<DfsTree>::operator*() const {
+  return Edge{pPosition, pGraph.parent(pPosition)};
+}
+
+template <>
+Iterator<DfsTree>& Iterator<DfsTree>::operator++() {
+  ++pPosition;
+  return *this;
+}
+
+template <>
+bool Iterator<DfsTree>::operator!=(const Iterator<DfsTree>& other) const {
+  return pPosition == other.pPosition;
+}
+
+template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
   std::vector<bool> visited(numberOfNodes(), false);
   std::stack<size_t> nodeStack;
