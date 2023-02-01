@@ -105,42 +105,16 @@ bool AdjacencyListGraph<Directionality::Directed>::connected() const {
 
 AdjacencyListGraph<Directionality::Directed> findBackedges(
     const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
-  // DEBUG
-  std::cerr << "graph: " << graph;
-  std::cerr << "tree: " << tree;
-  std::cerr << "-----\n";
   AdjacencyListGraph<Directionality::Directed> backedges(graph.numberOfNodes());
   for (Edge e : graph) {
     if (tree.down(e)) {
       e.invert();
     }
-
-    // DEBUG
-    std::cerr << e;
-
     if (!tree.adjacent(e)) {
       backedges.addEdge(e.reverse());
-
-      // DEBUG
-      std::cerr << " added " << e.reverse();
-    }
-
-    std::cerr << std::endl;
-  }
-  /*
-  for (size_t k = 0; k < graph.numberOfNodes(); ++k) {
-    for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
-      const size_t u = std::max(k, static_cast<size_t>(it.index()));
-      const size_t v = std::min(k, static_cast<size_t>(it.index()));
-      if (!tree.adjacent(u, v)) {  // if edge (k, it.index()) not in T
-        backedges.addEdge(v, u);   // add the reverse directed edge to backedges
-      }
     }
   }
-  */
 
-  // DEBUG
-  std::cerr << "backedges: " << backedges;
   return backedges;
 }
 

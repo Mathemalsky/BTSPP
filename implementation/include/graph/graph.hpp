@@ -8,7 +8,10 @@
 #include <Eigen/SparseCore>
 
 #include "graph/geometry.hpp"
-//#include "graph/iterators.hpp"
+
+/***********************************************************************************************************************
+ *                                                Edges
+ **********************************************************************************************************************/
 
 struct Edge {
   size_t u;
@@ -16,10 +19,6 @@ struct Edge {
   Edge reverse() const { return Edge{v, u}; }
   void invert() { std::swap(u, v); }
 };
-
-inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
-  return os << "(" << edge.u << ", " << edge.v << ") ";
-}
 
 enum class Directionality { Undirected, Directed };
 
@@ -36,30 +35,12 @@ static Edge orientation(const size_t u, const size_t v) {
 template <Directionality DIRECT>
 static Edge orientation(const Edge& e) {
   if constexpr (DIRECT == Directionality::Undirected) {
-    return (e.u > e.v ? e : Edge{e.v, e.u});
+    return (e.u > e.v ? e : e.reverse());
   }
   else {
     return e;
   }
 }
-
-/***********************************************************************************************************************
- *                                          iterator declaration
- **********************************************************************************************************************/
-
-class GraphIt {
-  virtual Edge operator*() const = 0;
-  virtual GraphIt& operator++()  = 0;
-};
-
-template <Directionality DIRECT>
-class AdjacencyListGraphIt;
-class AdjMatGraphIt;
-class DfsTreeIt;
-
-/***********************************************************************************************************************
- *                                             graph classes
- **********************************************************************************************************************/
 
 class EdgeWeight {
 public:
@@ -78,7 +59,7 @@ public:
   EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
   EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
   EdgeWeight& operator+=(const EdgeWeight other) {
-    this->pCost = std::min(this->pCost, other.pCost);
+    pCost = std::min(pCost, other.pCost);
     return *this;
   }
 
@@ -108,6 +89,24 @@ struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
 };
 }  // namespace Eigen
 
+/***********************************************************************************************************************
+ *                                          iterator declaration
+ **********************************************************************************************************************/
+
+class GraphIt {
+  virtual Edge operator*() const = 0;
+  virtual GraphIt& operator++()  = 0;
+};
+
+template <Directionality DIRECT>
+class AdjacencyListGraphIt;
+class AdjMatGraphIt;
+class DfsTreeIt;
+
+/***********************************************************************************************************************
+ *                                             graph classes
+ **********************************************************************************************************************/
+
 class Graph {
 public:
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
@@ -117,19 +116,6 @@ public:
   virtual size_t numberOfNodes() const                        = 0;
 
 protected:
-};
-
-template <class T>
-class Iterator {
-public:
-  Iterator(const T& graph, size_t position) : pGraph(graph), pPosition(position) {}
-  Edge operator*() const;
-  Iterator<T>& operator++();
-  bool operator!=(const Iterator<T>& other) const;
-
-private:
-  const T& pGraph;
-  size_t pPosition;
 };
 
 class WeightedGraph : public virtual Graph {
@@ -160,7 +146,7 @@ public:
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
 
   Point2D position(const size_t v) const { return pPositions[v]; }
-  std::vector<Point2D>& verteces() { return this->pPositions; }
+  std::vector<Point2D>& verteces() { return pPositions; }
 
 private:
   std::vector<Point2D> pPositions;
@@ -202,7 +188,7 @@ public:
     return it != neighbour.end();
   }
 
-  bool adjacent(const Edge& e) const { return this->adjacent(e.u, e.v); }
+  bool adjacent(const Edge& e) const { return adjacent(e.u, e.v); }
 
   bool connected() const override;
 
@@ -246,7 +232,7 @@ public:
 
   void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
 
-  const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
+  const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return pAdjacencyMatrix; }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
@@ -475,33 +461,6 @@ inline DfsTreeIt DfsTree::end() const {
 /***********************************************************************************************************************
  *                                          template implementation
  **********************************************************************************************************************/
-
-// DEBUG
-#include <iostream>
-inline std::ostream& operator<<(std::ostream& os, const AdjMatGraph& graph) {
-  os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
-  for (const Edge& e : graph) {
-    os << e << std::endl;
-  }
-  return os;
-}
-
-inline std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
-  os << "Number of nodes: " << tree.numberOfNodes() << std::endl;
-  for (const Edge& e : tree) {
-    os << e << std::endl;
-  }
-  return os;
-}
-
-template <Directionality DIRECT>
-inline std::ostream& operator<<(std::ostream& os, const AdjacencyListGraph<DIRECT>& graph) {
-  os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
-  for (const Edge& e : graph) {
-    os << e << std::endl;
-  }
-  return os;
-}
 
 template <Directionality DIRECT>
 DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
