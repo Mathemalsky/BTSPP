@@ -68,8 +68,7 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
       graph.addEdge(e, euclidean.weight(e));
     }
 
-    graph.compressMatrix(); // matrix became uncommpressed when adding edges
-
+    graph.compressMatrix();  // matrix became uncommpressed when adding edges
 
     // take the square of the graph
     // graph.square();

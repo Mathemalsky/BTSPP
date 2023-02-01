@@ -186,7 +186,7 @@ public:
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
-  void compressMatrix() {pAdjacencyMatrix.makeCompressed();}
+  void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
   const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return this->pAdjacencyMatrix; }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
@@ -306,15 +306,14 @@ public:
 
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
-  size_t index(const size_t u) const { return this->pIndeces[u]; }
-  size_t& index(const size_t u) { return this->pIndeces[u]; }
+  // size_t index(const size_t u) const { return this->pIndeces[u]; }
+  // size_t& index(const size_t u) { return this->pIndeces[u]; }
 
   size_t parent(const size_t u) const { return this->pAdjacencyList[u]; }
   size_t& parent(const size_t u) { return this->pAdjacencyList[u]; }
 
   DfsTreeIt begin() const;
   DfsTreeIt end() const;
-
 
 private:
   std::vector<size_t> pAdjacencyList;
@@ -339,9 +338,7 @@ public:
   struct SparseMatrixPos {
     size_t innerIndex;
     size_t outerIndex;
-    bool operator!=(const SparseMatrixPos& other) const {
-      return innerIndex != other.innerIndex;
-    }
+    bool operator!=(const SparseMatrixPos& other) const { return innerIndex != other.innerIndex; }
   };
 
   AdjMatGraphIt(const AdjMatGraph& graph, SparseMatrixPos position) : pGraph(graph), pPosition(position) {}
@@ -416,14 +413,18 @@ inline std::ostream& operator<<(std::ostream& os, const AdjMatGraph& graph) {
   return os;
 }
 
+inline std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
+  os << "Number of nodes: " << tree.numberOfNodes() << std::endl;
+  for (const Edge& e : tree) {
+    os << e << std::endl;
+  }
+  return os;
+}
+
 template <Directionality DIRECT>
 DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
-  // DEBUG
-  std::cerr << graph;
-
   const size_t numberOfNodes = graph.numberOfNodes();
   DfsTree tree(numberOfNodes);
-  size_t indexCounter = 0;
   std::vector<bool> visited(numberOfNodes, false);
   std::stack<size_t> nodeStack;
   nodeStack.push(rootNode);
@@ -432,14 +433,18 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
     nodeStack.pop();
     if (!visited[top]) {
       visited[top] = true;
+      for (unsigned int i = 0; i < top; ++i) {
+        if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
+          nodeStack.push(i);
+          tree.parent(i) = top;
+        }
+      }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());     // do not push already visited nodes
           tree.parent(it.index()) = top;  // update the parent
         }
       }
-      tree.index(top) = indexCounter;
-      ++indexCounter;
     }
   }
   return tree;
