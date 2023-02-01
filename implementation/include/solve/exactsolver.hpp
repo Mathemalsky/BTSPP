@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include <draw/definitions.hpp>
+#include <solve/definitions.hpp>
 
 #include "graph/graph.hpp"
 

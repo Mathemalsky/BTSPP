@@ -2,9 +2,10 @@
 
 #include <array>
 
+#include "solve/definitions.hpp"
+
 using RGBA_COLOUR = std::array<float, 4>;  // 4th float currently unused
 
-enum class ProblemType : unsigned int { BTSP_approx, BTSP_exact, TSP_exact, NUMBER_OF_OPTIONS };
 namespace problemType {
 constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> PROBLEM_TYPES = {
     ProblemType::BTSP_approx, ProblemType::BTSP_exact, ProblemType::TSP_exact};

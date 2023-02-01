@@ -7,7 +7,7 @@
 #include "draw/definitions.hpp"
 #include "draw/variables.hpp"
 
-#include "exactsolver.hpp"
+#include "solve/exactsolver.hpp"
 
 static void toggleSettingsWindow() {
   if (drawing::SHOW_SETTINGS_WINDOW) {

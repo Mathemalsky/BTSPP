@@ -27,6 +27,8 @@
 !implementation/src/graph/*.cpp
 !implementation/include/graph/*.hpp
 !implementation/include/utility/*.hpp
+!implementation/src/solve/*.cpp
+!implementation/include/solve/*.hpp
 
 # libraries
 !implementation/lib/imgui/*

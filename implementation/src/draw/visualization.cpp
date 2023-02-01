@@ -14,8 +14,8 @@
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
-#include "euclideandistancegraph.hpp"
-#include "exactsolver.hpp"
+#include "solve/euclideandistancegraph.hpp"
+#include "solve/exactsolver.hpp"
 
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {

@@ -9,8 +9,8 @@
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
 
-#include "approximation.hpp"
-#include "exactsolver.hpp"
+#include "solve/approximation.hpp"
+#include "solve/exactsolver.hpp"
 
 namespace drawing {
 extern Euclidean EUCLIDEAN;

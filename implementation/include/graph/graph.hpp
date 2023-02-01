@@ -333,15 +333,6 @@ private:
   std::vector<size_t> pExplorationOrder;
 };
 
-template <Directionality DIRECT>
-DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0);
-
-struct OpenEarDecomposition {
-  std::vector<std::vector<size_t>> ears;
-};
-
-OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
-
 /***********************************************************************************************************************
  *                                          iterator implementation
  **********************************************************************************************************************/
@@ -459,23 +450,30 @@ inline DfsTreeIt DfsTree::end() const {
  *                                          template implementation
  **********************************************************************************************************************/
 
+/*!
+ * \brief AdjacencyListGraph::connected checks the graph is connected
+ * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs
+ * \return true if the graph is connected, else false
+ */
 template <Directionality DIRECT>
 bool AdjacencyListGraph<DIRECT>::connected() const {
-  std::vector<bool> component(numberOfNodes(), false);
-  std::vector<size_t> nodesToCheck;
-  nodesToCheck.reserve(numberOfNodes());
-  nodesToCheck.push_back(0);  // we check if the component containing vertex 0 is the whole graph
-  while (!nodesToCheck.empty()) {
-    const size_t v = nodesToCheck.back();
-    nodesToCheck.pop_back();
-    component[v] = true;
-    for (const size_t& neighbour : pAdjacencyList[v]) {
-      if (!component[neighbour]) {
-        nodesToCheck.push_back(neighbour);
+  std::vector<bool> visited(numberOfNodes(), false);
+  std::vector<size_t> nodeStack;
+  nodeStack.reserve(numberOfNodes());
+  nodeStack.push_back(0);
+  while (!nodeStack.empty()) {
+    const size_t v = nodeStack.back();
+    nodeStack.pop_back();  // using vector as stack
+    if (!visited[v]) {
+      visited[v] = true;
+      for (const size_t& neighbour : pAdjacencyList[v]) {
+        if (!visited[neighbour]) {
+          nodeStack.push_back(neighbour);
+        }
       }
     }
   }
-  for (const bool& node : component) {
+  for (const bool& node : visited) {
     if (!node) {
       return false;
     }
@@ -483,34 +481,45 @@ bool AdjacencyListGraph<DIRECT>::connected() const {
   return true;
 }
 
+/***********************************************************************************************************************
+ *                                           graph algorithms
+ **********************************************************************************************************************/
+
 template <Directionality DIRECT>
-DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
+DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
 
   DfsTree tree(numberOfNodes);
   std::vector<bool> visited(numberOfNodes, false);
-  std::stack<size_t> nodeStack;
-
-  nodeStack.push(rootNode);
+  std::vector<size_t> nodeStack;
+  nodeStack.reserve(numberOfNodes);
+  nodeStack.push_back(rootNode);
   while (!nodeStack.empty()) {
-    const size_t top = nodeStack.top();
-    nodeStack.pop();
+    const size_t top = nodeStack.back();
+    nodeStack.pop_back();
     if (!visited[top]) {
       visited[top] = true;
       tree.explorationOrder().push_back(top);  // store order of node exploration
       for (unsigned int i = 0; i < top; ++i) {
         if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
-          nodeStack.push(i);
+          nodeStack.push_back(i);
           tree.parent(i) = top;
         }
       }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
         if (!visited[it.index()]) {
-          nodeStack.push(it.index());     // do not push already visited nodes
-          tree.parent(it.index()) = top;  // update the parent
+          nodeStack.push_back(it.index());  // do not push already visited nodes
+          tree.parent(it.index()) = top;    // update the parent
         }
       }
     }
   }
   return tree;
 }
+
+struct OpenEarDecomposition {
+  std::vector<std::vector<size_t>> ears;
+};
+
+OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
+AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);

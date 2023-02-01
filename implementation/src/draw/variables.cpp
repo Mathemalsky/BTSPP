@@ -11,7 +11,7 @@
 
 #include "utility/utils.hpp"
 
-#include "exactsolver.hpp"
+#include "solve/exactsolver.hpp"
 
 namespace drawing {
 Euclidean EUCLIDEAN;

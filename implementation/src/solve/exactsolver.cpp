@@ -1,4 +1,4 @@
-#include "exactsolver.hpp"
+#include "solve/exactsolver.hpp"
 
 #include <cassert>
 #include <iostream>
