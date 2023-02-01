@@ -1,5 +1,6 @@
 #include "graph/graph.hpp"
 
+#include <cassert>
 #include <exception>
 #include <stack>
 #include <vector>
@@ -79,77 +80,38 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
   return true;
 }
 
-template <>
-bool AdjacencyListGraph<Directionality::Directed>::connected() const {
-  std::vector<bool> component(numberOfNodes(), false);
-  std::vector<size_t> nodesToCheck;
-  nodesToCheck.reserve(numberOfNodes());
-  nodesToCheck.push_back(0);  // we check if the component containing vertex 0 is the whole graph
-  while (!nodesToCheck.empty()) {
-    const size_t v = nodesToCheck.back();
-    nodesToCheck.pop_back();
-    component[v] = true;
-    for (const size_t& neighbour : pAdjacencyList[v]) {
-      if (!component[neighbour]) {
-        nodesToCheck.push_back(neighbour);
-      }
-    }
-  }
-  for (const bool& node : component) {
-    if (!node) {
-      return false;
-    }
-  }
-  return true;
-}
-
-AdjacencyListGraph<Directionality::Directed> findBackedges(
+AdjacencyListGraph<Directionality::Undirected> findBackedges(
     const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
-  AdjacencyListGraph<Directionality::Directed> backedges(graph.numberOfNodes());
+  AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
   for (Edge e : graph) {
-    if (tree.down(e)) {
-      e.invert();
-    }
-    if (!tree.adjacent(e)) {
-      backedges.addEdge(e.reverse());
+    if (!tree.adjacent(e) && !tree.adjacent(e.reverse())) {
+      backedges.addEdge(e);
     }
   }
-
   return backedges;
 }
 
-// DBEUG
-#include <iostream>
-#include "utility/utils.hpp"
-
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
-  const DfsTree tree                                           = dfs(graph);
-  const AdjacencyListGraph<Directionality::Directed> backedges = findBackedges(graph, tree);
+  const DfsTree tree                                             = dfs(graph);
+  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
+  const size_t numberOfNodes                                     = graph.numberOfNodes();
 
-  // decompose by iterating over every backedge outgoing from every node
-  const size_t numberOfNodes = graph.numberOfNodes();
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
-  for (size_t v = 0; v < numberOfNodes; ++v) {
-    for (const size_t& u : backedges.neighbours(v)) {  // for every backedge starting at v
+  for (size_t v : tree.exploratioOrder()) {     // iterate over all nodes in the order they appeared in dfs
+    for (size_t u : backedges.neighbours(v)) {  // for every backedge starting at v
       if (!visited[u]) {
         std::vector<size_t> chain{v, u};
         visited[v] = true;
-        size_t x   = u;
-        while (!visited[x]) {
-          chain.push_back(tree.parent(x));
-          visited[x] = true;
-          x          = tree.parent(x);
+        while (!visited[u]) {
+          visited[u] = true;
+          u          = tree.parent(u);
+          chain.push_back(u);
         }
-        if (x == v && v != 0) {
-          throw std::runtime_error("Graph is not biconnected!");
-        }
+        assert(u != v || v == 0 && "Graph is not biconnected!");
         ears.push_back(chain);
       }
     }
   }
-
-  // DEBUG
-  std::cerr << "ears\n" << ears;
   return OpenEarDecomposition{ears};
 }

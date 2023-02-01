@@ -172,13 +172,17 @@ public:
   AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
 
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
-    const Edge e = orientation<DIRECT>(out, in);
-    pAdjacencyList[e.u].push_back(e.v);
+    pAdjacencyList[out].push_back(in);
+    if constexpr (DIRECT == Directionality::Undirected) {
+      pAdjacencyList[in].push_back(out);
+    }
   }
 
   void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
-    const Edge newEdge = orientation<DIRECT>(e);
-    pAdjacencyList[newEdge.u].push_back(newEdge.v);
+    pAdjacencyList[e.u].push_back(e.v);
+    if constexpr (DIRECT == Directionality::Undirected) {
+      pAdjacencyList[e.v].push_back(e.u);
+    }
   }
 
   bool adjacent(const size_t u, const size_t v) const override {
@@ -301,23 +305,16 @@ public:
     pExplorationOrder.resize(numberOfNodes);
   }
 
-  bool adjacent(const size_t u, const size_t v) const override { return v == parent(u); }
-  bool adjacent(const Edge& e) const override { return e.v == parent(e.u); }
+  bool adjacent(const size_t u, const size_t v) const override { return u != 0 && v == parent(u); }
+  bool adjacent(const Edge& e) const override { return e.u != 0 && e.v == parent(e.u); }
 
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   DfsTreeIt begin() const;
   DfsTreeIt end() const;
 
-  /*!
-   * \brief true if v was explored later than v in the dfs() else false
-   * \param e directed edge u -> v
-   * \return true if v was explored later than v in the dfs() else false
-   */
-  bool down(const Edge& e) const { return pExplorationOrder[e.u] < pExplorationOrder[e.v]; }
-
-  size_t explorationIndex(const size_t u) const { return pExplorationOrder[u]; }
-  size_t& explorationIndex(const size_t u) { return pExplorationOrder[u]; }
+  std::vector<size_t> exploratioOrder() const { return pExplorationOrder; }
+  std::vector<size_t>& explorationOrder() { return pExplorationOrder; }
 
   size_t parent(const size_t u) const {
     assert(
@@ -463,9 +460,32 @@ inline DfsTreeIt DfsTree::end() const {
  **********************************************************************************************************************/
 
 template <Directionality DIRECT>
+bool AdjacencyListGraph<DIRECT>::connected() const {
+  std::vector<bool> component(numberOfNodes(), false);
+  std::vector<size_t> nodesToCheck;
+  nodesToCheck.reserve(numberOfNodes());
+  nodesToCheck.push_back(0);  // we check if the component containing vertex 0 is the whole graph
+  while (!nodesToCheck.empty()) {
+    const size_t v = nodesToCheck.back();
+    nodesToCheck.pop_back();
+    component[v] = true;
+    for (const size_t& neighbour : pAdjacencyList[v]) {
+      if (!component[neighbour]) {
+        nodesToCheck.push_back(neighbour);
+      }
+    }
+  }
+  for (const bool& node : component) {
+    if (!node) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <Directionality DIRECT>
 DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
   const size_t numberOfNodes = graph.numberOfNodes();
-  size_t explorationCounter  = 0;
 
   DfsTree tree(numberOfNodes);
   std::vector<bool> visited(numberOfNodes, false);
@@ -476,8 +496,8 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode) {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      visited[top]               = true;
-      tree.explorationIndex(top) = explorationCounter++;  // store order of node exploration
+      visited[top] = true;
+      tree.explorationOrder().push_back(top);  // store order of node exploration
       for (unsigned int i = 0; i < top; ++i) {
         if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
           nodeStack.push(i);
