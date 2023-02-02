@@ -458,17 +458,16 @@ inline DfsTreeIt DfsTree::end() const {
 template <Directionality DIRECT>
 bool AdjacencyListGraph<DIRECT>::connected() const {
   std::vector<bool> visited(numberOfNodes(), false);
-  std::vector<size_t> nodeStack;
-  nodeStack.reserve(numberOfNodes());
-  nodeStack.push_back(0);
+  std::stack<size_t> nodeStack;
+  nodeStack.push(0);
   while (!nodeStack.empty()) {
-    const size_t v = nodeStack.back();
-    nodeStack.pop_back();  // using vector as stack
+    const size_t v = nodeStack.top();
+    nodeStack.pop();
     if (!visited[v]) {
       visited[v] = true;
       for (const size_t& neighbour : pAdjacencyList[v]) {
         if (!visited[neighbour]) {
-          nodeStack.push_back(neighbour);
+          nodeStack.push(neighbour);
         }
       }
     }
@@ -491,25 +490,24 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
 
   DfsTree tree(numberOfNodes);
   std::vector<bool> visited(numberOfNodes, false);
-  std::vector<size_t> nodeStack;
-  nodeStack.reserve(numberOfNodes);
-  nodeStack.push_back(rootNode);
+  std::stack<size_t> nodeStack;
+  nodeStack.push(rootNode);
   while (!nodeStack.empty()) {
-    const size_t top = nodeStack.back();
-    nodeStack.pop_back();
+    const size_t top = nodeStack.top();
+    nodeStack.pop();
     if (!visited[top]) {
       visited[top] = true;
       tree.explorationOrder().push_back(top);  // store order of node exploration
       for (unsigned int i = 0; i < top; ++i) {
         if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
-          nodeStack.push_back(i);
+          nodeStack.push(i);
           tree.parent(i) = top;
         }
       }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
         if (!visited[it.index()]) {
-          nodeStack.push_back(it.index());  // do not push already visited nodes
-          tree.parent(it.index()) = top;    // update the parent
+          nodeStack.push(it.index());     // do not push already visited nodes
+          tree.parent(it.index()) = top;  // update the parent
         }
       }
     }

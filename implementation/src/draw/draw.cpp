@@ -13,6 +13,10 @@
 
 #include "graph/graph.hpp"
 
+static RGBA_COLOUR operator*(const RGBA_COLOUR& colour, const float fade) {
+  return RGBA_COLOUR{colour[0] * fade, colour[1] * fade, colour[2] * fade, colour[3]};
+}
+
 static void clearWindow(GLFWwindow* window) {
   int display_w, display_h;
   glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -71,7 +75,8 @@ static void drawGraph(
 static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const OpenEarDecomposition& openEarDecomp) {
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
-    RGBA_COLOUR colour               = {0.0, (float) (i + 1) / openEarDecomp.ears.size(), 0.0, 1.0};
+    RGBA_COLOUR colour               = drawing::COLOUR[static_cast<unsigned int>(ProblemType::BTSP_approx)]
+                         * ((float) (i + 1) / openEarDecomp.ears.size());
     for (unsigned int j = chain.size() - 1; j > 0; --j) {
       drawEdge(drawLine, Edge{chain[j], chain[j - 1]}, 5.0f, colour);
     }
@@ -95,7 +100,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
         programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
         drawing::COLOUR[typeInt]);
     drawEdge(
-        programs.drawLine, drawing::BTSP_EXACT_RESULT.bottleneckEdge, drawing::THICKNESS[typeInt] * 1.5f,
+        programs.drawLine, drawing::BTSP_EXACT_RESULT.bottleneckEdge, drawing::THICKNESS[typeInt] * 1.75f,
         drawing::COLOUR[typeInt]);
   }
   typeInt = static_cast<unsigned int>(ProblemType::TSP_exact);
