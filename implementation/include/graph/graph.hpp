@@ -219,7 +219,7 @@ public:
   ~AdjMatGraph() = default;
 
   AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
-    pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight>(numberOfNodes, numberOfNodes)) {
+    pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(numberOfNodes, numberOfNodes)) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
@@ -236,12 +236,12 @@ public:
 
   void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
 
-  const Eigen::SparseMatrix<EdgeWeight>& matrix() const { return pAdjacencyMatrix; }
+  const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
 protected:
-  Eigen::SparseMatrix<EdgeWeight> pAdjacencyMatrix;
+  Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor> pAdjacencyMatrix;
 
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     pAdjacencyMatrix.insert(out, in) = edgeWeight;
@@ -393,7 +393,7 @@ public:
   Edge operator*() const override {
     assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
     const int* innerIndeces = pGraph.matrix().innerIndexPtr();
-    return Edge{(size_t) (innerIndeces[pPosition.innerIndex]), pPosition.outerIndex};
+    return Edge{pPosition.outerIndex, (size_t) (innerIndeces[pPosition.innerIndex])};
   }
 
   AdjMatGraphIt& operator++() override {
@@ -498,16 +498,16 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
     if (!visited[top]) {
       visited[top] = true;
       tree.explorationOrder().push_back(top);  // store order of node exploration
-      for (unsigned int i = 0; i < top; ++i) {
-        if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
-          nodeStack.push(i);
-          tree.parent(i) = top;
-        }
-      }
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
+      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(graph.matrix(), top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());     // do not push already visited nodes
           tree.parent(it.index()) = top;  // update the parent
+        }
+      }
+      for (unsigned int i = top + 1; i < numberOfNodes; ++i) {
+        if (graph.matrix().coeff(i, top) != 0 && !visited[i]) {
+          nodeStack.push(i);
+          tree.parent(i) = top;
         }
       }
     }

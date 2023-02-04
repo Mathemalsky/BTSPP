@@ -16,14 +16,14 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      for (unsigned int k = 0; k < top; ++k) {
-        if (pAdjacencyMatrix.coeff(top, k) != 0.0) {
-          nodeStack.push(k);
-        }
-      }
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());
+        }
+      }
+      for (unsigned int i = top + 1; i < numberOfNodes(); ++i) {
+        if (pAdjacencyMatrix.coeff(i, top) != 0 && !visited[i]) {
+          nodeStack.push(i);
         }
       }
       visited[top] = true;
@@ -48,14 +48,14 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      for (unsigned int k = 0; k < top; ++k) {
-        if (pAdjacencyMatrix.coeff(top, k) != 0.0 && !visited[k] && k != vertex) {
-          nodeStack.push(k);
-        }
-      }
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
         if (!visited[it.index()] && (size_t) it.index() != vertex) {
           nodeStack.push(it.index());
+        }
+      }
+      for (unsigned int i = top + 1; i < numberOfNodes(); ++i) {
+        if (pAdjacencyMatrix.coeff(i, top) != 0 && !visited[i] && i != vertex) {
+          nodeStack.push(i);
         }
       }
       visited[top] = true;
@@ -80,7 +80,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
   return true;
 }
 
-AdjacencyListGraph<Directionality::Undirected> findBackedges(
+static AdjacencyListGraph<Directionality::Undirected> findBackedges(
     const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
   AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
   for (Edge e : graph) {

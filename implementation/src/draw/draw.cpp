@@ -66,7 +66,7 @@ static void drawGraph(
     const ShaderProgram& drawLine, const AdjacencyMatrixGraph<Directionality::Undirected>& graph,
     const RGBA_COLOUR& colour) {
   for (unsigned int k = 0; k < graph.numberOfNodes(); ++k) {
-    for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
+    for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(graph.matrix(), k); it; ++it) {
       drawEdge(drawLine, Edge{(size_t) it.row(), (size_t) it.col()}, 5.0f, colour);
     }
   }
@@ -76,7 +76,7 @@ static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const OpenEa
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
     RGBA_COLOUR colour               = drawing::COLOUR[static_cast<unsigned int>(ProblemType::BTSP_approx)]
-                         * ((float) (i + 1) / openEarDecomp.ears.size());
+                         * ((float) (i) / (openEarDecomp.ears.size() - 1));
     for (unsigned int j = chain.size() - 1; j > 0; --j) {
       drawEdge(drawLine, Edge{chain[j], chain[j - 1]}, 5.0f, colour);
     }
