@@ -169,7 +169,9 @@ public:
   AdjacencyListGraph()  = default;
   ~AdjacencyListGraph() = default;
 
+  AdjacencyListGraph(const AdjacencyListGraph& graph) = default;
   AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+  AdjacencyListGraph(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
 
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     pAdjacencyList[out].push_back(in);
@@ -194,6 +196,11 @@ public:
 
   bool adjacent(const Edge& e) const { return adjacent(e.u, e.v); }
 
+  /*!
+   * \brief AdjacencyListGraph::connected checks the graph is connected
+   * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs
+   * \return true if the graph is connected, else false
+   */
   bool connected() const override;
 
   size_t numberOfEdges() const override {
@@ -205,6 +212,10 @@ public:
 
   AdjacencyListGraphIt<DIRECT> begin() const;
   AdjacencyListGraphIt<DIRECT> end() const;
+
+  const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
+
+  AdjacencyListGraph<Directionality::Undirected> undirected() const;
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
   size_t numberOfNeighbours(const size_t u) const { return pAdjacencyList[u].size(); }
@@ -444,40 +455,6 @@ inline DfsTreeIt DfsTree::begin() const {
 }
 inline DfsTreeIt DfsTree::end() const {
   return DfsTreeIt(*this, pAdjacencyList.size());
-}
-
-/***********************************************************************************************************************
- *                                          template implementation
- **********************************************************************************************************************/
-
-/*!
- * \brief AdjacencyListGraph::connected checks the graph is connected
- * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs
- * \return true if the graph is connected, else false
- */
-template <Directionality DIRECT>
-bool AdjacencyListGraph<DIRECT>::connected() const {
-  std::vector<bool> visited(numberOfNodes(), false);
-  std::stack<size_t> nodeStack;
-  nodeStack.push(0);
-  while (!nodeStack.empty()) {
-    const size_t v = nodeStack.top();
-    nodeStack.pop();
-    if (!visited[v]) {
-      visited[v] = true;
-      for (const size_t& neighbour : pAdjacencyList[v]) {
-        if (!visited[neighbour]) {
-          nodeStack.push(neighbour);
-        }
-      }
-    }
-  }
-  for (const bool& node : visited) {
-    if (!node) {
-      return false;
-    }
-  }
-  return true;
 }
 
 /***********************************************************************************************************************

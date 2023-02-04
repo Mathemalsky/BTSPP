@@ -11,7 +11,7 @@ inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
 inline std::ostream& operator<<(std::ostream& os, const AdjMatGraph& graph) {
   os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
   for (const Edge& e : graph) {
-    os << e << std::endl;
+    os << e << " " << graph.matrix().coeff(e.u, e.v).cost() << std::endl;
   }
   return os;
 }

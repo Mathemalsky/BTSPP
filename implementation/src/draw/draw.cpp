@@ -76,7 +76,7 @@ static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const OpenEa
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
     RGBA_COLOUR colour               = drawing::COLOUR[static_cast<unsigned int>(ProblemType::BTSP_approx)]
-                         * ((float) (i + 1) / openEarDecomp.ears.size());
+                         * ((float) i / (openEarDecomp.ears.size() - 1));
     for (unsigned int j = chain.size() - 1; j > 0; --j) {
       drawEdge(drawLine, Edge{chain[j], chain[j - 1]}, 5.0f, colour);
     }
