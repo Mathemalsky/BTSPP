@@ -91,10 +91,19 @@ static AdjacencyListGraph<Directionality::Undirected> findBackedges(
   return backedges;
 }
 
+// DBEUG
+#include <iostream>
+// #include "graph/ostream.hpp"
+
 OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
   const DfsTree tree                                             = dfs(graph);
   const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
   const size_t numberOfNodes                                     = graph.numberOfNodes();
+
+  // DEBUG
+  // std::cerr << "graph:\n" << graph;
+  // std::cerr << "tree:\n" << tree;
+  // std::cerr << "backedges:\n" << backedges;
 
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
@@ -168,5 +177,17 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
   }
 
   graph.compressMatrix();  // matrix became uncommpressed when adding edges
+
+  // DEBUG
+  std::cerr << "graph:\n" << graph;
+
+  std::cerr << "matrix entries:\n";
+  for (unsigned int i = 0; i < numberOfNodes; ++i) {
+    for (unsigned int j = 0; j < numberOfNodes; ++j) {
+      if (graph.matrix().coeff(i, j) != 0) {
+        std::cerr << Edge{(size_t) i, (size_t) j} << " " << graph.matrix().coeff(i, j).cost() << std::endl;
+      }
+    }
+  }
   return graph;
 }

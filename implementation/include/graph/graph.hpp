@@ -484,9 +484,52 @@ bool AdjacencyListGraph<DIRECT>::connected() const {
  *                                           graph algorithms
  **********************************************************************************************************************/
 
+// DEBUG
+#include <iostream>
+inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
+  return os << "(" << edge.u << ", " << edge.v << ") ";
+}
+
+inline std::ostream& operator<<(std::ostream& os, const AdjMatGraph& graph) {
+  os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
+  for (const Edge& e : graph) {
+    os << e << " " << graph.matrix().coeff(e.u, e.v).cost() << std::endl;
+  }
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
+  os << "Number of nodes: " << tree.numberOfNodes() << std::endl;
+  for (const Edge& e : tree) {
+    os << e << std::endl;
+  }
+  return os;
+}
+
+template <Directionality DIRECT>
+inline std::ostream& operator<<(std::ostream& os, const AdjacencyListGraph<DIRECT>& graph) {
+  os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
+  for (const Edge& e : graph) {
+    os << e << std::endl;
+  }
+  return os;
+}
+
 template <Directionality DIRECT>
 DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
+
+  // DEBUG
+  std::cerr << "graph:\n" << graph;
+
+  std::cerr << "matrix entries:\n";
+  for (int i = 0; i < numberOfNodes; ++i) {
+    for (int j = 0; j < numberOfNodes; ++j) {
+      if (graph.matrix().coeff(i, j) != 0) {
+        std::cerr << Edge{(size_t) i, (size_t) j} << " " << graph.matrix().coeff(i, j).cost() << std::endl;
+      }
+    }
+  }
 
   DfsTree tree(numberOfNodes);
   std::vector<bool> visited(numberOfNodes, false);
@@ -505,6 +548,10 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
         }
       }
       for (unsigned int i = top + 1; i < numberOfNodes; ++i) {
+        // DEBUG
+        if (graph.matrix().coeff(i, top) != 0) {
+          std::cerr << "found Edge " << Edge{top, i} << " " << graph.matrix().coeff(i, top).cost() << std::endl;
+        }
         if (graph.matrix().coeff(i, top) != 0 && !visited[i]) {
           nodeStack.push(i);
           tree.parent(i) = top;
