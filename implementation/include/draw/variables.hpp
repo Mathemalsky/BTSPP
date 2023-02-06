@@ -26,6 +26,7 @@ extern bool DRAW_BICONNECTED_GRAPH;
 extern std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
 extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
 extern std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+extern RGBA_COLOUR CLEAR_COLOUR;
 extern RGBA_COLOUR VERTEX_COLOUR;
 
 extern approximation::Result BTSP_APPROX_RESULT;

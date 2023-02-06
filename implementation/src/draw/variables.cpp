@@ -27,6 +27,7 @@ bool DRAW_BICONNECTED_GRAPH;
 std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
 std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
 std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+RGBA_COLOUR CLEAR_COLOUR;
 RGBA_COLOUR VERTEX_COLOUR;
 
 approximation::Result BTSP_APPROX_RESULT;

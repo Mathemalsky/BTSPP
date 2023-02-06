@@ -45,6 +45,7 @@ constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPT
     3.0f   // TSP_exact
 };
 
+constexpr RGBA_COLOUR INITIAL_CLEAR_COLOUR  = {0.19, 0.19, 0.25, 1.0};
 constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 0.0f, 0.0f, 1.0f};
 }  // namespace drawing
 

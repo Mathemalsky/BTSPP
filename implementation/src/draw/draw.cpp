@@ -23,7 +23,7 @@ static void clearWindow(GLFWwindow* window) {
   int display_w, display_h;
   glfwGetFramebufferSize(window, &display_w, &display_h);
   glViewport(0, 0, display_w, display_h);
-  glClearColor(0.6, 0.6, 0.8, 1.0);
+  glClearColor(CLEAR_COLOUR[0], CLEAR_COLOUR[1], CLEAR_COLOUR[2], CLEAR_COLOUR[3]);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -82,12 +82,6 @@ static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const OpenEa
   }
 }
 
-static void drawBottleneck(
-    const ShaderProgramCollection& programs, const Buffers& buffers, const unsigned int typeInt) {
-  drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
-  drawEdge(programs.drawLine, BTSP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
-}
-
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
   clearWindow(window);
   drawVerteces(programs.drawCircles);
@@ -101,11 +95,13 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
   }
   typeInt = static_cast<unsigned int>(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawBottleneck(programs, buffers, typeInt);
+    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+    drawEdge(programs.drawLine, BTSP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = static_cast<unsigned int>(ProblemType::BTSPP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawBottleneck(programs, buffers, typeInt);
+    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+    drawEdge(programs.drawLine, BTSPP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = static_cast<unsigned int>(ProblemType::TSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {

@@ -76,6 +76,7 @@ void drawImgui() {
     ImGui::SliderFloat(
         "thickness##TSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::TSP_exact], 0.0f, 30.0f, "%.1f");
 
+    ImGui::ColorEdit4("clear colour", (float*) &drawing::CLEAR_COLOUR);
     ImGui::ColorEdit3("vertex colour", (float*) &drawing::VERTEX_COLOUR);
     ImGui::End();
   }

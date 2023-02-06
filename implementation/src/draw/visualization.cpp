@@ -31,6 +31,7 @@ static void initDrawingVariables() {
   drawing::DRAW_OPEN_EAR_DECOMPOSITION = drawing::INITIAL_DRAW_OPEN_EAR_DECOMPOSITION;
   drawing::INITIALIZED                 = drawing::INITIAL_ACTIVENESS;
   drawing::THICKNESS                   = drawing::INITIAL_THICKNESS;
+  drawing::CLEAR_COLOUR                = drawing::INITIAL_CLEAR_COLOUR;
   drawing::VERTEX_COLOUR               = drawing::INITIAL_VERTEX_COLOUR;
 }
 
