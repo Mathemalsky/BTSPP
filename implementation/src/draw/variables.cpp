@@ -44,12 +44,12 @@ void updatePointsfFromEuclidean() {
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
   if (type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
-    ORDER[(unsigned int) type].resize(order.size() + 3);
+    ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD);
     std::memcpy(ORDER[(unsigned int) type].data(), order.data(), bytes_of(order));
-    std::memcpy(ORDER[(unsigned int) type].data() + order.size(), order.data(), 3 * sizeof(unsigned int));
+    std::memcpy(ORDER[(unsigned int) type].data() + order.size(), order.data(), PATH_OVERHEAD * sizeof(unsigned int));
   }
   if (type == ProblemType::BTSPP_exact) {
-    ORDER[(unsigned int) type].resize(order.size() + 2);
+    ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
     ORDER[(unsigned int) type][0] = order.back();
     std::memcpy(ORDER[(unsigned int) type].data() + 1, order.data(), bytes_of(order));
     ORDER[(unsigned int) type].back() = order[0];
