@@ -62,8 +62,8 @@ namespace input {
 std::unordered_map<int, bool> STATE;
 
 namespace mouse {
-double x;
-double y;
+Point2D MOUSE_LEFT_CLICKED;
+int NODE_IN_MOTION;
 }  // namespace mouse
 }  // namespace input
 

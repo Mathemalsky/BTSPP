@@ -44,8 +44,8 @@ void drawImgui() {
 
   if (drawing::SHOW_DEBUG_WINDOW) {
     ImGui::Begin("Debug", &drawing::SHOW_DEBUG_WINDOW);
-    ImGui::Text("mouse x = %f", input::mouse::x);
-    ImGui::Text("mouse y = %f", input::mouse::y);
+    // ImGui::Text("mouse x = %f", input::mouse::x);
+    // ImGui::Text("mouse y = %f", input::mouse::y);
     ImGui::Text(
         "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();

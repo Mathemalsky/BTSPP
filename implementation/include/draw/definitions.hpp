@@ -6,6 +6,10 @@
 
 using RGBA_COLOUR = std::array<float, 4>;  // 4th float currently unused
 
+namespace namedInts {
+constexpr int INVALID = -1;
+}
+
 namespace problemType {
 constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> PROBLEM_TYPES = {
     ProblemType::BTSP_approx, ProblemType::BTSP_exact, ProblemType::BTSPP_exact, ProblemType::TSP_exact};
