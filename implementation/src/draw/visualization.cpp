@@ -80,10 +80,10 @@ int visualize(const unsigned int numberOfNodes) {
   const char* glsl_version = imguiVersionHints();
 
   const ShaderCollection collection;
-  const ShaderProgram drawCircles       = collection.linkCircleDrawProgram();
-  const ShaderProgram drawCycleSegments = collection.linkCycleSegementDrawProgram();
-  const ShaderProgram drawLineProgram   = collection.linkLineDrawProgram();
-  const ShaderProgramCollection programs(drawCircles, drawCycleSegments, drawLineProgram);
+  const ShaderProgram drawCircles      = collection.linkCircleDrawProgram();
+  const ShaderProgram drawPathSegments = collection.linkPathSegementDrawProgram();
+  const ShaderProgram drawLineProgram  = collection.linkLineDrawProgram();
+  const ShaderProgramCollection programs(drawCircles, drawPathSegments, drawLineProgram);
 
   const Buffers& buffers = setUpBufferMemory(numberOfNodes);
   const VertexArray& vao = bindBufferMemory(buffers, programs);

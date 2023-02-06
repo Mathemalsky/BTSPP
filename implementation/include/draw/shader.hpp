@@ -36,22 +36,22 @@ public:
   ~ShaderCollection();
 
   ShaderProgram linkCircleDrawProgram() const;
-  ShaderProgram linkCycleSegementDrawProgram() const;
+  ShaderProgram linkPathSegementDrawProgram() const;
   ShaderProgram linkLineDrawProgram() const;
 
 private:
   const GLuint pVertexShader;
   const GLuint pCircleShader;
-  const GLuint pCycleVertexShader;
+  const GLuint pPathVertexShader;
   const GLuint pFragmentShader;
   const GLuint pLineVertexShader;
 };
 
 struct ShaderProgramCollection {
   ShaderProgramCollection(
-      const ShaderProgram& drawCircles, const ShaderProgram& drawCycleSegments, const ShaderProgram& drawLine) :
-    drawCircles(drawCircles), drawCycleSegments(drawCycleSegments), drawLine(drawLine) {}
+      const ShaderProgram& drawCircles, const ShaderProgram& drawPathSegments, const ShaderProgram& drawLine) :
+    drawCircles(drawCircles), drawPathSegments(drawPathSegments), drawLine(drawLine) {}
   const ShaderProgram drawCircles;
-  const ShaderProgram drawCycleSegments;
+  const ShaderProgram drawPathSegments;
   const ShaderProgram drawLine;
 };

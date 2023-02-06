@@ -18,7 +18,7 @@ static constexpr const char vertexShaderSource[] = R"glsl(
   }
 )glsl";
 
-static constexpr const char cycleVertexShaderSource[] = R"glsl(
+static constexpr const char pathVertexShaderSource[] = R"glsl(
   #version 440 core
   layout(std430, binding = 0) buffer lineVertex
   {
@@ -208,7 +208,7 @@ static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource)
 ShaderCollection::ShaderCollection() :
   pVertexShader(compileShader(GL_VERTEX_SHADER, vertexShaderSource)),
   pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource)),
-  pCycleVertexShader(compileShader(GL_VERTEX_SHADER, cycleVertexShaderSource)),
+  pPathVertexShader(compileShader(GL_VERTEX_SHADER, pathVertexShaderSource)),
   pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource)),
   pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShaderSource)) {
 }
@@ -216,7 +216,7 @@ ShaderCollection::ShaderCollection() :
 ShaderCollection::~ShaderCollection() {
   GL_CALL(glDeleteShader(pVertexShader);)
   GL_CALL(glDeleteShader(pCircleShader);)
-  GL_CALL(glDeleteShader(pCycleVertexShader);)
+  GL_CALL(glDeleteShader(pPathVertexShader);)
   GL_CALL(glDeleteShader(pFragmentShader);)
   GL_CALL(glDeleteShader(pLineVertexShader);)
 }
@@ -230,12 +230,12 @@ ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
   return circleProgram;
 }
 
-ShaderProgram ShaderCollection::linkCycleSegementDrawProgram() const {
-  const ShaderProgram cycleSegmentProgram;
-  cycleSegmentProgram.attachShader(pCycleVertexShader);
-  cycleSegmentProgram.attachShader(pFragmentShader);
-  cycleSegmentProgram.link();
-  return cycleSegmentProgram;
+ShaderProgram ShaderCollection::linkPathSegementDrawProgram() const {
+  const ShaderProgram pathSegmentProgram;
+  pathSegmentProgram.attachShader(pPathVertexShader);
+  pathSegmentProgram.attachShader(pFragmentShader);
+  pathSegmentProgram.link();
+  return pathSegmentProgram;
 }
 
 ShaderProgram ShaderCollection::linkLineDrawProgram() const {

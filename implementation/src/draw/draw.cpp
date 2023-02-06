@@ -35,14 +35,14 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
   glDrawArrays(GL_POINTS, 0, drawing::EUCLIDEAN.numberOfNodes());  // start at index 0
 }
 
-static void drawCycle(
-    const ShaderProgram& drawCycleSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
+static void drawPath(
+    const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
     const float thickness, const RGBA_COLOUR& colour) {
   shaderBuffer.bufferSubData(order);
-  drawCycleSegments.use();
-  drawCycleSegments.setUniform("u_thickness", thickness);
-  drawCycleSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
-  drawCycleSegments.setUniform("u_colour", colour);
+  drawPathSegments.use();
+  drawPathSegments.setUniform("u_thickness", thickness);
+  drawPathSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
+  drawPathSegments.setUniform("u_colour", colour);
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - 3));
@@ -83,6 +83,16 @@ static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const OpenEa
   }
 }
 
+static void drawBottleneck(
+    const ShaderProgramCollection& programs, const Buffers& buffers, const unsigned int typeInt) {
+  drawPath(
+      programs.drawPathSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
+      drawing::COLOUR[typeInt]);
+  drawEdge(
+      programs.drawLine, drawing::BTSP_EXACT_RESULT.bottleneckEdge, drawing::THICKNESS[typeInt] * 1.75f,
+      drawing::COLOUR[typeInt]);
+}
+
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
   clearWindow(window);
   drawVerteces(programs.drawCircles);
@@ -96,26 +106,16 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
   }
   typeInt = static_cast<unsigned int>(ProblemType::BTSP_exact);
   if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
-    drawCycle(
-        programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
-        drawing::COLOUR[typeInt]);
-    drawEdge(
-        programs.drawLine, drawing::BTSP_EXACT_RESULT.bottleneckEdge, drawing::THICKNESS[typeInt] * 1.75f,
-        drawing::COLOUR[typeInt]);
+    drawBottleneck(programs, buffers, typeInt);
   }
   typeInt = static_cast<unsigned int>(ProblemType::BTSPP_exact);
   if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
-    drawCycle(
-        programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
-        drawing::COLOUR[typeInt]);
-    drawEdge(
-        programs.drawLine, drawing::BTSP_EXACT_RESULT.bottleneckEdge, drawing::THICKNESS[typeInt] * 1.75f,
-        drawing::COLOUR[typeInt]);
+    drawBottleneck(programs, buffers, typeInt);
   }
   typeInt = static_cast<unsigned int>(ProblemType::TSP_exact);
   if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
-    drawCycle(
-        programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
+    drawPath(
+        programs.drawPathSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
         drawing::COLOUR[typeInt]);
   }
 }
