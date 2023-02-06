@@ -402,7 +402,7 @@ public:
   Edge operator*() const override {
     assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
     const int* innerIndeces = pGraph.matrix().innerIndexPtr();
-    return Edge{(size_t) (innerIndeces[pPosition.innerIndex]), pPosition.outerIndex};
+    return Edge{(size_t)(innerIndeces[pPosition.innerIndex]), pPosition.outerIndex};
   }
 
   AdjMatGraphIt& operator++() override {

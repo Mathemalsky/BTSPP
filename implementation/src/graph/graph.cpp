@@ -215,6 +215,12 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
   // create an undirected graph from that
   AdjacencyMatrixGraph<Directionality::Undirected> graph(numberOfNodes, entries);
 
+  // DEBUG
+  std::cerr << "graph:\n";
+  for (const Edge& e : graph) {
+    std::cerr << e << std::endl;
+  }
+
   // continue adding edges until it is biconnected
   unsigned int edgeCounter = numberOfNodes;
 
