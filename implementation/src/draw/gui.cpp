@@ -68,6 +68,11 @@ void drawImgui() {
         "thickness##BTSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::BTSP_exact], 0.0f, 20.0f, "%.1f");
     ImGui::ColorEdit3("##BTSP exact", (float*) &drawing::COLOUR[(unsigned int) ProblemType::BTSP_exact]);
 
+    ImGui::Checkbox("BTSPP exact", &drawing::ACTIVE[(unsigned int) ProblemType::BTSPP_exact]);
+    ImGui::SliderFloat(
+        "thickness##BTSPP exact", &drawing::THICKNESS[(unsigned int) ProblemType::BTSPP_exact], 0.0f, 20.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSPP exact", (float*) &drawing::COLOUR[(unsigned int) ProblemType::BTSPP_exact]);
+
     ImGui::Checkbox("TSP  exact", &drawing::ACTIVE[(unsigned int) ProblemType::TSP_exact]);
     ImGui::ColorEdit3("##TSP exact", (float*) &drawing::COLOUR[(unsigned int) ProblemType::TSP_exact]);
     ImGui::SliderFloat(

@@ -31,6 +31,7 @@ RGBA_COLOUR VERTEX_COLOUR;
 
 approximation::Result BTSP_APPROX_RESULT;
 exactsolver::Result BTSP_EXACT_RESULT;
+exactsolver::Result BTSPP_EXACT_RESULT;
 
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
@@ -46,6 +47,12 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
     ORDER[(unsigned int) type].resize(order.size() + 3);
     std::memcpy(ORDER[(unsigned int) type].data(), order.data(), bytes_of(order));
     std::memcpy(ORDER[(unsigned int) type].data() + order.size(), order.data(), 3 * sizeof(unsigned int));
+  }
+  if (type == ProblemType::BTSPP_exact) {
+    ORDER[(unsigned int) type].resize(order.size() + 2);
+    ORDER[(unsigned int) type][0] = order.back();
+    std::memcpy(ORDER[(unsigned int) type].data() + 1, order.data(), bytes_of(order));
+    ORDER[(unsigned int) type].back() = order[0];
   }
   INITIALIZED[static_cast<unsigned int>(type)] = true;
 }

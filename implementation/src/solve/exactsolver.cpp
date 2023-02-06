@@ -36,7 +36,9 @@ public:
   size_t xOutConstraints() const { return pNumberOfNodes; }
   size_t xConstraints() const { return xInConstraints() + xOutConstraints(); }
   size_t uConstraints() const { return (pNumberOfNodes - 1) * (pNumberOfNodes - 2); }
-  size_t cConstraints() const { return (pType == ProblemType::BTSP_exact ? xVariables() : 0); }
+  size_t cConstraints() const {
+    return (pType == ProblemType::BTSP_exact || pType == ProblemType::BTSPP_exact ? xVariables() : 0);
+  }
   size_t numConstraints() const { return xConstraints() + uConstraints() + cConstraints(); }
 
   size_t constraintXin(const size_t j) const { return j; }
@@ -101,6 +103,13 @@ static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, c
   }
 }
 
+static void setPathBounds(HighsModel& model, const Index& index, const size_t s = 0, const size_t t = 1) {
+  model.lp_.row_lower_[index.constraintXin(s)]  = 0;
+  model.lp_.row_upper_[index.constraintXin(s)]  = 0;
+  model.lp_.row_lower_[index.constraintXout(t)] = 0;
+  model.lp_.row_upper_[index.constraintXout(t)] = 0;
+}
+
 static void setMillerTuckerZemlinMatrix(std::vector<Entry>& entries, const Index& index, const size_t numberOfNodes) {
   // inequalities for fixing in and out degree to 1
   for (size_t j = 0; j < numberOfNodes; ++j) {
@@ -158,21 +167,20 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
   }
 }
 
-static Edge findBottleneck(const Euclidean& euclidean, const std::vector<unsigned int>& tour) {
+static Edge findBottleneck(const Euclidean& euclidean, const std::vector<unsigned int>& tour, const bool cycle) {
   unsigned int bottleneckEdgeEnd = 0;
-  double bottleneckWeight        = euclidean.weight(tour.back(), tour[0]);
-  for (unsigned int i = 1; i < euclidean.numberOfNodes(); ++i) {
-    if (euclidean.weight(tour[i - 1], tour[i]) > bottleneckWeight) {
+  double bottleneckWeight        = euclidean.weight(tour[0], tour[1]);
+  for (unsigned int i = 1; i < euclidean.numberOfNodes() - 1; ++i) {
+    if (euclidean.weight(tour[i], tour[i + 1]) > bottleneckWeight) {
       bottleneckEdgeEnd = i;
-      bottleneckWeight  = euclidean.weight(tour[i - 1], tour[i]);
+      bottleneckWeight  = euclidean.weight(tour[i], tour[i + 1]);
     }
   }
-
-  if (bottleneckEdgeEnd == 0) {
+  if (cycle && euclidean.weight(tour.back(), tour[0]) > bottleneckWeight) {
     return Edge{tour.back(), 0};
   }
   else {
-    return Edge{tour[bottleneckEdgeEnd - 1], tour[bottleneckEdgeEnd]};
+    return Edge{tour[bottleneckEdgeEnd], tour[bottleneckEdgeEnd + 1]};
   }
 }
 
@@ -190,6 +198,14 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
   if (problemType == ProblemType::BTSP_exact) {
     setBTSPcost(model, index);
     setMillerTuckerZemlinBounds(model, index, numberOfNodes);
+    setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);
+    setCBounds(model, index);
+    setCConstraints(entries, index, euclidean);
+  }
+  else if (problemType == ProblemType::BTSPP_exact) {
+    setBTSPcost(model, index);
+    setMillerTuckerZemlinBounds(model, index, numberOfNodes);
+    setPathBounds(model, index);
     setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);
     setCBounds(model, index);
     setCConstraints(entries, index, euclidean);
@@ -259,7 +275,10 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
   }
 
   if (problemType == ProblemType::BTSP_exact) {
-    return Result{tour, info.objective_function_value, findBottleneck(euclidean, tour)};
+    return Result{tour, info.objective_function_value, findBottleneck(euclidean, tour, true)};
+  }
+  else if (problemType == ProblemType::BTSPP_exact) {
+    return Result{tour, info.objective_function_value, findBottleneck(euclidean, tour, false)};
   }
   else if (problemType == ProblemType::TSP_exact) {
     return Result{tour, info.objective_function_value, Edge{0, 0}};

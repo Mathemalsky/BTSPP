@@ -103,6 +103,15 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
         programs.drawLine, drawing::BTSP_EXACT_RESULT.bottleneckEdge, drawing::THICKNESS[typeInt] * 1.75f,
         drawing::COLOUR[typeInt]);
   }
+  typeInt = static_cast<unsigned int>(ProblemType::BTSPP_exact);
+  if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
+    drawCycle(
+        programs.drawCycleSegments, buffers.tour, drawing::ORDER[typeInt], drawing::THICKNESS[typeInt],
+        drawing::COLOUR[typeInt]);
+    drawEdge(
+        programs.drawLine, drawing::BTSP_EXACT_RESULT.bottleneckEdge, drawing::THICKNESS[typeInt] * 1.75f,
+        drawing::COLOUR[typeInt]);
+  }
   typeInt = static_cast<unsigned int>(ProblemType::TSP_exact);
   if (drawing::ACTIVE[typeInt] && drawing::INITIALIZED[typeInt]) {
     drawCycle(
