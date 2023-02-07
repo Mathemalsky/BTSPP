@@ -187,9 +187,6 @@ private:
   const size_t pNumberOfNodes;
 };
 
-#include <iostream>
-#include "graph/ostream.hpp"
-
 AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
 
@@ -207,19 +204,10 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
     const Edge e = index.edge(edgeIndeces[i]);
     entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     entries.push_back(Entry(e.v, e.u, euclidean.weight(e)));
-
-    // DEBUG
-    std::cerr << e << std::endl;
   }
 
   // create an undirected graph from that
   AdjacencyMatrixGraph<Directionality::Undirected> graph(numberOfNodes, entries);
-
-  // DEBUG
-  std::cerr << "graph:\n";
-  for (const Edge& e : graph) {
-    std::cerr << e << std::endl;
-  }
 
   // continue adding edges until it is biconnected
   unsigned int edgeCounter = numberOfNodes;
@@ -228,10 +216,6 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
     assert(edgeCounter < euclidean.numberOfEdges() && "We cannot add more edges than existing.");
 
     const Edge e = index.edge(edgeIndeces[edgeCounter++]);
-
-    // DEBUG
-    std::cerr << "add Edge " << e << std::endl;
-
     graph.addEdge(e, euclidean.weight(e));
   }
 

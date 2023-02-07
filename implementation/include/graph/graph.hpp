@@ -282,7 +282,7 @@ public:
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     AdjMatGraph::addEdge(out, in, edgeWeight);
     if constexpr (DIRECT == Directionality::Undirected) {
-      AdjMatGraph::addEdge(out, in, edgeWeight);
+      AdjMatGraph::addEdge(in, out, edgeWeight);
     }
   }
 
@@ -402,7 +402,7 @@ public:
   Edge operator*() const override {
     assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
     const int* innerIndeces = pGraph.matrix().innerIndexPtr();
-    return Edge{(size_t)(innerIndeces[pPosition.innerIndex]), pPosition.outerIndex};
+    return Edge{(size_t) (innerIndeces[pPosition.innerIndex]), pPosition.outerIndex};
   }
 
   AdjMatGraphIt& operator++() override {
