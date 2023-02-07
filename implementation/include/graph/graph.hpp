@@ -237,7 +237,14 @@ public:
   virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
   virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
 
-  virtual double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).cost(); }
+  double weight(const Edge& e) const override {
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "edgeweight 0 cann also mean the edge does not exists");
+    return pAdjacencyMatrix.coeff(e.u, e.v).cost();
+  }
+  double weight(const size_t u, const size_t v) const override {
+    assert(pAdjacencyMatrix.coeff(u, v) != 0 && "edgeweight 0 cann also mean the edge does not exists");
+    return pAdjacencyMatrix.coeff(u, v).cost();
+  }
 
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
@@ -273,24 +280,15 @@ public:
     AdjMatGraph(numberOfNodes, tripletList) {}
 
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
-    AdjMatGraph::addEdge(orientation<DIRECT>(out, in), edgeWeight);
+    AdjMatGraph::addEdge(out, in, edgeWeight);
+    if constexpr (DIRECT == Directionality::Undirected) {
+      AdjMatGraph::addEdge(in, out, edgeWeight);
+    }
   }
 
-  void addEdge(const Edge& e, const EdgeWeight edgeWeight) override {
-    AdjMatGraph::addEdge(orientation<DIRECT>(e), edgeWeight);
-  }
-
-  bool adjacent(const size_t u, const size_t v) const override {
-    return AdjMatGraph::adjacent(orientation<DIRECT>(u, v));
-  }
+  void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { this->addEdge(e.u, e.v, edgeWeight); }
 
   bool connected() const override;
-
-  double weight(const size_t u, const size_t v) const override {
-    return AdjMatGraph::weight(orientation<DIRECT>(u, v));
-  }
-
-  double weight(const Edge& e) const override { return AdjMatGraph::weight(orientation<DIRECT>(e)); }
 
   bool biconnected() const;
   bool connectedWhithout(const size_t vertex) const;
@@ -475,12 +473,6 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
     if (!visited[top]) {
       visited[top] = true;
       tree.explorationOrder().push_back(top);  // store order of node exploration
-      for (unsigned int i = 0; i < top; ++i) {
-        if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
-          nodeStack.push(i);
-          tree.parent(i) = top;
-        }
-      }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());     // do not push already visited nodes

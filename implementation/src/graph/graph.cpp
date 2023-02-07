@@ -67,11 +67,6 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      for (unsigned int k = 0; k < top; ++k) {
-        if (pAdjacencyMatrix.coeff(top, k) != 0.0) {
-          nodeStack.push(k);
-        }
-      }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());
@@ -203,6 +198,7 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
   for (unsigned int i = 0; i < numberOfNodes; ++i) {
     const Edge e = index.edge(edgeIndeces[i]);
     entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
+    entries.push_back(Entry(e.v, e.u, euclidean.weight(e)));
   }
 
   // create an undirected graph from that
