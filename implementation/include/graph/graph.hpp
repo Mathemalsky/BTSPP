@@ -473,12 +473,6 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
     if (!visited[top]) {
       visited[top] = true;
       tree.explorationOrder().push_back(top);  // store order of node exploration
-      for (unsigned int i = 0; i < top; ++i) {
-        if (graph.matrix().coeff(top, i) != 0 && !visited[i]) {
-          nodeStack.push(i);
-          tree.parent(i) = top;
-        }
-      }
       for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());     // do not push already visited nodes
