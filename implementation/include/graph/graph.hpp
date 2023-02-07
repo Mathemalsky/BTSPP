@@ -229,6 +229,8 @@ public:
   AdjMatGraph()  = default;
   ~AdjMatGraph() = default;
 
+  AdjMatGraph(const size_t numberOfNodes) : pAdjacencyMatrix(numberOfNodes, numberOfNodes) {}
+  AdjMatGraph(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& mat) : pAdjacencyMatrix(mat) {}
   AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(numberOfNodes, numberOfNodes)) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -276,6 +278,7 @@ public:
   AdjacencyMatrixGraph()  = default;
   ~AdjacencyMatrixGraph() = default;
 
+  AdjacencyMatrixGraph(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& mat) : AdjMatGraph(mat) {}
   AdjacencyMatrixGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
@@ -292,6 +295,7 @@ public:
 
   bool biconnected() const;
   bool connectedWhithout(const size_t vertex) const;
+  AdjacencyMatrixGraph<Directionality::Undirected> undirected() const;
 };
 
 class Tree : public virtual Graph {

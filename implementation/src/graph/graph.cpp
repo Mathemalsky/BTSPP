@@ -59,6 +59,18 @@ bool AdjacencyListGraph<Directionality::Directed>::connected() const {
 }
 
 template <>
+AdjacencyMatrixGraph<Directionality::Undirected> AdjacencyMatrixGraph<Directionality::Directed>::undirected() const {
+  return AdjacencyMatrixGraph<Directionality::Undirected>(
+      pAdjacencyMatrix + Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(pAdjacencyMatrix.transpose()));
+}
+
+template <>
+AdjacencyMatrixGraph<Directionality::Undirected> AdjacencyMatrixGraph<Directionality::Undirected>::undirected() const {
+  assert("You are converting an undirected graph into an undirected graph!");
+  return *this;
+}
+
+template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
   std::vector<bool> visited(numberOfNodes(), false);
   std::stack<size_t> nodeStack;
@@ -82,6 +94,11 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
     }
   }
   return true;
+}
+
+template <>
+bool AdjacencyMatrixGraph<Directionality::Directed>::connected() const {
+  return undirected().connected();
 }
 
 template <>
