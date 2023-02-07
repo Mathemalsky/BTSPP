@@ -65,7 +65,7 @@ static void drawGraph(
     const ShaderProgram& drawLine, const AdjacencyMatrixGraph<Directionality::Undirected>& graph,
     const RGBA_COLOUR& colour) {
   for (unsigned int k = 0; k < graph.numberOfNodes(); ++k) {
-    for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(graph.matrix(), k); it; ++it) {
+    for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(graph.matrix(), k); it; ++it) {
       drawEdge(drawLine, Edge{(size_t) it.row(), (size_t) it.col()}, 5.0f, colour);
     }
   }

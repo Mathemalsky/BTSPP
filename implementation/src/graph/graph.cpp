@@ -67,7 +67,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
         if (!visited[it.index()]) {
           nodeStack.push(it.index());
         }
@@ -94,12 +94,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      for (unsigned int k = 0; k < top; ++k) {
-        if (pAdjacencyMatrix.coeff(top, k) != 0.0 && !visited[k] && k != vertex) {
-          nodeStack.push(k);
-        }
-      }
-      for (Eigen::SparseMatrix<EdgeWeight>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
+      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
         if (!visited[it.index()] && (size_t) it.index() != vertex) {
           nodeStack.push(it.index());
         }
