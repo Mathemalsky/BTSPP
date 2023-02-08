@@ -275,11 +275,6 @@ protected:
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) override {
     pAdjacencyMatrix.insert(e.u, e.v) = edgeWeight;
   }
-
-  void removeEdge(const Edge& e) {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "edge to be removed does not exist in graph");
-    pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
-  }
 };
 
 template <Directionality DIRECT>
@@ -305,6 +300,15 @@ public:
 
   bool biconnected() const;
   bool connectedWhithout(const size_t vertex) const;
+  void removeEdge(const Edge& e) {
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "edge to be removed does not exist in graph");
+    pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
+    if constexpr (DIRECT == Directionality::Undirected) {
+      assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "edge to be removed does not exist in graph");
+      pAdjacencyMatrix.coeffRef(e.v, e.u) = 0.0;
+    }
+  }
+  AdjacencyMatrixGraph<Directionality::Undirected> removeUncriticalEdges() const;
   AdjacencyMatrixGraph<Directionality::Undirected> undirected() const;
 };
 
@@ -506,4 +510,5 @@ struct EarDecomposition {
 };
 
 EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
+AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition);
 AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);

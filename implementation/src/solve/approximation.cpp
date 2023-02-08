@@ -9,6 +9,11 @@
 
 #include "graph/graph.hpp"
 
+// DEBUG
+#include <iostream>
+#include "utility/utils.hpp"
+#include "graph/ostream.hpp"
+
 namespace approximation {
 
 Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
@@ -17,9 +22,26 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
 
     const EarDecomposition ears = schmidt(graph);  // calculate proper ear decomposition
 
-    // find approximation
+    // DEBUG
+    std::cerr << "ears\n" << ears.ears;
 
-    return Result{graph, ears};
+    // find approximation
+    const AdjacencyMatrixGraph<Directionality::Undirected> fromEars = earDecompToGraph(ears);
+
+    // DBEUG
+    std::cerr << "fromEars\n" << fromEars;
+
+    const AdjacencyMatrixGraph<Directionality::Undirected> minimal = fromEars.removeUncriticalEdges();
+
+    // DBEUG
+    std::cerr << "minimal\n" << minimal;
+
+    const EarDecomposition openEars = schmidt(minimal);
+
+    // DEBUG
+    std::cerr << "openEars\n" << openEars.ears;
+
+    return Result{graph, openEars};
   }
   else {
     throw std::runtime_error("Unknown problem type");

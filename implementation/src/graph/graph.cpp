@@ -138,6 +138,28 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
   return true;
 }
 
+// DEBUG
+#include <iostream>
+#include "graph/ostream.hpp"
+
+template <>
+AdjacencyMatrixGraph<Directionality::Undirected>
+    AdjacencyMatrixGraph<Directionality::Undirected>::removeUncriticalEdges() const {
+  AdjacencyMatrixGraph<Directionality::Undirected> saveCopy        = *this;
+  AdjacencyMatrixGraph<Directionality::Undirected> experimetalCopy = *this;
+  for (const Edge& e : *this) {
+    experimetalCopy.removeEdge(e);
+    experimetalCopy.prune();
+    if (schmidt(experimetalCopy).open()) {
+      saveCopy = experimetalCopy;
+    }
+    else {
+      experimetalCopy = saveCopy;
+    }
+  }
+  return saveCopy;
+}
+
 static AdjacencyListGraph<Directionality::Undirected> findBackedges(
     const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
   AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
@@ -178,6 +200,20 @@ EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>&
 }
 
 using Entry = Eigen::Triplet<EdgeWeight>;
+
+// VERY INEFFICIENT
+AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition) {
+  size_t maxIndex = 0;
+  std::vector<Entry> entries;
+  for (const std::vector<size_t>& ear : earDecomposition.ears) {
+    for (size_t i = ear.size() - 1; i > 0; --i) {
+      maxIndex = std::max(maxIndex, ear[i]);
+      entries.push_back(Entry(ear[i], ear[i - 1], 1.0));
+      entries.push_back(Entry(ear[i - 1], ear[i], 1.0));
+    }
+  }
+  return AdjacencyMatrixGraph<Directionality::Undirected>(maxIndex + 1, entries);
+}
 
 class Index {
 public:
