@@ -101,8 +101,7 @@ class GraphIt {
   virtual GraphIt& operator++()  = 0;
 };
 
-template <Directionality DIRECT>
-class AdjacencyListGraphIt;
+class AdjListGraphIt;
 class AdjMatGraphIt;
 class DfsTreeIt;
 
@@ -161,20 +160,56 @@ protected:
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
 };
 
+class AdjListGraph : public Modifyable {
+public:
+  AdjListGraph()  = default;
+  ~AdjListGraph() = default;
+
+  AdjListGraph(const AdjListGraph& graph) = default;
+  AdjListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+  AdjListGraph(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
+
+  bool adjacent(const size_t u, const size_t v) const override {
+    const std::vector<size_t>& neighbour         = pAdjacencyList[u];
+    const std::vector<size_t>::const_iterator it = std::find(neighbour.begin(), neighbour.end(), v);
+    return it != neighbour.end();
+  }
+
+  bool adjacent(const Edge& e) const override { return adjacent(e.u, e.v); }
+
+  size_t numberOfEdges() const override {
+    return std::accumulate(
+        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
+  }
+  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
+
+  AdjListGraphIt begin() const;
+  AdjListGraphIt end() const;
+
+  const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
+
+  const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
+  size_t numberOfNeighbours(const size_t u) const { return pAdjacencyList[u].size(); }
+
+protected:
+  std::vector<std::vector<size_t>> pAdjacencyList;
+};
+
 /*!
  * \brief The AdjacencyListGraph class implements a modifyable graph with adjacency list as internal storage
  * \details If the edge is directed, it is directed from vertex associated with outer storage index to vertex associated
  * with inner storage index
  */
 template <Directionality DIRECT>
-class AdjacencyListGraph : public Modifyable {
+class AdjacencyListGraph : public AdjListGraph {
 public:
   AdjacencyListGraph()  = default;
   ~AdjacencyListGraph() = default;
 
   AdjacencyListGraph(const AdjacencyListGraph& graph) = default;
   AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
-  AdjacencyListGraph(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
+  AdjacencyListGraph(const std::vector<std::vector<size_t>>& adjacencyList) : AdjListGraph(adjacencyList) {}
 
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     pAdjacencyList[out].push_back(in);
@@ -190,41 +225,15 @@ public:
     }
   }
 
-  bool adjacent(const size_t u, const size_t v) const override {
-    const Edge e                         = orientation<DIRECT>(u, v);
-    const std::vector<size_t>& neighbour = pAdjacencyList[e.u];
-    const auto it                        = std::find(neighbour.begin(), neighbour.end(), e.v);
-    return it != neighbour.end();
-  }
-
-  bool adjacent(const Edge& e) const { return adjacent(e.u, e.v); }
-
   /*!
    * \brief AdjacencyListGraph::connected checks the graph is connected
-   * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs
-   * \return true if the graph is connected, else false
+   * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs. Directed
+   * graphs are considered as connected if the undirected graph obtained by adding an anti parallel edge for each edge
+   * is connected. \return true if the graph is connected, else false
    */
   bool connected() const override;
 
-  size_t numberOfEdges() const override {
-    return std::accumulate(
-        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
-        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
-  }
-  size_t numberOfNodes() const override { return pAdjacencyList.size(); }
-
-  AdjacencyListGraphIt<DIRECT> begin() const;
-  AdjacencyListGraphIt<DIRECT> end() const;
-
-  const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
-
   AdjacencyListGraph<Directionality::Undirected> undirected() const;
-
-  const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
-  size_t numberOfNeighbours(const size_t u) const { return pAdjacencyList[u].size(); }
-
-private:
-  std::vector<std::vector<size_t>> pAdjacencyList;
 };
 
 class AdjMatGraph : public Modifyable, public WeightedGraph {
@@ -364,23 +373,21 @@ private:
  *                                          iterator implementation
  **********************************************************************************************************************/
 
-struct AdjListPos {
-  size_t outerIndex;
-  size_t innerIndex;
-  bool operator!=(const AdjListPos& other) const { return outerIndex != other.outerIndex; }
-};
-
-template <Directionality DIRECT>
-class AdjacencyListGraphIt : public GraphIt {
+class AdjListGraphIt : public GraphIt {
 public:
-  AdjacencyListGraphIt(const AdjacencyListGraph<DIRECT>& graph, AdjListPos position) :
-    pGraph(graph), pPosition(position) {}
+  struct AdjListPos {
+    size_t outerIndex;
+    size_t innerIndex;
+    bool operator!=(const AdjListPos& other) const { return outerIndex != other.outerIndex; }
+  };
+
+  AdjListGraphIt(const AdjListGraph& graph, AdjListPos position) : pGraph(graph), pPosition(position) {}
 
   Edge operator*() const override {
     return Edge{pPosition.outerIndex, pGraph.neighbours(pPosition.outerIndex)[pPosition.innerIndex]};
   }
 
-  AdjacencyListGraphIt& operator++() override {
+  AdjListGraphIt& operator++() override {
     ++pPosition.innerIndex;
     while (pPosition.innerIndex == pGraph.numberOfNeighbours(pPosition.outerIndex)
            && pPosition.outerIndex < pGraph.numberOfNodes()) {
@@ -390,21 +397,19 @@ public:
     return *this;
   }
 
-  bool operator!=(const AdjacencyListGraphIt<DIRECT>& other) const { return pPosition != other.pPosition; }
+  bool operator!=(const AdjListGraphIt& other) const { return pPosition != other.pPosition; }
 
 private:
-  const AdjacencyListGraph<DIRECT>& pGraph;
+  const AdjListGraph& pGraph;
   AdjListPos pPosition;
 };
 
-template <Directionality DIRECT>
-inline AdjacencyListGraphIt<DIRECT> AdjacencyListGraph<DIRECT>::begin() const {
-  return AdjacencyListGraphIt<DIRECT>(*this, AdjListPos{0, 0});
+inline AdjListGraphIt AdjListGraph::begin() const {
+  return AdjListGraphIt(*this, AdjListGraphIt::AdjListPos{0, 0});
 }
 
-template <Directionality DIRECT>
-inline AdjacencyListGraphIt<DIRECT> AdjacencyListGraph<DIRECT>::end() const {
-  return AdjacencyListGraphIt(*this, AdjListPos{numberOfNodes(), 0});
+inline AdjListGraphIt AdjListGraph::end() const {
+  return AdjListGraphIt(*this, AdjListGraphIt::AdjListPos{numberOfNodes(), 0});
 }
 
 class AdjMatGraphIt : public GraphIt {
