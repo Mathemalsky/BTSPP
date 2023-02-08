@@ -71,7 +71,7 @@ static void drawGraph(
   }
 }
 
-static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const OpenEarDecomposition& openEarDecomp) {
+static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const EarDecomposition& openEarDecomp) {
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
     RGBA_COLOUR colour =

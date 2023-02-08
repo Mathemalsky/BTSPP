@@ -15,7 +15,7 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
   if (problemType == ProblemType::BTSP_approx) {
     AdjacencyMatrixGraph<Directionality::Undirected> graph = biconnectedSpanningGraph(euclidean);
 
-    const OpenEarDecomposition ears = schmidt(graph);  // calculate proper ear decomposition
+    const EarDecomposition ears = schmidt(graph);  // calculate proper ear decomposition
 
     // find approximation
 

@@ -149,14 +149,15 @@ static AdjacencyListGraph<Directionality::Undirected> findBackedges(
   return backedges;
 }
 
-OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
+EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
   const DfsTree tree                                             = dfs(graph);
   const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
   const size_t numberOfNodes                                     = graph.numberOfNodes();
 
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
-  for (size_t v : tree.exploratioOrder()) {     // iterate over all nodes in the order they appeared in dfs
+  std::vector<size_t> articulationPoints;
+  for (size_t v : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
     for (size_t u : backedges.neighbours(v)) {  // for every backedge starting at v
       if (!visited[u]) {
         std::vector<size_t> chain{v, u};
@@ -166,12 +167,14 @@ OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirect
           u          = tree.parent(u);
           chain.push_back(u);
         }
-        assert((u != v || v == 0) && "Graph is not biconnected!");
+        if (u == v && v != 0) {
+          articulationPoints.push_back(u);
+        }
         ears.push_back(chain);
       }
     }
   }
-  return OpenEarDecomposition{ears};
+  return EarDecomposition{ears, articulationPoints};
 }
 
 using Entry = Eigen::Triplet<EdgeWeight>;

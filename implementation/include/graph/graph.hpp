@@ -56,12 +56,15 @@ public:
   bool operator==(const double compare) { return pCost == compare; }
   bool operator!=(const double compare) { return pCost != compare; }
 
+  bool operator<=(const EdgeWeight other) { return pCost <= other.pCost; }
   EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
   EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
   EdgeWeight& operator+=(const EdgeWeight other) {
     pCost = std::min(pCost, other.pCost);
     return *this;
   }
+
+  friend EdgeWeight abs(const EdgeWeight weight) { return EdgeWeight(std::abs(weight.pCost)); }
 
 private:
   double pCost;
@@ -258,6 +261,8 @@ public:
 
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
 
+  void prune() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
+
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
 protected:
@@ -269,6 +274,11 @@ protected:
 
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) override {
     pAdjacencyMatrix.insert(e.u, e.v) = edgeWeight;
+  }
+
+  void removeEdge(const Edge& e) {
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "edge to be removed does not exist in graph");
+    pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
   }
 };
 
@@ -326,7 +336,7 @@ public:
   DfsTreeIt begin() const;
   DfsTreeIt end() const;
 
-  std::vector<size_t> exploratioOrder() const { return pExplorationOrder; }
+  std::vector<size_t> explorationOrder() const { return pExplorationOrder; }
   std::vector<size_t>& explorationOrder() { return pExplorationOrder; }
 
   size_t parent(const size_t u) const {
@@ -488,9 +498,12 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
   return tree;
 }
 
-struct OpenEarDecomposition {
+struct EarDecomposition {
   std::vector<std::vector<size_t>> ears;
+  std::vector<size_t> articulationPoints;
+
+  bool open() const { return articulationPoints.empty(); }
 };
 
-OpenEarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
+EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
 AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);

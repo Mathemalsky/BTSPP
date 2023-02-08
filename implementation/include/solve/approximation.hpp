@@ -9,7 +9,7 @@
 namespace approximation {
 struct Result {
   AdjacencyMatrixGraph<Directionality::Undirected> biconnectedGraph;
-  OpenEarDecomposition openEarDecomposition;
+  EarDecomposition openEarDecomposition;
   // const std::vector<unsigned int> tour;
   // const Edge bottleneckEdge;
 };
