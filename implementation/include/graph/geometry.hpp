@@ -22,10 +22,9 @@ struct Point2D {
 
   /*!
    * \brief liesOnLeftSide checks if p lies in the left half space defined by directed vector seg.a -> seg.b
-   * \details check is performed by checking if the euclidean scalar product of (seg.a, seg.b) and the vector obtained by
-   * rotating (seg.b, p) by \pi /2 is nonpositiv
-   * \param seg half space defining vector
-   * \return bool if p lies in the left closed half space
+   * \details check is performed by checking if the euclidean scalar product of (seg.a, seg.b) and the vector obtained
+   * by rotating (seg.b, p) by \pi /2 is nonpositiv \param seg half space defining vector \return bool if p lies in the
+   * left closed half space
    */
   bool liesOnLeftSide(const LineSegment& seg) const;
 };
@@ -64,5 +63,6 @@ inline bool Point2D::liesOnLeftSide(const LineSegment& seg) const {
 }
 
 inline bool intersect(const LineSegment& seg1, const LineSegment& seg2) {
-  return (seg2.a.liesOnLeftSide(seg1) != seg2.b.liesOnLeftSide(seg1)) && (seg1.a.liesOnLeftSide(seg2) != seg1.b.liesOnLeftSide(seg2));
+  return (seg2.a.liesOnLeftSide(seg1) != seg2.b.liesOnLeftSide(seg1))
+         && (seg1.a.liesOnLeftSide(seg2) != seg1.b.liesOnLeftSide(seg2));
 }

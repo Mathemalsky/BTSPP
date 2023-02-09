@@ -67,6 +67,11 @@ static void setTSPcost(HighsModel& model, const Index& index, const Euclidean& e
   }
 }
 
+static void setBTSPcost(HighsModel& model, const Index& index) {
+  model.lp_.col_cost_                    = std::vector<double>(model.lp_.num_col_, 0.0);  // set vector to 0
+  model.lp_.col_cost_[index.variableC()] = 1.0;                                           // objective is c
+}
+
 static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, const size_t numberOfNodes) {
   const double p = numberOfNodes;
 
@@ -103,11 +108,32 @@ static void setMillerTuckerZemlinBounds(HighsModel& model, const Index& index, c
   }
 }
 
+static void setCBounds(HighsModel& model, const Index& index) {
+  model.lp_.col_upper_[index.variableC()] = M_INFINITY;
+  model.lp_.col_lower_[index.variableC()] = 0.0;
+
+  for (size_t i = index.xConstraints() + index.uConstraints(); i < index.numConstraints(); ++i) {
+    model.lp_.row_lower_[i] = 0.0;
+    model.lp_.row_upper_[i] = M_INFINITY;
+  }
+  model.lp_.integrality_[index.variableC()] = HighsVarType::kContinuous;
+}
+
 static void setPathBounds(HighsModel& model, const Index& index, const size_t s = 0, const size_t t = 1) {
   model.lp_.row_lower_[index.constraintXin(s)]  = 0;
   model.lp_.row_upper_[index.constraintXin(s)]  = 0;
   model.lp_.row_lower_[index.constraintXout(t)] = 0;
   model.lp_.row_upper_[index.constraintXout(t)] = 0;
+}
+
+static void setAntiCrossingBounds(HighsModel& model, const size_t numAntiCrossingConstraints) {
+  const size_t numberOfPreviousConstraints = model.lp_.row_lower_.size();
+  model.lp_.row_lower_.resize(numberOfPreviousConstraints + numAntiCrossingConstraints);
+  model.lp_.row_upper_.resize(numberOfPreviousConstraints + numAntiCrossingConstraints);
+  for (unsigned i = numberOfPreviousConstraints; i < numberOfPreviousConstraints + numAntiCrossingConstraints; ++i) {
+    model.lp_.row_lower_[i] = 0.0;
+    model.lp_.row_upper_[i] = 1.0;
+  }
 }
 
 static void setMillerTuckerZemlinMatrix(std::vector<Entry>& entries, const Index& index, const size_t numberOfNodes) {
@@ -138,22 +164,6 @@ static void setMillerTuckerZemlinMatrix(std::vector<Entry>& entries, const Index
   }
 }
 
-static void setBTSPcost(HighsModel& model, const Index& index) {
-  model.lp_.col_cost_                    = std::vector<double>(model.lp_.num_col_, 0.0);  // set vector to 0
-  model.lp_.col_cost_[index.variableC()] = 1.0;                                           // objective is c
-}
-
-static void setCBounds(HighsModel& model, const Index& index) {
-  model.lp_.col_upper_[index.variableC()] = M_INFINITY;
-  model.lp_.col_lower_[index.variableC()] = 0.0;
-
-  for (size_t i = index.xConstraints() + index.uConstraints(); i < index.numConstraints(); ++i) {
-    model.lp_.row_lower_[i] = 0.0;
-    model.lp_.row_upper_[i] = M_INFINITY;
-  }
-  model.lp_.integrality_[index.variableC()] = HighsVarType::kContinuous;
-}
-
 static void setCConstraints(std::vector<Entry>& entries, const Index& index, const Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   for (size_t j = 0; j < numberOfNodes; ++j) {
@@ -165,6 +175,42 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
       entries.push_back(Entry(index.constraintC(j, i), index.variableC(), 1.0));
     }
   }
+}
+
+static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Index& index, const Euclidean& euclidean) {
+  const size_t numberOfNodes = euclidean.numberOfNodes();
+  size_t row                 = index.numConstraints();
+  for (unsigned int i = 0; i < numberOfNodes; ++i) {
+    for (unsigned int j = i + 1; j < numberOfNodes; ++j) {
+      for (unsigned int k = i + 1; k < numberOfNodes; ++k) {
+        if (k == j) {
+          continue;
+        }
+        for (unsigned int l = k + 1; l < numberOfNodes; ++l) {
+          if (l == j) {
+            continue;
+          }
+          if (intersect(
+                  LineSegment{euclidean.position(i), euclidean.position(j)},
+                  LineSegment{euclidean.position(k), euclidean.position(l)})) {
+            entries.push_back(Entry(row, index.variableX(i, j), 1.0));
+            entries.push_back(Entry(row, index.variableX(k, l), 1.0));
+            entries.push_back(Entry(row, index.variableX(j, i), 1.0));
+            entries.push_back(Entry(row, index.variableX(l, k), 1.0));
+            ++row;
+          }
+        }
+      }
+    }
+  }
+  return row - index.numConstraints();
+}
+
+static void forbidCrossing(
+    HighsModel& model, std::vector<Entry>& entries, const Euclidean& euclidean, const Index& index) {
+  const size_t numOfAntiCrossingConstraints = setAntiCrossingConstraints(entries, index, euclidean);
+  setAntiCrossingBounds(model, numOfAntiCrossingConstraints);
+  model.lp_.num_row_ += numOfAntiCrossingConstraints;
 }
 
 static Edge findBottleneck(const Euclidean& euclidean, const std::vector<unsigned int>& tour, const bool cycle) {
@@ -201,6 +247,7 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
     setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);
     setCBounds(model, index);
     setCConstraints(entries, index, euclidean);
+    forbidCrossing(model, entries, euclidean, index);
   }
   else if (problemType == ProblemType::BTSPP_exact) {
     setBTSPcost(model, index);
