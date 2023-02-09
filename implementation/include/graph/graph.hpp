@@ -109,6 +109,10 @@ class DfsTreeIt;
  *                                             graph classes
  **********************************************************************************************************************/
 
+/*!
+ * \brief The Graph class is the base class of all more specialist types of graph. It's designed to contain the
+ * functions graphs off all types have in common.
+ */
 class Graph {
 public:
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
@@ -126,6 +130,11 @@ public:
   virtual double weight(const Edge& e) const                  = 0;
 };
 
+/*!
+ * \brief The CompleteGraph class is a inclomplete class for complete graphs, undirected simple graphs.
+ * \details Complete Graph uses the property that every vertex is connected to every other vertex and hence edges do not
+ * need to be stored explicitly. This class does not support directed graphs or multigraphs.
+ */
 class CompleteGraph : public virtual Graph {
 public:
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
@@ -134,6 +143,11 @@ public:
   size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
+/*!
+ * \brief The Euclidean class
+ * \details An euclidean graph is a graph where each vertex has a position in 2 dimensional euclidean plane and the
+ * weights of the edges are the euclidean distances between them.
+ */
 class Euclidean : public CompleteGraph, public WeightedGraph {
 public:
   Euclidean()          = default;

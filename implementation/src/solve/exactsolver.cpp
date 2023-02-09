@@ -193,10 +193,10 @@ static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Inde
           if (intersect(
                   LineSegment{euclidean.position(i), euclidean.position(j)},
                   LineSegment{euclidean.position(k), euclidean.position(l)})) {
-            entries.push_back(Entry(row, index.variableX(i, j), 1.0));
-            entries.push_back(Entry(row, index.variableX(k, l), 1.0));
-            entries.push_back(Entry(row, index.variableX(j, i), 1.0));
-            entries.push_back(Entry(row, index.variableX(l, k), 1.0));
+            entries.push_back(Entry(row, index.variableX(i, j), 1.0));  // Here we are putting 4 constraints into one
+            entries.push_back(Entry(row, index.variableX(k, l), 1.0));  // by abusing the fact, that at most one of
+            entries.push_back(Entry(row, index.variableX(j, i), 1.0));  // edges {(i,j), (j,i)} and at most on of
+            entries.push_back(Entry(row, index.variableX(l, k), 1.0));  // {(k,l), (l,k)} can be part of the solution.
             ++row;
           }
         }
@@ -236,7 +236,7 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
 
   HighsModel model;
   model.lp_.num_col_ = index.numVariables();
-  model.lp_.num_row_ = index.numConstraints();
+  model.lp_.num_row_ = index.numConstraints();  // may be changed later on by forbidCrossing()
   model.lp_.sense_   = ObjSense::kMinimize;
   model.lp_.offset_  = 0;  // offset has no effect on optimization
 
