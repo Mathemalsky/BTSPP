@@ -13,34 +13,30 @@
  *                                                Edges
  **********************************************************************************************************************/
 
+/*!
+ * \brief The Edge struct represents an edge from u to v in directed graphs or just between u and v in undirected graphs
+ */
 struct Edge {
   size_t u;
   size_t v;
+
+  /*!
+   * \brief reverse creates a new add directed from v to u
+   * \return edge in opposite direction
+   */
   Edge reverse() const { return Edge{v, u}; }
+
+  /*!
+   * \brief invert swaps the internal storage of u and v
+   */
   void invert() { std::swap(u, v); }
 };
 
+/*!
+ * \brief The Directionality enum can be Directed or Undirected
+ * \details This enum can be passed as template argument to some graph classes.
+ */
 enum class Directionality { Undirected, Directed };
-
-template <Directionality DIRECT>
-static Edge orientation(const size_t u, const size_t v) {
-  if constexpr (DIRECT == Directionality::Undirected) {
-    return (u > v ? Edge{u, v} : Edge{v, u});
-  }
-  else {
-    return Edge{u, v};
-  }
-}
-
-template <Directionality DIRECT>
-static Edge orientation(const Edge& e) {
-  if constexpr (DIRECT == Directionality::Undirected) {
-    return (e.u > e.v ? e : e.reverse());
-  }
-  else {
-    return e;
-  }
-}
 
 class EdgeWeight {
 public:
@@ -124,6 +120,9 @@ public:
 protected:
 };
 
+/*!
+ * \brief The WeightedGraph class is an interface all graphs with weighted edges inherit from.
+ */
 class WeightedGraph : public virtual Graph {
 public:
   virtual double weight(const size_t u, const size_t v) const = 0;
@@ -168,12 +167,18 @@ private:
   std::vector<Point2D> pPositions;
 };
 
+/*!
+ * \brief The Modifyable class is an interface all modifyable graph classes inherit from.
+ */
 class Modifyable : public virtual Graph {
 protected:
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) = 0;
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
 };
 
+/*!
+ * \brief The AdjListGraph class abstract class for graph which store adjacency as list
+ */
 class AdjListGraph : public Modifyable {
 public:
   AdjListGraph()  = default;
@@ -250,6 +255,10 @@ public:
   AdjacencyListGraph<Directionality::Undirected> undirected() const;
 };
 
+/*!
+ * \brief The AdjListGraph class abstract class for graph which store adjacency as sparse matrix
+ * \details graphs with adjacency matrix storage are generelly assumed to be weighted graphs
+ */
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 public:
   AdjMatGraph()  = default;
@@ -300,6 +309,11 @@ protected:
   }
 };
 
+/*!
+ * \brief The AdjacencyMatrixGraph class implements the concrete classes for directed undirected graphs
+ * \details In case of udirected graph the complete sparse adjacency is stored, not just the strictly lower matrix to
+ * accelerate iteration over all adjacent nodes.
+ */
 template <Directionality DIRECT>
 class AdjacencyMatrixGraph : public virtual AdjMatGraph {
 public:
@@ -335,6 +349,9 @@ public:
   AdjacencyMatrixGraph<Directionality::Undirected> undirected() const;
 };
 
+/*!
+ * \brief The Tree class is an abstract which impllements the methods all trees have in common
+ */
 class Tree : public virtual Graph {
   bool connected() const override { return true; }
   size_t numberOfEdges() const override { return numberOfNodes() - 1; }
