@@ -261,6 +261,54 @@ public:
  */
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 public:
+  class Edges {
+  public:
+    class Iterator {
+    public:
+      struct SparseMatrixPos {
+        size_t innerIndex;
+        size_t outerIndex;
+        bool operator!=(const SparseMatrixPos& other) const { return innerIndex != other.innerIndex; }
+      };
+
+      Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
+        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {}
+
+      Edge operator*() const {
+        assert(pAdjacencyMatrix.isCompressed() && "check is only valid on compressed matrix");
+        const int* innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        return Edge{pPosition.outerIndex, (size_t) (innerIndeces[pPosition.innerIndex])};
+      }
+
+      Iterator& operator++() {
+        assert(pAdjacencyMatrix.isCompressed() && "check is only valid on compressed matrix");
+        const int* outerIndeces = pAdjacencyMatrix.outerIndexPtr();
+        ++pPosition.innerIndex;
+        while (pPosition.innerIndex >= (size_t) outerIndeces[pPosition.outerIndex + 1]) {
+          ++pPosition.outerIndex;
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.innerIndex != other.pPosition.innerIndex; }
+
+    private:
+      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+      SparseMatrixPos pPosition;
+    };
+
+    Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) :
+      pAdjacencyMatrix(adjacencyMatrix) {}
+
+    Iterator begin() const { return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0}); }
+    Iterator end() const {
+      return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{(size_t) pAdjacencyMatrix.nonZeros(), 0});
+    }
+
+  private:
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+  };
+
   AdjMatGraph()  = default;
   ~AdjMatGraph() = default;
 
@@ -286,10 +334,9 @@ public:
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
-  AdjMatGraphIt begin() const;
-  AdjMatGraphIt end() const;
-
   void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
+
+  Edges edges() const { return Edges(pAdjacencyMatrix); }
 
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
 
@@ -456,7 +503,7 @@ public:
   Edge operator*() const override {
     assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
     const int* innerIndeces = pGraph.matrix().innerIndexPtr();
-    return Edge{pPosition.outerIndex, (size_t)(innerIndeces[pPosition.innerIndex])};
+    return Edge{pPosition.outerIndex, (size_t) (innerIndeces[pPosition.innerIndex])};
   }
 
   AdjMatGraphIt& operator++() override {
@@ -475,14 +522,6 @@ private:
   const AdjMatGraph& pGraph;
   SparseMatrixPos pPosition;
 };
-
-inline AdjMatGraphIt AdjMatGraph::begin() const {
-  return AdjMatGraphIt(*this, AdjMatGraphIt::SparseMatrixPos{0, 0});
-}
-inline AdjMatGraphIt AdjMatGraph::end() const {
-  return AdjMatGraphIt(
-      *this, AdjMatGraphIt::SparseMatrixPos{(size_t) pAdjacencyMatrix.nonZeros(), (size_t) pAdjacencyMatrix.cols()});
-}
 
 class DfsTreeIt : public GraphIt {
 public:

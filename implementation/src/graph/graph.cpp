@@ -147,7 +147,7 @@ AdjacencyMatrixGraph<Directionality::Undirected>
     AdjacencyMatrixGraph<Directionality::Undirected>::removeUncriticalEdges() const {
   AdjacencyMatrixGraph<Directionality::Undirected> saveCopy        = *this;
   AdjacencyMatrixGraph<Directionality::Undirected> experimetalCopy = *this;
-  for (const Edge& e : *this) {
+  for (const Edge& e : this->edges()) {
     experimetalCopy.removeEdge(e);
     experimetalCopy.prune();
     if (schmidt(experimetalCopy).open()) {
@@ -163,7 +163,7 @@ AdjacencyMatrixGraph<Directionality::Undirected>
 static AdjacencyListGraph<Directionality::Undirected> findBackedges(
     const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
   AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
-  for (Edge e : graph) {
+  for (Edge e : graph.edges()) {
     if (!tree.adjacent(e) && !tree.adjacent(e.reverse())) {
       backedges.addEdge(e);
     }
