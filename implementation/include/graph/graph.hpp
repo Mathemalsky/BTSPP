@@ -133,6 +133,42 @@ public:
  * weights of the edges are the euclidean distances between them.
  */
 class Euclidean : public CompleteGraph, public WeightedGraph {
+private:
+  class Edges {
+  private:
+    class Iterator {
+    public:
+      struct Position {
+        size_t index;
+        const size_t numberOfNodes;
+      };
+      Iterator(const Position& pos) : pPosition(pos) {}
+
+      Edge operator*() const {
+        return Edge{pPosition.index / pPosition.numberOfNodes, pPosition.index % pPosition.numberOfNodes};
+      }
+
+      Iterator& operator++() {
+        ++pPosition.index;
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.index != other.pPosition.index; }
+
+    private:
+      Position pPosition;
+    };  // end Iterator class
+
+  public:
+    Edges(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
+
+    Iterator begin() const { return Iterator(Iterator::Position{0, pNumberOfNodes}); }
+    Iterator end() const { return Iterator(Iterator::Position{pNumberOfNodes * pNumberOfNodes, pNumberOfNodes}); }
+
+  private:
+    const size_t pNumberOfNodes;
+  };  // end Edges class
+
 public:
   Euclidean()          = default;
   virtual ~Euclidean() = default;
@@ -144,6 +180,8 @@ public:
 
   double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
+
+  Edges edges() const { return Edges(numberOfNodes()); }
 
   Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return pPositions; }
