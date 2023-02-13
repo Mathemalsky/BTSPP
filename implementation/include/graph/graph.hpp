@@ -336,16 +336,16 @@ private:
       };
 
       Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
-        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {}
+        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {
+        assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
+      }
 
       Edge operator*() const {
-        assert(pAdjacencyMatrix.isCompressed() && "check is only valid on compressed matrix");
         const int* innerIndeces = pAdjacencyMatrix.innerIndexPtr();
         return Edge{pPosition.outerIndex, (size_t) (innerIndeces[pPosition.innerIndex])};
       }
 
       Iterator& operator++() {
-        assert(pAdjacencyMatrix.isCompressed() && "check is only valid on compressed matrix");
         const int* outerIndeces = pAdjacencyMatrix.outerIndexPtr();
         ++pPosition.innerIndex;
         while (pPosition.innerIndex >= (size_t) outerIndeces[pPosition.outerIndex + 1]) {
@@ -373,6 +373,44 @@ private:
   private:
     const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
   };  // end Edges class
+
+  class Neighbours {
+  private:
+    class Iterator {
+    public:
+      Iterator(const int* ptr) : pInnerIndeces(ptr) {}
+
+      size_t operator*() const { return *pInnerIndeces; }
+
+      Iterator operator++() {
+        ++pInnerIndeces;
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pInnerIndeces != other.pInnerIndeces; }
+
+    private:
+      const int* pInnerIndeces;
+    };  // end Iterator class
+
+  public:
+    Neighbours(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const size_t node) :
+      pAdjacencyMatrix(adjacencyMatrix), pNode(node) {
+      assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
+    }
+
+    Iterator begin() const {
+      return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode]);
+    }
+
+    Iterator end() const {
+      return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode + 1]);
+    }
+
+  private:
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+    const size_t pNode;
+  };  // end Neighbours class
 
 public:
   AdjMatGraph()  = default;
@@ -405,6 +443,8 @@ public:
   Edges edges() const { return Edges(pAdjacencyMatrix); }
 
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
+
+  Neighbours neighbours(const size_t node) { return Neighbours(pAdjacencyMatrix, node); }
 
   void prune() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
 
