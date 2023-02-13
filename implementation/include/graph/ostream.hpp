@@ -17,8 +17,8 @@ inline std::ostream& operator<<(std::ostream& os, const AdjMatGraph& graph) {
 }
 
 inline std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
-  os << "Number of nodes: " << tree.numberOfNodes() << std::endl;
-  for (const Edge& e : tree) {
+  os << "Number of nodes int tree: " << tree.numberOfNodes() << std::endl;
+  for (const Edge& e : tree.edges()) {
     os << e << std::endl;
   }
   return os;

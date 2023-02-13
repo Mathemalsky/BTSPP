@@ -196,6 +196,7 @@ EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>&
       }
     }
   }
+  std::cerr << tree;
   return EarDecomposition{ears, articulationPoints};
 }
 
