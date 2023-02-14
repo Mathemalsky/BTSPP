@@ -10,15 +10,15 @@ inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
 
 inline std::ostream& operator<<(std::ostream& os, const AdjMatGraph& graph) {
   os << "Number of nodes: " << graph.numberOfNodes() << std::endl;
-  for (const Edge& e : graph) {
+  for (const Edge& e : graph.edges()) {
     os << e << " " << graph.matrix().coeff(e.u, e.v).cost() << std::endl;
   }
   return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const DfsTree& tree) {
-  os << "Number of nodes: " << tree.numberOfNodes() << std::endl;
-  for (const Edge& e : tree) {
+  os << "Number of nodes int tree: " << tree.numberOfNodes() << std::endl;
+  for (const Edge& e : tree.edges()) {
     os << e << std::endl;
   }
   return os;

@@ -10,7 +10,7 @@
 #include "graph/geometry.hpp"
 
 /***********************************************************************************************************************
- *                                                Edges
+ *                                                        Edges
  **********************************************************************************************************************/
 
 /*!
@@ -89,20 +89,7 @@ struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
 }  // namespace Eigen
 
 /***********************************************************************************************************************
- *                                          iterator declaration
- **********************************************************************************************************************/
-
-class GraphIt {
-  virtual Edge operator*() const = 0;
-  virtual GraphIt& operator++()  = 0;
-};
-
-class AdjListGraphIt;
-class AdjMatGraphIt;
-class DfsTreeIt;
-
-/***********************************************************************************************************************
- *                                             graph classes
+ *                                                  graph classes
  **********************************************************************************************************************/
 
 /*!
@@ -116,8 +103,6 @@ public:
   virtual bool connected() const                              = 0;
   virtual size_t numberOfEdges() const                        = 0;
   virtual size_t numberOfNodes() const                        = 0;
-
-protected:
 };
 
 /*!
@@ -148,6 +133,42 @@ public:
  * weights of the edges are the euclidean distances between them.
  */
 class Euclidean : public CompleteGraph, public WeightedGraph {
+private:
+  class Edges {
+  private:
+    class Iterator {
+    public:
+      struct Position {
+        size_t index;
+        const size_t numberOfNodes;
+      };
+      Iterator(const Position& pos) : pPosition(pos) {}
+
+      Edge operator*() const {
+        return Edge{pPosition.index / pPosition.numberOfNodes, pPosition.index % pPosition.numberOfNodes};
+      }
+
+      Iterator& operator++() {
+        ++pPosition.index;
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.index != other.pPosition.index; }
+
+    private:
+      Position pPosition;
+    };  // end Iterator class
+
+  public:
+    Edges(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
+
+    Iterator begin() const { return Iterator(Iterator::Position{0, pNumberOfNodes}); }
+    Iterator end() const { return Iterator(Iterator::Position{pNumberOfNodes * pNumberOfNodes, pNumberOfNodes}); }
+
+  private:
+    const size_t pNumberOfNodes;
+  };  // end Edges class
+
 public:
   Euclidean()          = default;
   virtual ~Euclidean() = default;
@@ -159,6 +180,8 @@ public:
 
   double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
+
+  Edges edges() const { return Edges(numberOfNodes()); }
 
   Point2D position(const size_t v) const { return pPositions[v]; }
   std::vector<Point2D>& verteces() { return pPositions; }
@@ -180,6 +203,120 @@ protected:
  * \brief The AdjListGraph class abstract class for graph which store adjacency as list
  */
 class AdjListGraph : public Modifyable {
+private:
+  class Edges {
+  private:
+    class Iterator {
+    public:
+      struct AdjListPos {
+        size_t outerIndex;
+        size_t innerIndex;
+      };
+      Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
+        pAdjacencyList(adjacencyList), pPosition(pos) {}
+
+      Edge operator*() const {
+        return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]};
+      }
+
+      Iterator& operator++() {
+        ++pPosition.innerIndex;
+        while (pPosition.innerIndex == pAdjacencyList[pPosition.outerIndex].size()
+               && pPosition.outerIndex < pAdjacencyList.size()) {
+          pPosition.innerIndex = 0;
+          ++pPosition.outerIndex;
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
+
+    private:
+      const std::vector<std::vector<size_t>>& pAdjacencyList;
+      AdjListPos pPosition;
+    };  // end Iterator class
+
+  public:
+    Edges(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
+
+    Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{0, 0}); }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of AdjListPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
+    Iterator end() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{pAdjacencyList.size(), 0}); }
+
+  private:
+    const std::vector<std::vector<size_t>>& pAdjacencyList;
+  };  // end Edges class
+
+  class EdgesToLowerIndex {
+  private:
+    class Iterator {
+    public:
+      struct AdjListPos {
+        size_t outerIndex;
+        size_t innerIndex;
+      };
+
+      Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
+        pAdjacencyList(adjacencyList), pPosition(pos) {}
+
+      Edge operator*() const {
+        return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]};
+      }
+
+      Iterator& operator++() {
+        ++pPosition.innerIndex;
+        while ((endOfNeighbours() || !toLowerIndex()) && pPosition.outerIndex < pAdjacencyList.size()) {
+          if (endOfNeighbours()) {
+            pPosition.innerIndex = 0;
+            ++pPosition.outerIndex;
+          }
+          else {
+            ++pPosition.innerIndex;
+          }
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
+
+    private:
+      bool toLowerIndex() const {
+        return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex;
+      }
+      bool endOfNeighbours() const { return pPosition.innerIndex == pAdjacencyList[pPosition.outerIndex].size(); }
+
+      const std::vector<std::vector<size_t>>& pAdjacencyList;
+      AdjListPos pPosition;
+    };  // end Iterator class
+
+  public:
+    EdgesToLowerIndex(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
+
+    /*!
+     * \brief begin returns the begin iterator for iteration
+     * \details We start with 1 because for node 0 there is no node with strictly smaller index.
+     * \return Iterator infront of the first element.
+     */
+    Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{1, 0}); }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of AdjListPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
+    Iterator end() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{pAdjacencyList.size(), 0}); }
+
+  private:
+    const std::vector<std::vector<size_t>>& pAdjacencyList;
+  };  // end EdgesToLowerIndex class
+
 public:
   AdjListGraph()  = default;
   ~AdjListGraph() = default;
@@ -203,10 +340,11 @@ public:
   }
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
-  AdjListGraphIt begin() const;
-  AdjListGraphIt end() const;
-
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
+
+  Edges edges() const { return Edges(pAdjacencyList); }
+
+  EdgesToLowerIndex edgesToLowerIndex() const { return EdgesToLowerIndex(pAdjacencyList); }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
   size_t numberOfNeighbours(const size_t u) const { return pAdjacencyList[u].size(); }
@@ -248,7 +386,8 @@ public:
    * \brief AdjacencyListGraph::connected checks the graph is connected
    * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs. Directed
    * graphs are considered as connected if the undirected graph obtained by adding an anti parallel edge for each edge
-   * is connected. \return true if the graph is connected, else false
+   * is connected.
+   * \return true if the graph is connected, else false
    */
   bool connected() const override;
 
@@ -260,6 +399,169 @@ public:
  * \details graphs with adjacency matrix storage are generelly assumed to be weighted graphs
  */
 class AdjMatGraph : public Modifyable, public WeightedGraph {
+private:
+  class Edges {
+  private:
+    class Iterator {
+    public:
+      struct SparseMatrixPos {
+        size_t innerIndex;
+        size_t outerIndex;
+      };
+
+      Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
+        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {
+        assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
+      }
+
+      Edge operator*() const {
+        const int* innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndeces[pPosition.innerIndex])};
+      }
+
+      Iterator& operator++() {
+        const int* outerIndeces = pAdjacencyMatrix.outerIndexPtr();
+        ++pPosition.innerIndex;
+        while (pPosition.innerIndex >= static_cast<size_t>(outerIndeces[pPosition.outerIndex + 1])) {
+          ++pPosition.outerIndex;
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.innerIndex != other.pPosition.innerIndex; }
+
+    private:
+      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+      SparseMatrixPos pPosition;
+    };  // end Iterator class
+
+  public:
+    Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) :
+      pAdjacencyMatrix(adjacencyMatrix) {}
+
+    Iterator begin() const { return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0}); }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of SparseMatrixPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
+    Iterator end() const {
+      return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.nonZeros()), 0});
+    }
+
+  private:
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+  };  // end Edges class
+
+  class EdgesToLowerIndex {
+  private:
+    class Iterator {
+    public:
+      struct SparseMatrixPos {
+        size_t innerIndex;
+        size_t outerIndex;
+      };
+
+      Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
+        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {
+        assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
+      }
+
+      Edge operator*() const {
+        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndeces[pPosition.innerIndex])};
+      }
+
+      Iterator& operator++() {
+        const int* const outerIndeces = pAdjacencyMatrix.outerIndexPtr();
+        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        ++pPosition.innerIndex;
+        while (!valid()) {
+          if (static_cast<size_t>(innerIndeces[pPosition.innerIndex]) >= pPosition.outerIndex) {
+            pPosition.innerIndex = outerIndeces[pPosition.outerIndex + 1];  // skip rest of the row
+          }
+          ++pPosition.outerIndex;  // goes to next row
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.innerIndex != other.pPosition.innerIndex; }
+
+      bool valid() const {
+        const int* const outerIndeces = pAdjacencyMatrix.outerIndexPtr();
+        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        return pPosition.innerIndex < static_cast<size_t>(outerIndeces[pPosition.outerIndex + 1])  // correct row
+               && static_cast<size_t>(innerIndeces[pPosition.innerIndex]) < pPosition.outerIndex;  // lower triangular
+      }
+
+    private:
+      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+      SparseMatrixPos pPosition;
+    };  // end Iterator class
+
+  public:
+    EdgesToLowerIndex(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) :
+      pAdjacencyMatrix(adjacencyMatrix) {}
+
+    Iterator begin() const {
+      Iterator it(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0});
+      return it.valid() ? it : ++it;
+    }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of SparseMatrixPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
+    Iterator end() const {
+      return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.nonZeros()), 0});
+    }
+
+  private:
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+  };  // end EdgesToLowerIndex class
+
+  class Neighbours {
+  private:
+    class Iterator {
+    public:
+      Iterator(const int* ptr) : pInnerIndeces(ptr) {}
+
+      size_t operator*() const { return *pInnerIndeces; }
+
+      Iterator operator++() {
+        ++pInnerIndeces;
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pInnerIndeces != other.pInnerIndeces; }
+
+    private:
+      const int* pInnerIndeces;
+    };  // end Iterator class
+
+  public:
+    Neighbours(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const size_t node) :
+      pAdjacencyMatrix(adjacencyMatrix), pNode(node) {
+      assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
+    }
+
+    Iterator begin() const {
+      return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode]);
+    }
+
+    Iterator end() const {
+      return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode + 1]);
+    }
+
+  private:
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+    const size_t pNode;
+  };  // end Neighbours class
+
 public:
   AdjMatGraph()  = default;
   ~AdjMatGraph() = default;
@@ -286,12 +588,15 @@ public:
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
-  AdjMatGraphIt begin() const;
-  AdjMatGraphIt end() const;
-
   void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
 
+  Edges edges() const { return Edges(pAdjacencyMatrix); }
+
+  EdgesToLowerIndex edgesToLowerIndex() const { return EdgesToLowerIndex(pAdjacencyMatrix); }
+
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
+
+  Neighbours neighbours(const size_t node) const { return Neighbours(pAdjacencyMatrix, node); }
 
   void prune() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
 
@@ -338,10 +643,10 @@ public:
   bool biconnected() const;
   bool connectedWhithout(const size_t vertex) const;
   void removeEdge(const Edge& e) {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "edge to be removed does not exist in graph");
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
     if constexpr (DIRECT == Directionality::Undirected) {
-      assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "edge to be removed does not exist in graph");
+      assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "Edge to be removed does not exist in graph!");
       pAdjacencyMatrix.coeffRef(e.v, e.u) = 0.0;
     }
   }
@@ -358,11 +663,59 @@ class Tree : public virtual Graph {
 };
 
 /*!
- * \brief class FixTree
+ * \brief class DfsTree
  * \details This class is for trees where every node has exactly one parent. This allows to store the neighboors
  * more efficient.
  */
 class DfsTree : public Tree {
+private:
+  class Edges {
+  private:
+    class Iterator {
+    public:
+      Iterator(const std::vector<size_t>& adjacencyList, const size_t root, const size_t pos) :
+        pAdjacencyList(adjacencyList), pRoot(root), pPosition(pos) {}
+
+      Edge operator*() const {
+        assert(pPosition != pRoot && "No outging edge from root node!");
+        return Edge{pPosition, pAdjacencyList[pPosition]};
+      }
+
+      Iterator& operator++() {
+        ++pPosition;
+        if (pPosition == pRoot) {
+          ++pPosition;
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition != other.pPosition; }
+
+    private:
+      const std::vector<size_t>& pAdjacencyList;
+      const size_t pRoot;
+      size_t pPosition;
+    };  // end Iterator class
+
+  public:
+    Edges(const std::vector<size_t>& adjacencyList, const size_t root) : pAdjacencyList(adjacencyList), pRoot(root) {}
+
+    Iterator begin() const {
+      if (pRoot != 0) {
+        return Iterator(pAdjacencyList, pRoot, 0);  // skip the root node
+      }
+      else {
+        return Iterator(pAdjacencyList, pRoot, 1);
+      }
+    }
+
+    Iterator end() const { return Iterator(pAdjacencyList, pRoot, pAdjacencyList.size()); }
+
+  private:
+    const std::vector<size_t>& pAdjacencyList;
+    const size_t pRoot;
+  };  // end Edges class
+
 public:
   DfsTree()  = default;
   ~DfsTree() = default;
@@ -377,23 +730,22 @@ public:
 
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
-  DfsTreeIt begin() const;
-  DfsTreeIt end() const;
+  Edges edges() const { return Edges(pAdjacencyList, root()); }
 
   std::vector<size_t> explorationOrder() const { return pExplorationOrder; }
   std::vector<size_t>& explorationOrder() { return pExplorationOrder; }
 
   size_t parent(const size_t u) const {
-    assert(
-        u != pExplorationOrder[0] && "You are trying to access the root nodes parent, which is uninitialized memory!");
+    assert(u != root() && "You are trying to access the root nodes parent, which is uninitialized memory!");
     return pAdjacencyList[u];
   }
 
   size_t& parent(const size_t u) {
-    assert(
-        u != pExplorationOrder[0] && "You are trying to access the root nodes parent, which is uninitialized memory!");
+    assert(u != root() && "You are trying to access the root nodes parent, which is uninitialized memory!");
     return pAdjacencyList[u];
   }
+
+  size_t root() const { return pExplorationOrder[0]; }
 
 private:
   std::vector<size_t> pAdjacencyList;
@@ -401,120 +753,22 @@ private:
 };
 
 /***********************************************************************************************************************
- *                                          iterator implementation
+ *                                             types for graph algorithms
  **********************************************************************************************************************/
 
-class AdjListGraphIt : public GraphIt {
-public:
-  struct AdjListPos {
-    size_t outerIndex;
-    size_t innerIndex;
-    bool operator!=(const AdjListPos& other) const { return outerIndex != other.outerIndex; }
-  };
+struct EarDecomposition {
+  std::vector<std::vector<size_t>> ears;
+  std::vector<size_t> articulationPoints;
 
-  AdjListGraphIt(const AdjListGraph& graph, AdjListPos position) : pGraph(graph), pPosition(position) {}
-
-  Edge operator*() const override {
-    return Edge{pPosition.outerIndex, pGraph.neighbours(pPosition.outerIndex)[pPosition.innerIndex]};
-  }
-
-  AdjListGraphIt& operator++() override {
-    ++pPosition.innerIndex;
-    while (pPosition.innerIndex == pGraph.numberOfNeighbours(pPosition.outerIndex)
-           && pPosition.outerIndex < pGraph.numberOfNodes()) {
-      pPosition.innerIndex = 0;
-      ++pPosition.outerIndex;
-    }
-    return *this;
-  }
-
-  bool operator!=(const AdjListGraphIt& other) const { return pPosition != other.pPosition; }
-
-private:
-  const AdjListGraph& pGraph;
-  AdjListPos pPosition;
+  bool open() const { return articulationPoints.empty(); }
 };
-
-inline AdjListGraphIt AdjListGraph::begin() const {
-  return AdjListGraphIt(*this, AdjListGraphIt::AdjListPos{0, 0});
-}
-
-inline AdjListGraphIt AdjListGraph::end() const {
-  return AdjListGraphIt(*this, AdjListGraphIt::AdjListPos{numberOfNodes(), 0});
-}
-
-class AdjMatGraphIt : public GraphIt {
-public:
-  struct SparseMatrixPos {
-    size_t innerIndex;
-    size_t outerIndex;
-    bool operator!=(const SparseMatrixPos& other) const { return innerIndex != other.innerIndex; }
-  };
-
-  AdjMatGraphIt(const AdjMatGraph& graph, SparseMatrixPos position) : pGraph(graph), pPosition(position) {}
-
-  Edge operator*() const override {
-    assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
-    const int* innerIndeces = pGraph.matrix().innerIndexPtr();
-    return Edge{pPosition.outerIndex, (size_t)(innerIndeces[pPosition.innerIndex])};
-  }
-
-  AdjMatGraphIt& operator++() override {
-    assert(pGraph.matrix().isCompressed() && "check is only valid on compressed matrix");
-    const int* outerIndeces = pGraph.matrix().outerIndexPtr();
-    ++pPosition.innerIndex;
-    while (pPosition.innerIndex >= (size_t) outerIndeces[pPosition.outerIndex + 1]) {
-      ++pPosition.outerIndex;
-    }
-    return *this;
-  }
-
-  bool operator!=(const AdjMatGraphIt& other) const { return pPosition != other.pPosition; }
-
-private:
-  const AdjMatGraph& pGraph;
-  SparseMatrixPos pPosition;
-};
-
-inline AdjMatGraphIt AdjMatGraph::begin() const {
-  return AdjMatGraphIt(*this, AdjMatGraphIt::SparseMatrixPos{0, 0});
-}
-inline AdjMatGraphIt AdjMatGraph::end() const {
-  return AdjMatGraphIt(
-      *this, AdjMatGraphIt::SparseMatrixPos{(size_t) pAdjacencyMatrix.nonZeros(), (size_t) pAdjacencyMatrix.cols()});
-}
-
-class DfsTreeIt : public GraphIt {
-public:
-  DfsTreeIt(const DfsTree& tree, const size_t position) : pTree(tree), pPosition(position) {}
-
-  Edge operator*() const override { return Edge{pPosition, pTree.parent(pPosition)}; }
-
-  DfsTreeIt& operator++() override {
-    ++pPosition;
-    return *this;
-  }
-
-  bool operator!=(const DfsTreeIt& other) const { return pPosition != other.pPosition; }
-
-private:
-  const DfsTree& pTree;
-  size_t pPosition;
-};
-
-inline DfsTreeIt DfsTree::begin() const {
-  return DfsTreeIt(*this, (size_t) 1);
-}
-inline DfsTreeIt DfsTree::end() const {
-  return DfsTreeIt(*this, pAdjacencyList.size());
-}
 
 /***********************************************************************************************************************
- *                                           graph algorithms
+ *                                                  graph algorithms
  **********************************************************************************************************************/
 
-template <Directionality DIRECT>
-DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0) {
+template <typename G>
+DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
 
   DfsTree tree(numberOfNodes);
@@ -527,10 +781,10 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
     if (!visited[top]) {
       visited[top] = true;
       tree.explorationOrder().push_back(top);  // store order of node exploration
-      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(graph.matrix(), top); it; ++it) {
-        if (!visited[it.index()]) {
-          nodeStack.push(it.index());     // do not push already visited nodes
-          tree.parent(it.index()) = top;  // update the parent
+      for (const size_t u : graph.neighbours(top)) {
+        if (!visited[u]) {
+          nodeStack.push(u);     // do not push already visited nodes
+          tree.parent(u) = top;  // update the parent
         }
       }
     }
@@ -538,13 +792,45 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
   return tree;
 }
 
-struct EarDecomposition {
+template <typename G>
+AdjacencyListGraph<Directionality::Undirected> findBackedges(const G& graph, const DfsTree& tree) {
+  AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
+  for (Edge e : graph.edges()) {
+    if (!tree.adjacent(e) && !tree.adjacent(e.reverse())) {
+      backedges.addEdge(e);
+    }
+  }
+  return backedges;
+}
+
+template <typename G>
+EarDecomposition schmidt(const G& graph) {
+  const DfsTree tree                                             = dfs(graph);
+  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
+  const size_t numberOfNodes                                     = graph.numberOfNodes();
+
+  std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
   std::vector<size_t> articulationPoints;
+  for (size_t v : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
+    for (size_t u : backedges.neighbours(v)) {  // for every backedge starting at v
+      if (!visited[u]) {
+        std::vector<size_t> chain{v, u};
+        visited[v] = true;
+        while (!visited[u]) {
+          visited[u] = true;
+          u          = tree.parent(u);
+          chain.push_back(u);
+        }
+        if (u == v && v != 0) {
+          articulationPoints.push_back(u);
+        }
+        ears.push_back(chain);
+      }
+    }
+  }
+  return EarDecomposition{ears, articulationPoints};
+}
 
-  bool open() const { return articulationPoints.empty(); }
-};
-
-EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
 AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition);
 AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);

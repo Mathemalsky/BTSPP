@@ -147,7 +147,7 @@ AdjacencyMatrixGraph<Directionality::Undirected>
     AdjacencyMatrixGraph<Directionality::Undirected>::removeUncriticalEdges() const {
   AdjacencyMatrixGraph<Directionality::Undirected> saveCopy        = *this;
   AdjacencyMatrixGraph<Directionality::Undirected> experimetalCopy = *this;
-  for (const Edge& e : *this) {
+  for (const Edge& e : this->edgesToLowerIndex()) {
     experimetalCopy.removeEdge(e);
     experimetalCopy.prune();
     if (schmidt(experimetalCopy).open()) {
@@ -158,45 +158,6 @@ AdjacencyMatrixGraph<Directionality::Undirected>
     }
   }
   return saveCopy;
-}
-
-static AdjacencyListGraph<Directionality::Undirected> findBackedges(
-    const AdjacencyMatrixGraph<Directionality::Undirected>& graph, const DfsTree& tree) {
-  AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
-  for (Edge e : graph) {
-    if (!tree.adjacent(e) && !tree.adjacent(e.reverse())) {
-      backedges.addEdge(e);
-    }
-  }
-  return backedges;
-}
-
-EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph) {
-  const DfsTree tree                                             = dfs(graph);
-  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
-  const size_t numberOfNodes                                     = graph.numberOfNodes();
-
-  std::vector<bool> visited(numberOfNodes, false);
-  std::vector<std::vector<size_t>> ears;
-  std::vector<size_t> articulationPoints;
-  for (size_t v : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
-    for (size_t u : backedges.neighbours(v)) {  // for every backedge starting at v
-      if (!visited[u]) {
-        std::vector<size_t> chain{v, u};
-        visited[v] = true;
-        while (!visited[u]) {
-          visited[u] = true;
-          u          = tree.parent(u);
-          chain.push_back(u);
-        }
-        if (u == v && v != 0) {
-          articulationPoints.push_back(u);
-        }
-        ears.push_back(chain);
-      }
-    }
-  }
-  return EarDecomposition{ears, articulationPoints};
 }
 
 using Entry = Eigen::Triplet<EdgeWeight>;
