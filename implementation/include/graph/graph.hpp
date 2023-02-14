@@ -444,7 +444,7 @@ public:
 
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
 
-  Neighbours neighbours(const size_t node) { return Neighbours(pAdjacencyMatrix, node); }
+  Neighbours neighbours(const size_t node) const { return Neighbours(pAdjacencyMatrix, node); }
 
   void prune() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
 
@@ -601,11 +601,22 @@ private:
 };
 
 /***********************************************************************************************************************
- *                                           graph algorithms
+ *                                           types for graph algorithms
  **********************************************************************************************************************/
 
-template <Directionality DIRECT>
-DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0) {
+struct EarDecomposition {
+  std::vector<std::vector<size_t>> ears;
+  std::vector<size_t> articulationPoints;
+
+  bool open() const { return articulationPoints.empty(); }
+};
+
+/***********************************************************************************************************************
+ *                                                graph algorithms
+ **********************************************************************************************************************/
+
+template <typename G>
+DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
 
   DfsTree tree(numberOfNodes);
@@ -618,10 +629,10 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
     if (!visited[top]) {
       visited[top] = true;
       tree.explorationOrder().push_back(top);  // store order of node exploration
-      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(graph.matrix(), top); it; ++it) {
-        if (!visited[it.index()]) {
-          nodeStack.push(it.index());     // do not push already visited nodes
-          tree.parent(it.index()) = top;  // update the parent
+      for (const size_t u : graph.neighbours(top)) {
+        if (!visited[u]) {
+          nodeStack.push(u);     // do not push already visited nodes
+          tree.parent(u) = top;  // update the parent
         }
       }
     }
@@ -629,13 +640,45 @@ DfsTree dfs(const AdjacencyMatrixGraph<DIRECT>& graph, const size_t rootNode = 0
   return tree;
 }
 
-struct EarDecomposition {
+template <typename G>
+AdjacencyListGraph<Directionality::Undirected> findBackedges(const G& graph, const DfsTree& tree) {
+  AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
+  for (Edge e : graph.edges()) {
+    if (!tree.adjacent(e) && !tree.adjacent(e.reverse())) {
+      backedges.addEdge(e);
+    }
+  }
+  return backedges;
+}
+
+template <typename G>
+EarDecomposition schmidt(const G& graph) {
+  const DfsTree tree                                             = dfs(graph);
+  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
+  const size_t numberOfNodes                                     = graph.numberOfNodes();
+
+  std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
   std::vector<size_t> articulationPoints;
+  for (size_t v : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
+    for (size_t u : backedges.neighbours(v)) {  // for every backedge starting at v
+      if (!visited[u]) {
+        std::vector<size_t> chain{v, u};
+        visited[v] = true;
+        while (!visited[u]) {
+          visited[u] = true;
+          u          = tree.parent(u);
+          chain.push_back(u);
+        }
+        if (u == v && v != 0) {
+          articulationPoints.push_back(u);
+        }
+        ears.push_back(chain);
+      }
+    }
+  }
+  return EarDecomposition{ears, articulationPoints};
+}
 
-  bool open() const { return articulationPoints.empty(); }
-};
-
-EarDecomposition schmidt(const AdjacencyMatrixGraph<Directionality::Undirected>& graph);
 AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition);
 AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);
