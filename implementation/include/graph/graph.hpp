@@ -240,6 +240,13 @@ private:
     Edges(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
 
     Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{0, 0}); }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of AdjListPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
     Iterator end() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{pAdjacencyList.size(), 0}); }
 
   private:
@@ -313,7 +320,8 @@ public:
    * \brief AdjacencyListGraph::connected checks the graph is connected
    * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs. Directed
    * graphs are considered as connected if the undirected graph obtained by adding an anti parallel edge for each edge
-   * is connected. \return true if the graph is connected, else false
+   * is connected.
+   * \return true if the graph is connected, else false
    */
   bool connected() const override;
 
@@ -342,13 +350,13 @@ private:
 
       Edge operator*() const {
         const int* innerIndeces = pAdjacencyMatrix.innerIndexPtr();
-        return Edge{pPosition.outerIndex, (size_t) (innerIndeces[pPosition.innerIndex])};
+        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndeces[pPosition.innerIndex])};
       }
 
       Iterator& operator++() {
         const int* outerIndeces = pAdjacencyMatrix.outerIndexPtr();
         ++pPosition.innerIndex;
-        while (pPosition.innerIndex >= (size_t) outerIndeces[pPosition.outerIndex + 1]) {
+        while (pPosition.innerIndex >= static_cast<size_t>(outerIndeces[pPosition.outerIndex + 1])) {
           ++pPosition.outerIndex;
         }
         return *this;
@@ -366,13 +374,89 @@ private:
       pAdjacencyMatrix(adjacencyMatrix) {}
 
     Iterator begin() const { return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0}); }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of SparseMatrixPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
     Iterator end() const {
-      return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{(size_t) pAdjacencyMatrix.nonZeros(), 0});
+      return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.nonZeros()), 0});
     }
 
   private:
     const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
   };  // end Edges class
+
+  class EdgesToLowerIndex {
+  private:
+    class Iterator {
+    public:
+      struct SparseMatrixPos {
+        size_t innerIndex;
+        size_t outerIndex;
+      };
+
+      Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
+        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {
+        assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
+      }
+
+      Edge operator*() const {
+        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndeces[pPosition.innerIndex])};
+      }
+
+      Iterator& operator++() {
+        const int* const outerIndeces = pAdjacencyMatrix.outerIndexPtr();
+        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        ++pPosition.innerIndex;
+        while (!valid()) {
+          if (static_cast<size_t>(innerIndeces[pPosition.innerIndex]) >= pPosition.outerIndex) {
+            pPosition.innerIndex = outerIndeces[pPosition.outerIndex + 1];  // skip rest of the row
+          }
+          ++pPosition.outerIndex;  // goes to next row
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.innerIndex != other.pPosition.innerIndex; }
+
+      bool valid() const {
+        const int* const outerIndeces = pAdjacencyMatrix.outerIndexPtr();
+        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        return pPosition.innerIndex < static_cast<size_t>(outerIndeces[pPosition.outerIndex + 1])  // correct row
+               && static_cast<size_t>(innerIndeces[pPosition.innerIndex]) < pPosition.outerIndex;  // lower triangular
+      }
+
+    private:
+      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+      SparseMatrixPos pPosition;
+    };  // end Iterator class
+
+  public:
+    EdgesToLowerIndex(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) :
+      pAdjacencyMatrix(adjacencyMatrix) {}
+
+    Iterator begin() const {
+      Iterator it(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0});
+      return it.valid() ? it : ++it;
+    }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of SparseMatrixPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
+    Iterator end() const {
+      return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.nonZeros()), 0});
+    }
+
+  private:
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
+  };  // end EdgesToLowerIndex class
 
   class Neighbours {
   private:
@@ -442,6 +526,8 @@ public:
 
   Edges edges() const { return Edges(pAdjacencyMatrix); }
 
+  EdgesToLowerIndex edgesToLowerIndex() const { return EdgesToLowerIndex(pAdjacencyMatrix); }
+
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
 
   Neighbours neighbours(const size_t node) const { return Neighbours(pAdjacencyMatrix, node); }
@@ -491,10 +577,10 @@ public:
   bool biconnected() const;
   bool connectedWhithout(const size_t vertex) const;
   void removeEdge(const Edge& e) {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "edge to be removed does not exist in graph");
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
     if constexpr (DIRECT == Directionality::Undirected) {
-      assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "edge to be removed does not exist in graph");
+      assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "Edge to be removed does not exist in graph!");
       pAdjacencyMatrix.coeffRef(e.v, e.u) = 0.0;
     }
   }
@@ -550,7 +636,7 @@ private:
 
     Iterator begin() const {
       if (pRoot != 0) {
-        return Iterator(pAdjacencyList, pRoot, 0);
+        return Iterator(pAdjacencyList, pRoot, 0);  // skip the root node
       }
       else {
         return Iterator(pAdjacencyList, pRoot, 1);
