@@ -10,7 +10,7 @@
 #include "graph/geometry.hpp"
 
 /***********************************************************************************************************************
- *                                                Edges
+ *                                                        Edges
  **********************************************************************************************************************/
 
 /*!
@@ -89,7 +89,7 @@ struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
 }  // namespace Eigen
 
 /***********************************************************************************************************************
- *                                             graph classes
+ *                                                  graph classes
  **********************************************************************************************************************/
 
 /*!
@@ -253,6 +253,70 @@ private:
     const std::vector<std::vector<size_t>>& pAdjacencyList;
   };  // end Edges class
 
+  class EdgesToLowerIndex {
+  private:
+    class Iterator {
+    public:
+      struct AdjListPos {
+        size_t outerIndex;
+        size_t innerIndex;
+      };
+
+      Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
+        pAdjacencyList(adjacencyList), pPosition(pos) {}
+
+      Edge operator*() const {
+        return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]};
+      }
+
+      Iterator& operator++() {
+        ++pPosition.innerIndex;
+        while ((endOfNeighbours() || !toLowerIndex()) && pPosition.outerIndex < pAdjacencyList.size()) {
+          if (endOfNeighbours()) {
+            pPosition.innerIndex = 0;
+            ++pPosition.outerIndex;
+          }
+          else {
+            ++pPosition.innerIndex;
+          }
+        }
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
+
+    private:
+      bool toLowerIndex() const {
+        return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex;
+      }
+      bool endOfNeighbours() const { return pPosition.innerIndex == pAdjacencyList[pPosition.outerIndex].size(); }
+
+      const std::vector<std::vector<size_t>>& pAdjacencyList;
+      AdjListPos pPosition;
+    };  // end Iterator class
+
+  public:
+    EdgesToLowerIndex(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
+
+    /*!
+     * \brief begin returns the begin iterator for iteration
+     * \details We start with 1 because for node 0 there is no node with strictly smaller index.
+     * \return Iterator infront of the first element.
+     */
+    Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{1, 0}); }
+
+    /*!
+     * \brief end returns the end Iterator for comparison.
+     * \details The 0 is just an arbitrary number because the outerIndex of AdjListPos is not taken into
+     * account for comparison.
+     * \return Iterator behind the last element.
+     */
+    Iterator end() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{pAdjacencyList.size(), 0}); }
+
+  private:
+    const std::vector<std::vector<size_t>>& pAdjacencyList;
+  };  // end EdgesToLowerIndex class
+
 public:
   AdjListGraph()  = default;
   ~AdjListGraph() = default;
@@ -279,6 +343,8 @@ public:
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
 
   Edges edges() const { return Edges(pAdjacencyList); }
+
+  EdgesToLowerIndex edgesToLowerIndex() const { return EdgesToLowerIndex(pAdjacencyList); }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
   size_t numberOfNeighbours(const size_t u) const { return pAdjacencyList[u].size(); }
@@ -687,7 +753,7 @@ private:
 };
 
 /***********************************************************************************************************************
- *                                           types for graph algorithms
+ *                                             types for graph algorithms
  **********************************************************************************************************************/
 
 struct EarDecomposition {
@@ -698,7 +764,7 @@ struct EarDecomposition {
 };
 
 /***********************************************************************************************************************
- *                                                graph algorithms
+ *                                                  graph algorithms
  **********************************************************************************************************************/
 
 template <typename G>

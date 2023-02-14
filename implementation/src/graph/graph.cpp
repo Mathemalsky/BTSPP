@@ -147,7 +147,7 @@ AdjacencyMatrixGraph<Directionality::Undirected>
     AdjacencyMatrixGraph<Directionality::Undirected>::removeUncriticalEdges() const {
   AdjacencyMatrixGraph<Directionality::Undirected> saveCopy        = *this;
   AdjacencyMatrixGraph<Directionality::Undirected> experimetalCopy = *this;
-  for (const Edge& e : this->edges()) {
+  for (const Edge& e : this->edgesToLowerIndex()) {
     experimetalCopy.removeEdge(e);
     experimetalCopy.prune();
     if (schmidt(experimetalCopy).open()) {

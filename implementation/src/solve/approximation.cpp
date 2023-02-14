@@ -31,27 +31,6 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     // DBEUG
     std::cerr << "fromEars\n" << fromEars;
 
-    // TEST
-    std::cerr << "edges to lower index\n";
-    for (const Edge& e : fromEars.edgesToLowerIndex()) {
-      std::cerr << e << std::endl;
-    }
-
-    /*
-    // TEST
-    std::cerr << "neighbours of 0\n";
-    for (const size_t u : fromEars.neighbours(0)) {
-      std::cerr << u << " ";
-    }
-    std::cerr << std::endl;
-
-    std::cerr << "neighbours of 3\n";
-    for (const size_t u : fromEars.neighbours(3)) {
-      std::cerr << u << " ";
-    }
-    std::cerr << std::endl;
-    */
-
     const AdjacencyMatrixGraph<Directionality::Undirected> minimal = fromEars.removeUncriticalEdges();
 
     // DBEUG
