@@ -43,14 +43,22 @@ AdjacencyListGraph<Directionality::Undirected> findBackedges(const G& graph, con
   return backedges;
 }
 
+/*!
+ * \brief schmidt computes an open ear decomposition
+ * \details This function requires the input graph to be biconnected (strongly biconnected in case of directed graph).
+ * The algorithm is related to
+ * SCHMIDT, Jens M. A simple test on 2-vertex-and 2-edge-connectivity.
+ * Information Processing Letters, 2013, 113. Jg., Nr. 7, S. 241-244.
+ * \param graph Instance of a graph, which provides the required member functions.
+ * \return Open Ear decomposition as std::vector of ears which are std::vector<size_t>.
+ */
 template <typename G>
 EarDecomposition schmidt(const G& graph) {
+  assert(checkBiconnectivity(graph) && "The graph is assumed to be biconnected!");
+
   const DfsTree tree                                             = dfs(graph);
   const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
   const size_t numberOfNodes                                     = graph.numberOfNodes();
-
-  // DEBUG
-  std::cerr << "tree called in schmidt\n" << tree.explorationOrder() << std::endl;
 
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
@@ -63,9 +71,6 @@ EarDecomposition schmidt(const G& graph) {
           visited[v] = true;
           v          = tree.parent(v);
           chain.push_back(v);
-        }
-        if (v == u && u != tree.root()) {
-          // do something
         }
         ears.push_back(chain);
       }
@@ -108,7 +113,6 @@ bool checkBiconnectivity(const G& graph) {
   return true;
 }
 
-AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition);
 AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);
 AdjacencyListGraph<Directionality::Undirected> earDecompToAdjacencyListGraph(
     const EarDecomposition& earDecomposition, const size_t numberOfNodes);

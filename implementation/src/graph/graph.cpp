@@ -40,7 +40,7 @@ bool AdjacencyListGraph<Directionality::Undirected>::connected() const {
     nodeStack.pop();
     if (!visited[v]) {
       visited[v] = true;
-      for (const size_t& neighbour : pAdjacencyList[v]) {
+      for (const size_t& neighbour : this->neighbours(v)) {
         if (!visited[neighbour]) {
           nodeStack.push(neighbour);
         }
@@ -81,9 +81,9 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
     const size_t top = nodeStack.top();
     nodeStack.pop();
     if (!visited[top]) {
-      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
-        if (!visited[it.index()]) {
-          nodeStack.push(it.index());
+      for (const size_t u : this->neighbours(top)) {
+        if (!visited[u]) {
+          nodeStack.push(u);
         }
       }
       visited[top] = true;
@@ -132,12 +132,7 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const s
 
 template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
-  for (size_t i = 0; i < numberOfNodes(); ++i) {
-    if (!connectedWhithout(i)) {
-      return false;
-    }
-  }
-  return true;
+  return checkBiconnectivity(*this);
 }
 
 template <>
@@ -145,42 +140,14 @@ bool AdjacencyListGraph<Directionality::Undirected>::biconnected() const {
   return checkBiconnectivity(*this);
 }
 
-// DEBUG
-#include <iostream>
-#include "graph/ostream.hpp"
-
-/*
-template <>
-AdjacencyMatrixGraph<Directionality::Undirected>
-    AdjacencyMatrixGraph<Directionality::Undirected>::removeUncriticalEdges() const {
-  AdjacencyMatrixGraph<Directionality::Undirected> saveCopy        = *this;
-  AdjacencyMatrixGraph<Directionality::Undirected> experimetalCopy = *this;
-  for (const Edge& e : this->edgesToLowerIndex()) {
-    experimetalCopy.removeEdge(e);
-    experimetalCopy.prune();
-    if (schmidt(experimetalCopy).open()) {
-      saveCopy = experimetalCopy;
-    }
-    else {
-      experimetalCopy = saveCopy;
-    }
-  }
-  return saveCopy;
-}
-*/
-
 template <>
 AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality::Undirected>::removeUncriticalEdges()
     const {
   AdjacencyListGraph<Directionality::Undirected> saveCopy         = *this;
   AdjacencyListGraph<Directionality::Undirected> experimentalCopy = *this;
+
   for (const Edge& e : this->edgesToLowerIndex()) {
     experimentalCopy.removeEdge(e);
-
-    // DEBUG
-    std::cerr << "experimental copy\n" << experimentalCopy << std::endl;
-    std::cerr << "save         copy\n" << saveCopy << std::endl;
-
     if (experimentalCopy.biconnected()) {
       saveCopy = experimentalCopy;
     }

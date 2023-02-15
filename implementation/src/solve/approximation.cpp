@@ -22,7 +22,6 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     AdjacencyMatrixGraph<Directionality::Undirected> graph = biconnectedSpanningGraph(euclidean);
 
     // DEBUG
-    std::cerr << "biconnected graph\n" << graph << std::endl;
     std::cerr << "undirected\n";
     for (const Edge& e : graph.edgesToLowerIndex()) {
       std::cerr << e << std::endl;
@@ -32,8 +31,6 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
 
     // DEBUG
     std::cerr << "ears\n" << ears.ears;
-
-    // const AdjacencyMatrixGraph<Directionality::Undirected> fromEars = earDecompToGraph(ears);
 
     const AdjacencyListGraph<Directionality::Undirected> fromEars =
         earDecompToAdjacencyListGraph(ears, graph.numberOfNodes());

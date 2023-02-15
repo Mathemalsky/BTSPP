@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstddef>
 #include <numeric>
 #include <stack>
 #include <vector>
@@ -8,6 +9,8 @@
 #include <Eigen/SparseCore>
 
 #include "graph/geometry.hpp"
+
+#include "utility/utils.hpp"
 
 /***********************************************************************************************************************
  *                                                        Edges
@@ -400,9 +403,11 @@ public:
   bool biconnected() const;
 
   void removeEdge(const Edge& e) {
-    std::remove(pAdjacencyList[e.u].begin(), pAdjacencyList[e.u].end(), e.v);
+    [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.u], e.v);
+    assert(removed && "Edge to be removed does not exist in graph!");
     if constexpr (DIRECT == Directionality::Undirected) {
-      std::remove(pAdjacencyList[e.v].begin(), pAdjacencyList[e.v].end(), e.u);
+      [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.v], e.u);
+      assert(removed && "Edge to be removed does not exist in graph!");
     }
   }
 
@@ -593,11 +598,11 @@ public:
   virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
 
   double weight(const Edge& e) const override {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "edgeweight 0 cann also mean the edge does not exists");
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
     return pAdjacencyMatrix.coeff(e.u, e.v).cost();
   }
   double weight(const size_t u, const size_t v) const override {
-    assert(pAdjacencyMatrix.coeff(u, v) != 0 && "edgeweight 0 cann also mean the edge does not exists");
+    assert(pAdjacencyMatrix.coeff(u, v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
     return pAdjacencyMatrix.coeff(u, v).cost();
   }
 
