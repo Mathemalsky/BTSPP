@@ -54,25 +54,58 @@ EarDecomposition schmidt(const G& graph) {
 
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
-  std::vector<size_t> articulationPoints;
-  for (size_t v : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
-    for (size_t u : backedges.neighbours(v)) {  // for every backedge starting at v
-      if (!visited[u]) {
-        std::vector<size_t> chain{v, u};
-        visited[v] = true;
-        while (!visited[u]) {
-          visited[u] = true;
-          u          = tree.parent(u);
-          chain.push_back(u);
+  for (size_t u : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
+    for (size_t v : backedges.neighbours(u)) {  // for every backedge starting at v
+      if (!visited[v]) {
+        std::vector<size_t> chain{u, v};
+        visited[u] = true;
+        while (!visited[v]) {
+          visited[v] = true;
+          v          = tree.parent(v);
+          chain.push_back(v);
         }
-        if (u == v && v != tree.root()) {
-          articulationPoints.push_back(u);
+        if (v == u && u != tree.root()) {
+          // do something
         }
         ears.push_back(chain);
       }
     }
   }
-  return EarDecomposition{ears, articulationPoints};
+  return EarDecomposition{ears};
+}
+
+template <typename G>
+bool checkBiconnectivity(const G& graph) {
+  const DfsTree tree                                             = dfs(graph);
+  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
+  const size_t numberOfNodes                                     = graph.numberOfNodes();
+
+  if (backedges.degree(tree.root()) == 0) {
+    return false;  // root isn't part of any cycle
+  }
+
+  std::vector<bool> visited(numberOfNodes, false);
+  for (size_t u : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
+    for (size_t v : backedges.neighbours(u)) {  // for every backedge starting at v
+      if (!visited[v]) {
+        visited[u] = true;
+        while (!visited[v]) {
+          visited[v] = true;
+          v          = tree.parent(v);
+        }
+        if (v == u && u != tree.root()) {
+          return false;  // v is an articulation point
+        }
+      }
+    }
+  }
+
+  for (const bool b : visited) {
+    if (!b) {
+      return false;
+    }
+  }
+  return true;
 }
 
 AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition);

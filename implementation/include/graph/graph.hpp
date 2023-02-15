@@ -347,12 +347,13 @@ public:
 
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
 
+  size_t degree(const size_t u) const { return pAdjacencyList[u].size(); }
+
   Edges edges() const { return Edges(pAdjacencyList); }
 
   EdgesToLowerIndex edgesToLowerIndex() const { return EdgesToLowerIndex(pAdjacencyList); }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
-  size_t numberOfNeighbours(const size_t u) const { return pAdjacencyList[u].size(); }
 
 protected:
   std::vector<std::vector<size_t>> pAdjacencyList;
@@ -395,6 +396,8 @@ public:
    * \return true if the graph is connected, else false
    */
   bool connected() const override;
+
+  bool biconnected() const;
 
   void removeEdge(const Edge& e) {
     std::remove(pAdjacencyList[e.u].begin(), pAdjacencyList[e.u].end(), e.v);
@@ -770,7 +773,4 @@ private:
 
 struct EarDecomposition {
   std::vector<std::vector<size_t>> ears;
-  std::vector<size_t> articulationPoints;
-
-  bool open() const { return articulationPoints.empty(); }
 };

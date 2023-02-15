@@ -14,7 +14,7 @@ AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality
   const size_t numberOfNodes = this->numberOfNodes();
   AdjacencyListGraph<Directionality::Undirected> undirected(numberOfNodes);
   for (size_t i = 0; i < numberOfNodes; ++i) {
-    for (size_t j = 0; j < numberOfNeighbours(i); ++j) {
+    for (size_t j = 0; j < degree(i); ++j) {
       if (std::find(undirected.neighbours(i).begin(), undirected.neighbours(i).end(), j)
           == undirected.neighbours(i).end()) {
         undirected.addEdge(i, j);
@@ -140,10 +140,16 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
   return true;
 }
 
+template <>
+bool AdjacencyListGraph<Directionality::Undirected>::biconnected() const {
+  return checkBiconnectivity(*this);
+}
+
 // DEBUG
 #include <iostream>
 #include "graph/ostream.hpp"
 
+/*
 template <>
 AdjacencyMatrixGraph<Directionality::Undirected>
     AdjacencyMatrixGraph<Directionality::Undirected>::removeUncriticalEdges() const {
@@ -161,24 +167,25 @@ AdjacencyMatrixGraph<Directionality::Undirected>
   }
   return saveCopy;
 }
+*/
 
 template <>
 AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality::Undirected>::removeUncriticalEdges()
     const {
-  AdjacencyListGraph<Directionality::Undirected> saveCopy        = *this;
-  AdjacencyListGraph<Directionality::Undirected> experimetalCopy = *this;
+  AdjacencyListGraph<Directionality::Undirected> saveCopy         = *this;
+  AdjacencyListGraph<Directionality::Undirected> experimentalCopy = *this;
   for (const Edge& e : this->edgesToLowerIndex()) {
-    experimetalCopy.removeEdge(e);
+    experimentalCopy.removeEdge(e);
 
     // DEBUG
-    std::cerr << "experimental copy\n" << experimetalCopy << std::endl;
+    std::cerr << "experimental copy\n" << experimentalCopy << std::endl;
     std::cerr << "save         copy\n" << saveCopy << std::endl;
 
-    if (schmidt(experimetalCopy).open()) {
-      saveCopy = experimetalCopy;
+    if (experimentalCopy.biconnected()) {
+      saveCopy = experimentalCopy;
     }
     else {
-      experimetalCopy = saveCopy;
+      experimentalCopy = saveCopy;
     }
   }
   return saveCopy;
