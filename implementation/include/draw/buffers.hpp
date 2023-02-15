@@ -190,6 +190,12 @@ struct Buffers {
   const VertexBuffer& coordinates;     /**< coordinates of graph vertices */
   const ShaderBuffer& tour;            /**< vertex indeces in order as they appear in the tour */
   const ShaderBuffer& tourCoordinates; /**< coordinates of graph vertices */
+
+  ~Buffers() {
+    delete &coordinates;
+    delete &tour;
+    delete &tourCoordinates;
+  }
 };
 
 /***********************************************************************************************************************
