@@ -526,8 +526,16 @@ private:
     EdgesToLowerIndex(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) :
       pAdjacencyMatrix(adjacencyMatrix) {}
 
+    /*!
+     * \brief begin returns a an Iterator to the begin of the strictly lower triangle in adjacency matrix.
+     * \details The Iterator starts in second row, because the intersect of first row and strictly lower triangle is
+     * empty.
+     * \return Iterator to the begin of the strictly lower triangle in adjacency matrix
+     */
     Iterator begin() const {
-      Iterator it(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0});
+      assert(pAdjacencyMatrix.rows() > 1 && "Adjacency matrix with less than 2 rows has no entries below diagonal!");
+      Iterator it(
+          pAdjacencyMatrix, Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.outerIndexPtr()[1]), 0});
       return it.valid() ? it : ++it;
     }
 
