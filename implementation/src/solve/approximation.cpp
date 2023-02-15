@@ -21,6 +21,13 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
   if (problemType == ProblemType::BTSP_approx) {
     AdjacencyMatrixGraph<Directionality::Undirected> graph = biconnectedSpanningGraph(euclidean);
 
+    // DEBUG
+    std::cerr << "biconnected graph\n" << graph << std::endl;
+    std::cerr << "undirected\n";
+    for (const Edge& e : graph.edgesToLowerIndex()) {
+      std::cerr << e << std::endl;
+    }
+
     const EarDecomposition ears = schmidt(graph);  // calculate proper ear decomposition
 
     // DEBUG

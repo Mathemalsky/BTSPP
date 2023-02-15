@@ -494,7 +494,7 @@ private:
         const int* const outerIndeces = pAdjacencyMatrix.outerIndexPtr();
         const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
         ++pPosition.innerIndex;
-        while (!valid()) {
+        while (pPosition.innerIndex < static_cast<size_t>(pAdjacencyMatrix.nonZeros()) && !valid()) {
           if (static_cast<size_t>(innerIndeces[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndeces[pPosition.outerIndex + 1];  // skip rest of the row
           }
