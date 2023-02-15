@@ -8,6 +8,7 @@
 #include "draw/definitions.hpp"
 
 #include "graph/graph.hpp"
+#include "graph/algorithm.hpp"
 
 // DEBUG
 #include <iostream>
@@ -25,13 +26,15 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     // DEBUG
     std::cerr << "ears\n" << ears.ears;
 
-    // find approximation
-    const AdjacencyMatrixGraph<Directionality::Undirected> fromEars = earDecompToGraph(ears);
+    // const AdjacencyMatrixGraph<Directionality::Undirected> fromEars = earDecompToGraph(ears);
+
+    const AdjacencyListGraph<Directionality::Undirected> fromEars =
+        earDecompToAdjacencyListGraph(ears, graph.numberOfNodes());
 
     // DBEUG
     std::cerr << "fromEars\n" << fromEars;
 
-    const AdjacencyMatrixGraph<Directionality::Undirected> minimal = fromEars.removeUncriticalEdges();
+    const AdjacencyListGraph<Directionality::Undirected> minimal = fromEars.removeUncriticalEdges();
 
     // DBEUG
     std::cerr << "minimal\n" << minimal;

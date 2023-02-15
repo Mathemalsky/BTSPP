@@ -49,6 +49,12 @@ constexpr RGBA_COLOUR INITIAL_CLEAR_COLOUR  = {0.19, 0.19, 0.25, 1.0};
 constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 0.0f, 0.0f, 1.0f};
 }  // namespace drawing
 
+namespace input {
+namespace mouse {
+constexpr int INITIAL_NODE_IN_MOTION = namedInts::INVALID;
+}
+}  // namespace input
+
 namespace mainwindow {
 constexpr unsigned int INITIAL_HEIGHT = 960;
 constexpr unsigned int INITIAL_WIDTH  = 960;

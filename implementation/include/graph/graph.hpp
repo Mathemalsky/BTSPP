@@ -271,7 +271,7 @@ private:
 
       Iterator& operator++() {
         ++pPosition.innerIndex;
-        while ((endOfNeighbours() || !toLowerIndex()) && pPosition.outerIndex < pAdjacencyList.size()) {
+        while (pPosition.outerIndex < pAdjacencyList.size() && (endOfNeighbours() || !toLowerIndex())) {
           if (endOfNeighbours()) {
             pPosition.innerIndex = 0;
             ++pPosition.outerIndex;
@@ -285,10 +285,11 @@ private:
 
       bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
 
-    private:
       bool toLowerIndex() const {
         return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex;
       }
+
+    private:
       bool endOfNeighbours() const { return pPosition.innerIndex == pAdjacencyList[pPosition.outerIndex].size(); }
 
       const std::vector<std::vector<size_t>>& pAdjacencyList;
@@ -300,10 +301,14 @@ private:
 
     /*!
      * \brief begin returns the begin iterator for iteration
-     * \details We start with 1 because for node 0 there is no node with strictly smaller index.
+     * \details We start with 1 because for node 0 there is no node with strictly smaller index. If this inital iterator
+     * does not point to an edge to lower index, it is increased to the next edge satisfying this condition.
      * \return Iterator infront of the first element.
      */
-    Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{1, 0}); }
+    Iterator begin() const {
+      Iterator it(pAdjacencyList, Iterator::AdjListPos{1, 0});
+      return it.toLowerIndex() ? it : ++it;
+    }
 
     /*!
      * \brief end returns the end Iterator for comparison.
@@ -391,6 +396,14 @@ public:
    */
   bool connected() const override;
 
+  void removeEdge(const Edge& e) {
+    std::remove(pAdjacencyList[e.u].begin(), pAdjacencyList[e.u].end(), e.v);
+    if constexpr (DIRECT == Directionality::Undirected) {
+      std::remove(pAdjacencyList[e.v].begin(), pAdjacencyList[e.v].end(), e.u);
+    }
+  }
+
+  AdjacencyListGraph<Directionality::Undirected> removeUncriticalEdges() const;
   AdjacencyListGraph<Directionality::Undirected> undirected() const;
 };
 
@@ -720,9 +733,8 @@ public:
   DfsTree()  = default;
   ~DfsTree() = default;
 
-  DfsTree(const size_t numberOfNodes) {
-    pAdjacencyList.resize(numberOfNodes);
-    pExplorationOrder.resize(numberOfNodes);
+  DfsTree(const size_t numberOfNodes) : pAdjacencyList(numberOfNodes) {
+    pExplorationOrder.reserve(numberOfNodes);  // just reserve, because dfs performs push_backs
   }
 
   bool adjacent(const size_t u, const size_t v) const override { return u != 0 && v == parent(u); }
@@ -762,75 +774,3 @@ struct EarDecomposition {
 
   bool open() const { return articulationPoints.empty(); }
 };
-
-/***********************************************************************************************************************
- *                                                  graph algorithms
- **********************************************************************************************************************/
-
-template <typename G>
-DfsTree dfs(const G& graph, const size_t rootNode = 0) {
-  const size_t numberOfNodes = graph.numberOfNodes();
-
-  DfsTree tree(numberOfNodes);
-  std::vector<bool> visited(numberOfNodes, false);
-  std::stack<size_t> nodeStack;
-  nodeStack.push(rootNode);
-  while (!nodeStack.empty()) {
-    const size_t top = nodeStack.top();
-    nodeStack.pop();
-    if (!visited[top]) {
-      visited[top] = true;
-      tree.explorationOrder().push_back(top);  // store order of node exploration
-      for (const size_t u : graph.neighbours(top)) {
-        if (!visited[u]) {
-          nodeStack.push(u);     // do not push already visited nodes
-          tree.parent(u) = top;  // update the parent
-        }
-      }
-    }
-  }
-  return tree;
-}
-
-template <typename G>
-AdjacencyListGraph<Directionality::Undirected> findBackedges(const G& graph, const DfsTree& tree) {
-  AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
-  for (Edge e : graph.edges()) {
-    if (!tree.adjacent(e) && !tree.adjacent(e.reverse())) {
-      backedges.addEdge(e);
-    }
-  }
-  return backedges;
-}
-
-template <typename G>
-EarDecomposition schmidt(const G& graph) {
-  const DfsTree tree                                             = dfs(graph);
-  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
-  const size_t numberOfNodes                                     = graph.numberOfNodes();
-
-  std::vector<bool> visited(numberOfNodes, false);
-  std::vector<std::vector<size_t>> ears;
-  std::vector<size_t> articulationPoints;
-  for (size_t v : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
-    for (size_t u : backedges.neighbours(v)) {  // for every backedge starting at v
-      if (!visited[u]) {
-        std::vector<size_t> chain{v, u};
-        visited[v] = true;
-        while (!visited[u]) {
-          visited[u] = true;
-          u          = tree.parent(u);
-          chain.push_back(u);
-        }
-        if (u == v && v != 0) {
-          articulationPoints.push_back(u);
-        }
-        ears.push_back(chain);
-      }
-    }
-  }
-  return EarDecomposition{ears, articulationPoints};
-}
-
-AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition);
-AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);

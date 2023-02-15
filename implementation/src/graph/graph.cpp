@@ -7,6 +7,8 @@
 
 #include <Eigen/SparseCore>
 
+#include "graph/algorithm.hpp"
+
 template <>
 AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality::Directed>::undirected() const {
   const size_t numberOfNodes = this->numberOfNodes();
@@ -160,72 +162,24 @@ AdjacencyMatrixGraph<Directionality::Undirected>
   return saveCopy;
 }
 
-using Entry = Eigen::Triplet<EdgeWeight>;
+template <>
+AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality::Undirected>::removeUncriticalEdges()
+    const {
+  AdjacencyListGraph<Directionality::Undirected> saveCopy        = *this;
+  AdjacencyListGraph<Directionality::Undirected> experimetalCopy = *this;
+  for (const Edge& e : this->edgesToLowerIndex()) {
+    experimetalCopy.removeEdge(e);
 
-// VERY INEFFICIENT
-AdjacencyMatrixGraph<Directionality::Undirected> earDecompToGraph(const EarDecomposition& earDecomposition) {
-  size_t maxIndex = 0;
-  std::vector<Entry> entries;
-  for (const std::vector<size_t>& ear : earDecomposition.ears) {
-    for (size_t i = ear.size() - 1; i > 0; --i) {
-      maxIndex = std::max(maxIndex, ear[i]);
-      entries.push_back(Entry(ear[i], ear[i - 1], 1.0));
-      entries.push_back(Entry(ear[i - 1], ear[i], 1.0));
+    // DEBUG
+    std::cerr << "experimental copy\n" << experimetalCopy << std::endl;
+    std::cerr << "save         copy\n" << saveCopy << std::endl;
+
+    if (schmidt(experimetalCopy).open()) {
+      saveCopy = experimetalCopy;
+    }
+    else {
+      experimetalCopy = saveCopy;
     }
   }
-  return AdjacencyMatrixGraph<Directionality::Undirected>(maxIndex + 1, entries);
-}
-
-class Index {
-public:
-  Index(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
-
-  size_t numberOfEdges() const { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
-  size_t edgeIndex(const size_t i, const size_t j) const {
-    return i > j ? 0.5 * (i * i - i) + j : 0.5 * (j * j - j) + i;
-  }
-
-  Edge edge(const unsigned int k) const {
-    const unsigned int i = std::floor(std::sqrt(0.25 + 2 * k) + 0.5);
-    return Edge{i, k - (i * i - i) / 2};
-  }
-
-private:
-  const size_t pNumberOfNodes;
-};
-
-AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean) {
-  const size_t numberOfNodes = euclidean.numberOfNodes();
-
-  const Index index(numberOfNodes);
-  std::vector<unsigned int> edgeIndeces(index.numberOfEdges());
-  std::iota(edgeIndeces.begin(), edgeIndeces.end(), 0);
-  std::sort(edgeIndeces.begin(), edgeIndeces.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
-    return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
-  });
-
-  // add the first numberOfNodes many edges
-  std::vector<Entry> entries;
-  entries.reserve(numberOfNodes);
-  for (unsigned int i = 0; i < numberOfNodes; ++i) {
-    const Edge e = index.edge(edgeIndeces[i]);
-    entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
-    entries.push_back(Entry(e.v, e.u, euclidean.weight(e)));
-  }
-
-  // create an undirected graph from that
-  AdjacencyMatrixGraph<Directionality::Undirected> graph(numberOfNodes, entries);
-
-  // continue adding edges until it is biconnected
-  unsigned int edgeCounter = numberOfNodes;
-
-  while (!graph.biconnected()) {
-    assert(edgeCounter < euclidean.numberOfEdges() && "We cannot add more edges than existing.");
-
-    const Edge e = index.edge(edgeIndeces[edgeCounter++]);
-    graph.addEdge(e, euclidean.weight(e));
-  }
-
-  graph.compressMatrix();  // matrix became uncommpressed when adding edges
-  return graph;
+  return saveCopy;
 }

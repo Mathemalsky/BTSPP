@@ -35,6 +35,10 @@ static void initDrawingVariables() {
   drawing::VERTEX_COLOUR               = drawing::INITIAL_VERTEX_COLOUR;
 }
 
+static void initInputVariables() {
+  input::mouse::NODE_IN_MOTION = input::mouse::INITIAL_NODE_IN_MOTION;
+}
+
 static const Buffers& setUpBufferMemory(const unsigned int numberOfNodes) {
   // generate random vertices in euclidean plane
   drawing::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(numberOfNodes));
@@ -99,8 +103,9 @@ int visualize(const unsigned int numberOfNodes) {
   // setup Dear ImGui
   setUpImgui(window, glsl_version);
 
-  // set initial state of the settings window
+  // set initial state of variables for drawing and input
   initDrawingVariables();
+  initInputVariables();
 
   // main loop
   while (!glfwWindowShouldClose(window)) {
