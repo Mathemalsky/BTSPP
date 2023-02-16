@@ -120,7 +120,7 @@ bool checkBiconnectivity(const G& graph) {
  * \param euclidean complete graph, providing distances between nodes.
  * \return undirected AdjacencyMatrixGraph
  */
-AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);
+AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean);
 
 /*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
