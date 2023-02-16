@@ -1,11 +1,11 @@
 #pragma once
 
-#include "graph/graph.hpp"
+#include <cassert>
+#include <cstddef>
+#include <stack>
+#include <vector>
 
-// DEBUG
-#include <iostream>
-#include "utility/utils.hpp"
-#include "graph/ostream.hpp"
+#include "graph/graph.hpp"
 
 template <typename G>
 DfsTree dfs(const G& graph, const size_t rootNode = 0) {
@@ -113,6 +113,20 @@ bool checkBiconnectivity(const G& graph) {
   return true;
 }
 
+/*!
+ * \brief biconnectedSpanningGraph computes a bottleneck optimal biconnected spanning subgraph.
+ * \details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
+ * increasing in their length and successively added until the graph is biconnected.
+ * \param euclidean complete graph, providing distances between nodes.
+ * \return undirected AdjacencyMatrixGraph
+ */
 AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);
+
+/*!
+ * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
+ * \param earDecomposition open ear decomposition
+ * \param numberOfNodes number of nodes appaering there
+ * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
+ */
 AdjacencyListGraph<Directionality::Undirected> earDecompToAdjacencyListGraph(
     const EarDecomposition& earDecomposition, const size_t numberOfNodes);

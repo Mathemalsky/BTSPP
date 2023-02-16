@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <numeric>
-#include <stack>
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -649,7 +648,7 @@ protected:
  * accelerate iteration over all adjacent nodes.
  */
 template <Directionality DIRECT>
-class AdjacencyMatrixGraph : public virtual AdjMatGraph {
+class AdjacencyMatrixGraph : public AdjMatGraph {
 public:
   AdjacencyMatrixGraph()  = default;
   ~AdjacencyMatrixGraph() = default;

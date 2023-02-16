@@ -104,33 +104,6 @@ bool AdjacencyMatrixGraph<Directionality::Directed>::connected() const {
 }
 
 template <>
-bool AdjacencyMatrixGraph<Directionality::Undirected>::connectedWhithout(const size_t vertex) const {
-  std::vector<bool> visited(numberOfNodes(), false);
-  std::stack<size_t> nodeStack;
-  const size_t rootNode = (vertex != 0 ? 0 : 1);
-  nodeStack.push(rootNode);
-  while (!nodeStack.empty()) {
-    const size_t top = nodeStack.top();
-    nodeStack.pop();
-    if (!visited[top]) {
-      for (Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>::InnerIterator it(pAdjacencyMatrix, top); it; ++it) {
-        if (!visited[it.index()] && (size_t) it.index() != vertex) {
-          nodeStack.push(it.index());
-        }
-      }
-      visited[top] = true;
-    }
-  }
-
-  for (size_t i = 0; i < visited.size(); ++i) {
-    if (!visited[i] && vertex != i) {
-      return false;
-    }
-  }
-  return true;
-}
-
-template <>
 bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
   return checkBiconnectivity(*this);
 }

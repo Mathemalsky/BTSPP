@@ -71,6 +71,5 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
     graph.compressMatrix();  // matrix became uncommpressed when adding edges
   }
 
-  graph.compressMatrix();  // matrix became uncommpressed when adding edges
   return graph;
 }
