@@ -68,13 +68,6 @@ static void drawGraph(const ShaderProgram& drawLine, const G& graph, const RGBA_
   }
 }
 
-template <typename G>
-static void drawUndirectedGraph(const ShaderProgram& drawLine, const G& graph, const RGBA_COLOUR& colour) {
-  for (const Edge& e : graph.edgesToLowerIndex()) {
-    drawEdge(drawLine, e, 5.0f, colour);
-  }
-}
-
 static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const EarDecomposition& openEarDecomp) {
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
@@ -92,7 +85,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
 
   unsigned int typeInt = static_cast<unsigned int>(ProblemType::BTSP_approx);
   if (DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawUndirectedGraph(programs.drawLine, BTSP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
+    drawGraph(programs.drawLine, BTSP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
   }
   if (DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawOpenEarDecomposition(programs.drawLine, BTSP_APPROX_RESULT.openEarDecomposition);

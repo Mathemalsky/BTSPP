@@ -9,29 +9,11 @@
 
 #include "graph/algorithm.hpp"
 
-template <>
-AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality::Directed>::undirected() const {
-  const size_t numberOfNodes = this->numberOfNodes();
-  AdjacencyListGraph<Directionality::Undirected> undirected(numberOfNodes);
-  for (size_t i = 0; i < numberOfNodes; ++i) {
-    for (size_t j = 0; j < degree(i); ++j) {
-      if (std::find(undirected.neighbours(i).begin(), undirected.neighbours(i).end(), j)
-          == undirected.neighbours(i).end()) {
-        undirected.addEdge(i, j);
-      }
-    }
-  }
-  return undirected;
-}
+/***********************************************************************************************************************
+ *                                                adjacency list graph
+ **********************************************************************************************************************/
 
-template <>
-AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality::Undirected>::undirected() const {
-  assert("You are converting an undirected graph into an undirected graph!");
-  return *this;
-}
-
-template <>
-bool AdjacencyListGraph<Directionality::Undirected>::connected() const {
+bool AdjacencyListGraph::connected() const {
   std::vector<bool> visited(numberOfNodes(), false);
   std::stack<size_t> nodeStack;
   nodeStack.push(0);
@@ -55,25 +37,45 @@ bool AdjacencyListGraph<Directionality::Undirected>::connected() const {
   return true;
 }
 
-template <>
-bool AdjacencyListGraph<Directionality::Directed>::connected() const {
-  return undirected().connected();
+AdjacencyListGraph AdjacencyListGraph::removeUncriticalEdges() const {
+  AdjacencyListGraph saveCopy         = *this;
+  AdjacencyListGraph experimentalCopy = *this;
+
+  for (const Edge& e : this->edges()) {
+    experimentalCopy.removeEdge(e);
+    if (experimentalCopy.biconnected()) {
+      saveCopy = experimentalCopy;
+    }
+    else {
+      experimentalCopy = saveCopy;
+    }
+  }
+  return saveCopy;
 }
 
-template <>
-AdjacencyMatrixGraph<Directionality::Undirected> AdjacencyMatrixGraph<Directionality::Directed>::undirected() const {
-  return AdjacencyMatrixGraph<Directionality::Undirected>(
-      pAdjacencyMatrix + Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(pAdjacencyMatrix.transpose()));
+/***********************************************************************************************************************
+ *                                               adjacency list digraph
+ **********************************************************************************************************************/
+
+AdjacencyListGraph AdjacencyListDigraph::undirected() const {
+  const size_t numberOfNodes = this->numberOfNodes();
+  AdjacencyListGraph undirected(numberOfNodes);
+  for (size_t i = 0; i < numberOfNodes; ++i) {
+    for (size_t j = 0; j < degree(i); ++j) {
+      if (std::find(undirected.neighbours(i).begin(), undirected.neighbours(i).end(), j)
+          == undirected.neighbours(i).end()) {
+        undirected.addEdge(i, j);
+      }
+    }
+  }
+  return undirected;
 }
 
-template <>
-AdjacencyMatrixGraph<Directionality::Undirected> AdjacencyMatrixGraph<Directionality::Undirected>::undirected() const {
-  assert("You are converting an undirected graph into an undirected graph!");
-  return *this;
-}
+/***********************************************************************************************************************
+ *                                               adjacency matrix graph
+ **********************************************************************************************************************/
 
-template <>
-bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
+bool AdjacencyMatrixGraph::connected() const {
   std::vector<bool> visited(numberOfNodes(), false);
   std::stack<size_t> nodeStack;
   nodeStack.push(0);
@@ -98,35 +100,11 @@ bool AdjacencyMatrixGraph<Directionality::Undirected>::connected() const {
   return true;
 }
 
-template <>
-bool AdjacencyMatrixGraph<Directionality::Directed>::connected() const {
-  return undirected().connected();
-}
+/***********************************************************************************************************************
+ *                                              adjacency matrix digraph
+ **********************************************************************************************************************/
 
-template <>
-bool AdjacencyMatrixGraph<Directionality::Undirected>::biconnected() const {
-  return checkBiconnectivity(*this);
-}
-
-template <>
-bool AdjacencyListGraph<Directionality::Undirected>::biconnected() const {
-  return checkBiconnectivity(*this);
-}
-
-template <>
-AdjacencyListGraph<Directionality::Undirected> AdjacencyListGraph<Directionality::Undirected>::removeUncriticalEdges()
-    const {
-  AdjacencyListGraph<Directionality::Undirected> saveCopy         = *this;
-  AdjacencyListGraph<Directionality::Undirected> experimentalCopy = *this;
-
-  for (const Edge& e : this->edgesToLowerIndex()) {
-    experimentalCopy.removeEdge(e);
-    if (experimentalCopy.biconnected()) {
-      saveCopy = experimentalCopy;
-    }
-    else {
-      experimentalCopy = saveCopy;
-    }
-  }
-  return saveCopy;
+AdjacencyMatrixGraph AdjacencyMatrixDigraph::undirected() const {
+  return AdjacencyMatrixGraph(
+      pAdjacencyMatrix + Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(pAdjacencyMatrix.transpose()));
 }

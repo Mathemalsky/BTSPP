@@ -7,8 +7,7 @@
 
 using Entry = Eigen::Triplet<EdgeWeight>;
 
-AdjacencyListGraph<Directionality::Undirected> earDecompToAdjacencyListGraph(
-    const EarDecomposition& earDecomposition, const size_t numberOfNodes) {
+AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes) {
   std::vector<std::vector<size_t>> adjacencyList(numberOfNodes);
   for (const std::vector<size_t>& ear : earDecomposition.ears) {
     for (size_t i = 0; i < ear.size() - 1; ++i) {
@@ -16,7 +15,7 @@ AdjacencyListGraph<Directionality::Undirected> earDecompToAdjacencyListGraph(
       adjacencyList[ear[i + 1]].push_back(ear[i]);
     }
   }
-  return AdjacencyListGraph<Directionality::Undirected>(adjacencyList);
+  return AdjacencyListGraph(adjacencyList);
 }
 
 class Index {
@@ -37,7 +36,7 @@ private:
   const size_t pNumberOfNodes;
 };
 
-AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean) {
+AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
 
   const Index index(numberOfNodes);
@@ -57,7 +56,7 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
   }
 
   // create an undirected graph from that
-  AdjacencyMatrixGraph<Directionality::Undirected> graph(numberOfNodes, entries);
+  AdjacencyMatrixGraph graph(numberOfNodes, entries);
 
   // continue adding edges until it is biconnected
   unsigned int edgeCounter = numberOfNodes;

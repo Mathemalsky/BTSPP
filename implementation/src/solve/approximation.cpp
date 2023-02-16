@@ -19,26 +19,22 @@ namespace approximation {
 
 Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
   if (problemType == ProblemType::BTSP_approx) {
-    AdjacencyMatrixGraph<Directionality::Undirected> graph = biconnectedSpanningGraph(euclidean);
+    AdjacencyMatrixGraph graph = biconnectedSpanningGraph(euclidean);
 
     // DEBUG
-    std::cerr << "undirected\n";
-    for (const Edge& e : graph.edgesToLowerIndex()) {
-      std::cerr << e << std::endl;
-    }
+    std::cerr << "undirected\n" << graph;
 
     const EarDecomposition ears = schmidt(graph);  // calculate proper ear decomposition
 
     // DEBUG
     std::cerr << "ears\n" << ears.ears;
 
-    const AdjacencyListGraph<Directionality::Undirected> fromEars =
-        earDecompToAdjacencyListGraph(ears, graph.numberOfNodes());
+    const AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, graph.numberOfNodes());
 
     // DBEUG
     std::cerr << "fromEars\n" << fromEars;
 
-    const AdjacencyListGraph<Directionality::Undirected> minimal = fromEars.removeUncriticalEdges();
+    const AdjacencyListGraph minimal = fromEars.removeUncriticalEdges();
 
     // DBEUG
     std::cerr << "minimal\n" << minimal;

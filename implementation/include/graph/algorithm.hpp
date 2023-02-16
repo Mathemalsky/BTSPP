@@ -33,8 +33,8 @@ DfsTree dfs(const G& graph, const size_t rootNode = 0) {
 }
 
 template <typename G>
-AdjacencyListGraph<Directionality::Undirected> findBackedges(const G& graph, const DfsTree& tree) {
-  AdjacencyListGraph<Directionality::Undirected> backedges(graph.numberOfNodes());
+AdjacencyListGraph findBackedges(const G& graph, const DfsTree& tree) {
+  AdjacencyListGraph backedges(graph.numberOfNodes());
   for (Edge e : graph.edges()) {
     if (!tree.adjacent(e) && !tree.adjacent(e.reverse())) {
       backedges.addEdge(e);
@@ -56,9 +56,9 @@ template <typename G>
 EarDecomposition schmidt(const G& graph) {
   assert(checkBiconnectivity(graph) && "The graph is assumed to be biconnected!");
 
-  const DfsTree tree                                             = dfs(graph);
-  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
-  const size_t numberOfNodes                                     = graph.numberOfNodes();
+  const DfsTree tree                 = dfs(graph);
+  const AdjacencyListGraph backedges = findBackedges(graph, tree);
+  const size_t numberOfNodes         = graph.numberOfNodes();
 
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;
@@ -81,9 +81,9 @@ EarDecomposition schmidt(const G& graph) {
 
 template <typename G>
 bool checkBiconnectivity(const G& graph) {
-  const DfsTree tree                                             = dfs(graph);
-  const AdjacencyListGraph<Directionality::Undirected> backedges = findBackedges(graph, tree);
-  const size_t numberOfNodes                                     = graph.numberOfNodes();
+  const DfsTree tree                 = dfs(graph);
+  const AdjacencyListGraph backedges = findBackedges(graph, tree);
+  const size_t numberOfNodes         = graph.numberOfNodes();
 
   if (backedges.degree(tree.root()) == 0) {
     return false;  // root isn't part of any cycle
@@ -120,7 +120,7 @@ bool checkBiconnectivity(const G& graph) {
  * \param euclidean complete graph, providing distances between nodes.
  * \return undirected AdjacencyMatrixGraph
  */
-AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const Euclidean& euclidean);
+AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean);
 
 /*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
@@ -128,5 +128,4 @@ AdjacencyMatrixGraph<Directionality::Undirected> biconnectedSpanningGraph(const 
  * \param numberOfNodes number of nodes appaering there
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
-AdjacencyListGraph<Directionality::Undirected> earDecompToAdjacencyListGraph(
-    const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
