@@ -32,13 +32,12 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     // DEBUG
     std::cerr << "ears\n" << ears.ears;
 
-    const AdjacencyListGraph<Directionality::Undirected> fromEars =
-        earDecompToAdjacencyListGraph(ears, graph.numberOfNodes());
+    const AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, graph.numberOfNodes());
 
     // DBEUG
     std::cerr << "fromEars\n" << fromEars;
 
-    const AdjacencyListGraph<Directionality::Undirected> minimal = fromEars.removeUncriticalEdges();
+    const AdjacencyListGraph minimal = fromEars.removeUncriticalEdges();
 
     // DBEUG
     std::cerr << "minimal\n" << minimal;

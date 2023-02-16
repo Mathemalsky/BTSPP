@@ -12,6 +12,13 @@
 #include "utility/utils.hpp"
 
 /***********************************************************************************************************************
+ *                                  forward declare functions from algorithm header
+ **********************************************************************************************************************/
+
+template <typename G>
+bool checkBiconnectivity(const G& graph);
+
+/***********************************************************************************************************************
  *                                                        Edges
  **********************************************************************************************************************/
 
@@ -129,12 +136,16 @@ public:
   size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
+class DirectedGraph : public virtual Graph {};
+
+class UndirectedGraph : public virtual Graph {};
+
 /*!
  * \brief The Euclidean class
  * \details An euclidean graph is a graph where each vertex has a position in 2 dimensional euclidean plane and the
  * weights of the edges are the euclidean distances between them.
  */
-class Euclidean : public CompleteGraph, public WeightedGraph {
+class Euclidean : public CompleteGraph, public WeightedGraph, public UndirectedGraph {
 private:
   class Edges {
   private:
@@ -202,7 +213,7 @@ protected:
 };
 
 /*!
- * \brief The AdjListGraph class abstract class for graph which store adjacency as list
+ * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as list.
  */
 class AdjListGraph : public Modifyable {
 private:
@@ -362,12 +373,11 @@ protected:
 };
 
 /*!
- * \brief The AdjacencyListGraph class implements a modifyable graph with adjacency list as internal storage
- * \details If the edge is directed, it is directed from vertex associated with outer storage index to vertex associated
- * with inner storage index
+ * \brief The AdjacencyListGraph class implemnts undirected graphs based on adjacency lists.
+ * \details For the sake of faster iteration over all neighbours, each edge is stored twice: once for each possible
+ * direction.
  */
-template <Directionality DIRECT>
-class AdjacencyListGraph : public AdjListGraph {
+class AdjacencyListGraph : public AdjListGraph, public UndirectedGraph {
 public:
   AdjacencyListGraph()  = default;
   ~AdjacencyListGraph() = default;
@@ -378,40 +388,72 @@ public:
 
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     pAdjacencyList[out].push_back(in);
-    if constexpr (DIRECT == Directionality::Undirected) {
-      pAdjacencyList[in].push_back(out);
-    }
+    pAdjacencyList[in].push_back(out);
   }
 
   void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     pAdjacencyList[e.u].push_back(e.v);
-    if constexpr (DIRECT == Directionality::Undirected) {
-      pAdjacencyList[e.v].push_back(e.u);
-    }
+    pAdjacencyList[e.v].push_back(e.u);
   }
 
   /*!
    * \brief AdjacencyListGraph::connected checks the graph is connected
+   * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs.
+   * \return true if the graph is connected, else false
+   */
+  bool connected() const override;
+
+  bool biconnected() const { return checkBiconnectivity(*this); }
+
+  void removeEdge(const Edge& e) {
+    [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.u], e.v);
+    assert(removed && "Edge to be removed does not exist in graph!");
+    [[maybe_unused]] const bool removed2 = removeAnyElementByValue(pAdjacencyList[e.v], e.u);
+    assert(removed2 && "Edge to be removed does not exist in graph!");
+  }
+
+  AdjacencyListGraph removeUncriticalEdges() const;
+};
+
+/*!
+ * \brief The AdjacencyListDigraph class implemnts undirected graphs based on adjacency lists.
+ * \details The functions checking for connectivity are checking for connectivity in the sense of weak connectivity.
+ */
+class AdjacencyListDigraph : public AdjListGraph, public DirectedGraph {
+public:
+  AdjacencyListDigraph()  = default;
+  ~AdjacencyListDigraph() = default;
+
+  AdjacencyListDigraph(const AdjacencyListDigraph& graph) = default;
+  AdjacencyListDigraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+  AdjacencyListDigraph(const std::vector<std::vector<size_t>>& adjacencyList) : AdjListGraph(adjacencyList) {}
+
+  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    pAdjacencyList[out].push_back(in);
+  }
+
+  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+    pAdjacencyList[e.u].push_back(e.v);
+  }
+
+  /*!
+   * \brief AdjacencyListDiGraph::connected checks the graph is connected
    * \details Check if the connected componend containing vertex 0 is the whole graph, by performing a dfs. Directed
    * graphs are considered as connected if the undirected graph obtained by adding an anti parallel edge for each edge
    * is connected.
    * \return true if the graph is connected, else false
    */
-  bool connected() const override;
+  bool connected() const override { return undirected().connected(); }
 
-  bool biconnected() const;
+  bool biconnected() const { return checkBiconnectivity(this->undirected()); }
 
   void removeEdge(const Edge& e) {
     [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.u], e.v);
     assert(removed && "Edge to be removed does not exist in graph!");
-    if constexpr (DIRECT == Directionality::Undirected) {
-      [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.v], e.u);
-      assert(removed && "Edge to be removed does not exist in graph!");
-    }
   }
 
-  AdjacencyListGraph<Directionality::Undirected> removeUncriticalEdges() const;
-  AdjacencyListGraph<Directionality::Undirected> undirected() const;
+  AdjacencyListDigraph removeUncriticalEdges() const;
+  AdjacencyListGraph undirected() const;
 };
 
 /*!

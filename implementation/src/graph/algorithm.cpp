@@ -7,8 +7,7 @@
 
 using Entry = Eigen::Triplet<EdgeWeight>;
 
-AdjacencyListGraph<Directionality::Undirected> earDecompToAdjacencyListGraph(
-    const EarDecomposition& earDecomposition, const size_t numberOfNodes) {
+AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes) {
   std::vector<std::vector<size_t>> adjacencyList(numberOfNodes);
   for (const std::vector<size_t>& ear : earDecomposition.ears) {
     for (size_t i = 0; i < ear.size() - 1; ++i) {
@@ -16,7 +15,7 @@ AdjacencyListGraph<Directionality::Undirected> earDecompToAdjacencyListGraph(
       adjacencyList[ear[i + 1]].push_back(ear[i]);
     }
   }
-  return AdjacencyListGraph<Directionality::Undirected>(adjacencyList);
+  return AdjacencyListGraph(adjacencyList);
 }
 
 class Index {
