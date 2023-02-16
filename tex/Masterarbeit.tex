@@ -1,0 +1,36 @@
+\documentclass[a4paper,11pt]{scrbook}
+
+% language
+\usepackage[utf8]{inputenc}
+\usepackage[UKenglish]{babel}
+
+% defintions, examples, theorems, ...
+\usepackage{amsthm}
+
+% definiton
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+
+% conclusion
+\newtheorem{conclusion}[definition]{conclusion}
+
+% lemma
+\newtheorem{lemma}[definition]{lemma}
+
+% assumption
+\newtheorem{assumption}[definition]{assumption}
+
+% theorem
+\newtheorem{theorem}[definition]{theorem}
+
+% example
+\newtheorem{example}[definition]{example}
+
+% surpress indent at begin of paragraph
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+\include{content/titlepage.tex}
+\include{content/prerequisites.tex}
+\end{document}

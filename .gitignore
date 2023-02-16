@@ -12,6 +12,8 @@
 
 # allow tex files in tex directory
 !tex/*.tex
+!tex/content/*.tex
+!tex/style/*.sty
 
 # allow basic scripts
 !implementation/.clang-format
