@@ -5,12 +5,13 @@
 #include "definitions.hpp"
 
 #include "graph/graph.hpp"
+#include "graph/algorithm.hpp"
 
 namespace approximation {
 struct Result {
   AdjacencyMatrixGraph biconnectedGraph;
   EarDecomposition openEarDecomposition;
-  // const std::vector<unsigned int> tour;
+  std::vector<unsigned int> tour;
   // const Edge bottleneckEdge;
 };
 

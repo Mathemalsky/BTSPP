@@ -7,6 +7,18 @@
 
 #include "graph/graph.hpp"
 
+/***********************************************************************************************************************
+ *                                             types for graph algorithms
+ **********************************************************************************************************************/
+
+struct EarDecomposition {
+  std::vector<std::vector<size_t>> ears;
+};
+
+/***********************************************************************************************************************
+ *                                                  graph algorithms
+ **********************************************************************************************************************/
+
 template <typename G>
 DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
@@ -79,6 +91,12 @@ EarDecomposition schmidt(const G& graph) {
   return EarDecomposition{ears};
 }
 
+/*!
+ * \brief checkBiconnectivity checks a graph is biconnected
+ * \details This function works similar to schmidt() but does not track the ears and beforms checks for biconnectivity
+ * instead. \param graph The graph object should provide the neighbours() function \return true if the graph is
+ * biconnected, false otherwise.
+ */
 template <typename G>
 bool checkBiconnectivity(const G& graph) {
   const DfsTree tree                 = dfs(graph);

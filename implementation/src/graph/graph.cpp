@@ -64,7 +64,7 @@ AdjacencyListGraph AdjacencyListDigraph::undirected() const {
     for (size_t j = 0; j < degree(i); ++j) {
       if (std::find(undirected.neighbours(i).begin(), undirected.neighbours(i).end(), j)
           == undirected.neighbours(i).end()) {
-        undirected.addEdge(i, j);
+        undirected.addEdge(i, j);  // add reverse directed add if not yet existing
       }
     }
   }

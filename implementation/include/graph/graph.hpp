@@ -237,11 +237,25 @@ public:
         pAdjacencyList.begin(), pAdjacencyList.end(), 0,
         [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
   }
+
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
 
+  /*!
+   * \brief degree returns (out-) degree of node
+   * \details in case of undirected graph, this function returns the outdegree
+   * \param u node
+   * \return u's degree
+   */
   size_t degree(const size_t u) const { return pAdjacencyList[u].size(); }
+  std::vector<size_t> degrees() const {
+    std::vector<size_t> vec(numberOfNodes());
+    for (size_t i = 0; i < numberOfNodes(); ++i) {
+      vec[i] = degree(i);
+    }
+    return vec;
+  }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
@@ -365,8 +379,9 @@ public:
 };
 
 /*!
- * \brief The AdjacencyListDigraph class implemnts undirected graphs based on adjacency lists.
+ * \brief The AdjacencyListDigraph class implements directed graphs based on adjacency lists.
  * \details The functions checking for connectivity are checking for connectivity in the sense of weak connectivity.
+ * Digraphs can have antiparallel edges.
  */
 class AdjacencyListDigraph : public AdjListGraph, public DirectedGraph {
 private:
@@ -458,8 +473,8 @@ public:
 };
 
 /*!
- * \brief The AdjListGraph class abstract class for graph which store adjacency as sparse matrix
- * \details graphs with adjacency matrix storage are generelly assumed to be weighted graphs
+ * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as sparse matrix.
+ * \details Graphs with adjacency matrix storage are generally assumed to be weighted graphs.
  */
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 private:
@@ -664,8 +679,9 @@ public:
 };
 
 /*!
- * \brief The AdjacencyMatrixGraph class implements the concrete classes for directed graphs.
+ * \brief The AdjacencyMatrixGraph class implements the concrete class for directed graphs.
  * \details The functions checking for connectivity are checking for connectivity in the sense of weak connectivity.
+ * Digraphs my have antiparallel edges.
  */
 class AdjacencyMatrixDigraph : public AdjMatGraph, public DirectedGraph {
 private:
@@ -765,7 +781,7 @@ class Tree : public virtual Graph {
  * \details This class is for trees where every node except for the root has exactly one parent and an edge directed to
  * it's parent. This allows to store the neighboors more efficient.
  */
-class DfsTree : public Tree {
+class DfsTree : public Tree, public DirectedGraph {
 private:
   class Edges {
   private:
@@ -847,12 +863,4 @@ public:
 private:
   std::vector<size_t> pAdjacencyList;
   std::vector<size_t> pExplorationOrder;
-};
-
-/***********************************************************************************************************************
- *                                             types for graph algorithms
- **********************************************************************************************************************/
-
-struct EarDecomposition {
-  std::vector<std::vector<size_t>> ears;
 };
