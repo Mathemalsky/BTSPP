@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <stack>
+#include <stdexcept>
 #include <vector>
 
 #include "graph/graph.hpp"
@@ -147,3 +148,33 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean);
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+
+template <typename G>
+size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+  for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
+    if (graph.degree(u) > 0) {
+      return u;
+    }
+  }
+  throw std::runtime_error("All nodes in graph are isolated!");
+}
+
+template <typename G>
+std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<UndirectedGraph, G>) {
+  G workingCopy = graph;
+  size_t u      = findNonIsolatedNode(graph);
+  std::vector<size_t> eulertour;
+  eulertour.reserve(graph.numberOfEdges());
+  std::stack<size_t> nodeStack;
+  nodeStack.push(u);
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    if (workingCopy.degree(top) == 0) {
+      // do something
+    }
+    else {
+      // remove an edge adjacent to top
+      // put the node at the other end of the vertex on top of the stack
+    }
+  }
+}
