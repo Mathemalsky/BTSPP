@@ -264,6 +264,12 @@ public:
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
+  void removeAllEdges() {
+    for (std::vector<size_t>& vec : pAdjacencyList) {
+      vec.resize(0);
+    }
+  }
+
 protected:
   std::vector<std::vector<size_t>> pAdjacencyList;
 };

@@ -19,29 +19,51 @@
 namespace approximation {
 
 template <typename G>
-size_t findDegree2Node(const G& graph, const std::vector<size_t>& ear) {
+Edge edgeSuccedingY(const G& graph, const std::vector<size_t>& ear) {
   for (size_t i = 1; i < ear.size() - 1; ++i) {
     const size_t u = ear[i];
     if (graph.degree(u) == 2) {
-      return u;
+      return Edge{u, ear[i + 1]};
     }
   }
   assert(false && "There should be a degree 2 node in the ear!");
 }
 
-std::vector<unsigned int> findTour(const EarDecomposition& ears, const size_t numberOfNodes) {
+static std::vector<unsigned int> shortcutToHamiltoncycle(
+    const std::vector<size_t>& eulertourInEarDecomposition, const size_t numberOfNodes) {
+  std::vector<bool> visited(numberOfNodes, false);
+  std::vector<unsigned int> hamiltoncycle;
+  hamiltoncycle.reserve(numberOfNodes);
+
+  for (const size_t u : eulertourInEarDecomposition) {
+    if (!visited[u]) {
+      hamiltoncycle.push_back(static_cast<unsigned int>(u));
+    }
+  }
+  return hamiltoncycle;
+}
+
+/*
+static void resolveDoubleEdges(std::vector<std::vector<size_t>>& tourFragments, const AdjacencyListGraph& doubleEdges) {
+
+}
+*/
+
+std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& ears, const size_t numberOfNodes) {
   if (ears.ears.size() == 1) {
     return std::vector<unsigned int>(ears.ears[0].begin(), ears.ears[0].end());  // cast down to unsigned int
   }
   else {
-    AdjacencyListGraph graph    = earDecompToAdjacencyListGraph(ears, numberOfNodes);
-    std::vector<size_t> degrees = graph.degrees();
+    AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
+    AdjacencyListGraph doubleEdges(numberOfNodes);
 
     // make degrees even
     for (long i = ears.ears.size() - 2; i >= 0; --i) {
       const std::vector<size_t>& ear = ears.ears[i];
-      const size_t y                 = findDegree2Node(graph, ear);
-      bool lastEdgeRemoved           = false;
+      // const Edge yEdge               = edgeSuccedingY(graph, ear);
+      bool lastEdgeRemoved     = false;
+      bool removedPreviousEdge = false;
+      std::vector<std::vector<size_t>> nodes;
       for (size_t i = 1; i < ear.size() - 1; ++i) {
         const size_t u = ear[i];
         if (graph.degree(u) % 2 == 1) {
@@ -50,13 +72,26 @@ std::vector<unsigned int> findTour(const EarDecomposition& ears, const size_t nu
             lastEdgeRemoved = true;
           }
           else {
-            // store the deleted edge elsewhere
+            doubleEdges.addEdge(Edge{u, ear[i + 1]});
           }
+          removedPreviousEdge = true;
+        }
+        else {
+          removedPreviousEdge = false;
         }
       }
+      /*
+      if(!lastEdgeRemoved) {
+        doubleEdges.removeEdge(yEdge);
+      }
+      */
     }
 
     // find euler tour
+    std::vector<size_t> eulerSubtour = eulertour(graph);
+
+    // complete to full euler tour
+
     // shortcut to hamiltonian cycle
 
     // DEBUG dummy return value
@@ -94,7 +129,7 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     std::cerr << "openEars\n" << openEars.ears;
 
     // find hamiltonian cycle
-    const std::vector<unsigned int> tour = findTour(openEars, euclidean.numberOfNodes());
+    const std::vector<unsigned int> tour = hamiltonCycleInSquare(openEars, euclidean.numberOfNodes());
 
     return Result{biconnectedGraph, openEars, tour};
   }

@@ -132,6 +132,44 @@ bool checkBiconnectivity(const G& graph) {
   return true;
 }
 
+template <typename G>
+size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+  for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
+    if (graph.degree(u) > 0) {
+      return u;
+    }
+  }
+  throw std::runtime_error("All nodes in graph are isolated!");
+}
+
+template <typename G>
+std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<UndirectedGraph, G>) {
+  G workingCopy = graph;
+  std::vector<size_t> eulertour;
+  eulertour.reserve(graph.numberOfEdges());
+  std::vector<bool> visited(graph.numberOfNodes(), false);
+  std::stack<size_t> nodeStack;
+  nodeStack.push(findNonIsolatedNode(graph));
+
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    if (workingCopy.degree(top) == 0) {
+      eulertour.push_back(top);
+      nodeStack.pop();
+    }
+    else {
+      if (visited[top]) {
+        eulertour.push_back(top);
+      }
+      const size_t v = workingCopy.neighbourAny(top);
+      workingCopy.removeEdge(Edge{top, v});  // remove an edge adjacent to top
+      nodeStack.push(v);                     // put the node at the other end of the edge on the stack
+      visited[top] = true;
+    }
+  }
+  return eulertour;
+}
+
 /*!
  * \brief biconnectedSpanningGraph computes a bottleneck optimal biconnected spanning subgraph.
  * \details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
@@ -148,43 +186,3 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean);
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
-
-template <typename G>
-size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
-  for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
-    if (graph.degree(u) > 0) {
-      return u;
-    }
-  }
-  throw std::runtime_error("All nodes in graph are isolated!");
-}
-
-template <typename G>
-std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<UndirectedGraph, G>) {
-  G workingCopy = graph;
-  size_t u      = findNonIsolatedNode(graph);
-  std::vector<size_t> eulertour;
-  eulertour.reserve(graph.numberOfEdges());
-  std::vector<bool> visited(graph.numberOfNodes(), false);
-  std::stack<size_t> nodeStack;
-  nodeStack.push(u);
-  while (!nodeStack.empty()) {
-    const size_t top = nodeStack.top();
-    if (workingCopy.degree(top) == 0) {
-      eulertour.push_back(top);
-      nodeStack.pop();
-    }
-    else {
-      if (visited[top]) {
-        eulertour.push_back(top);
-      }
-      const size_t v = workingCopy.neighbourAny(top);
-      workingCopy.removeEdge(Edge{top, v});
-      nodeStack.push(v);
-      visited[top] = true;
-      // remove an edge adjacent to top
-      // put the node at the other end of the vertex on top of the stack
-    }
-  }
-  return eulertour;
-}
