@@ -257,6 +257,11 @@ public:
     return vec;
   }
 
+  size_t neighbourAny(const size_t u) {
+    assert(pAdjacencyList[u].size() > 0 && "There is no neighbour!");
+    return pAdjacencyList[u][0];
+  }
+
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
 protected:
@@ -769,7 +774,7 @@ public:
 };
 
 /*!
- * \brief The Tree class is an abstract which impllements the methods all trees have in common
+ * \brief The Tree class is an abstract which implements the methods all trees have in common.
  */
 class Tree : public virtual Graph {
   bool connected() const override { return true; }

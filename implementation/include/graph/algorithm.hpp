@@ -165,16 +165,26 @@ std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Undirec
   size_t u      = findNonIsolatedNode(graph);
   std::vector<size_t> eulertour;
   eulertour.reserve(graph.numberOfEdges());
+  std::vector<bool> visited(graph.numberOfNodes(), false);
   std::stack<size_t> nodeStack;
   nodeStack.push(u);
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
     if (workingCopy.degree(top) == 0) {
-      // do something
+      eulertour.push_back(top);
+      nodeStack.pop();
     }
     else {
+      if (visited[top]) {
+        eulertour.push_back(top);
+      }
+      const size_t v = workingCopy.neighbourAny(top);
+      workingCopy.removeEdge(Edge{top, v});
+      nodeStack.push(v);
+      visited[top] = true;
       // remove an edge adjacent to top
       // put the node at the other end of the vertex on top of the stack
     }
   }
+  return eulertour;
 }
