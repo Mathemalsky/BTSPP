@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <numeric>
+#include <ranges>
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
@@ -51,11 +52,11 @@ static std::vector<unsigned int> backAndForth(const std::vector<size_t>& vecIn) 
 }
 
 static std::vector<unsigned int> assembleTour(
-    const std::vector<size_t>& hamiltonSubcycle, const std::vector<std::vector<size_t>>& nodesPreceedingDoubleEdges,
+    const std::vector<size_t>& hamiltonSubcycle, const std::vector<std::vector<size_t>>& nodesAdjacentToDoubleEdges,
     const size_t numberOfNodes) {
   std::unordered_map<size_t, size_t> doubleEdgeStarts;
-  for (size_t i = 0; i < nodesPreceedingDoubleEdges.size(); ++i) {
-    doubleEdgeStarts.insert({nodesPreceedingDoubleEdges[i][0], i});
+  for (size_t i = 0; i < nodesAdjacentToDoubleEdges.size(); ++i) {
+    doubleEdgeStarts.insert({nodesAdjacentToDoubleEdges[i][0], i});
   }
 
   std::vector<unsigned int> hamiltoncycle;
@@ -64,7 +65,7 @@ static std::vector<unsigned int> assembleTour(
   for (const size_t u : hamiltonSubcycle) {
     hamiltoncycle.push_back(u);
     if (doubleEdgeStarts.contains(u)) {
-      const std::vector<unsigned int> tmp = backAndForth(nodesPreceedingDoubleEdges[doubleEdgeStarts[u]]);
+      const std::vector<unsigned int> tmp = backAndForth(nodesAdjacentToDoubleEdges[doubleEdgeStarts[u]]);
       hamiltoncycle.insert(hamiltoncycle.end(), tmp.begin(), tmp.end());
       doubleEdgeStarts.erase(u);
     }
@@ -80,33 +81,58 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
   }
   else {
     AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
-    std::vector<std::vector<size_t>> nodesPreceedingDoubleEdges;
+    std::vector<std::vector<size_t>> nodesAdjacentToDoubleEdges;
 
     // make degrees even
     for (long i = ears.ears.size() - 2; i >= 0; --i) {
       const std::vector<size_t>& ear = ears.ears[i];
-      bool removedPreviousEdge       = false;
+      bool doublePreviousEdge        = false;
 
       for (size_t i = 1; i < ear.size() - 1; ++i) {
         const size_t u = ear[i];
+        const size_t v = ear[i + 1];
         if (graph.degree(u) % 2 == 1) {
-          graph.removeEdge(Edge{u, ear[i + 1]});
-          if (!removedPreviousEdge) {
-            nodesPreceedingDoubleEdges.push_back(std::vector<size_t>{u});
+          // graph.removeEdge(Edge{u, v});
+          if (!doublePreviousEdge) {
+            nodesAdjacentToDoubleEdges.push_back(std::vector<size_t>{u, v});
           }
           else {
-            nodesPreceedingDoubleEdges.back().push_back(u);
+            nodesAdjacentToDoubleEdges.back().push_back(v);
           }
-          removedPreviousEdge = true;
+          doublePreviousEdge = true;
         }
         else {
-          removedPreviousEdge = false;
+          doublePreviousEdge = false;
+        }
+      }
+
+      bool removedPair = false;
+      for (const std::vector<size_t>& doubleEdgeSegment : std::views::reverse(nodesAdjacentToDoubleEdges)) {
+        if (doubleEdgeSegment.back() == ear.back()) {  // if the last edge is doubled
+          graph.removeEdge(Edge{doubleEdgeSegment[doubleEdgeSegment.size() - 2], doubleEdgeSegment.back()});
+          removedPair = true;
+          if (doubleEdgeSegment.size() > 2) {  // if the last edge is not the only one in this segment
+            doubleEdgeSegement.pop_back();
+            for (size_t i = 0; i < doubleEdgeSegment.size() - 1; ++i) {
+              graph.removeEdge(Edge{doubleEdgeSegment[i], doubleEdgeSegment[i + 1]});
+            }
+            // add back and forth edges
+          }
+        }
+        else if (doubleEdgeSegment.size() == 2) {
+          // resolve for this case
+        }
+        else if (!removedPair) {
+          // same as above if doubleEdgeSegment.size() > 2
+        }
+        else {
+          // resolve parallel edges
         }
       }
     }
 
     // DEBUG
-    std::cerr << "nodesPreceedingDoubleEdges\n " << nodesPreceedingDoubleEdges;
+    std::cerr << "nodesAdjacentToDoubleEdges\n " << nodesAdjacentToDoubleEdges;
 
     // find euler tour
     std::vector<size_t> eulerSubtour = eulertour(graph);
@@ -119,7 +145,7 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
     // DEBUG
     std::cerr << "hamiltonSubcycle\n" << hamiltonSubcycle;
 
-    return assembleTour(hamiltonSubcycle, nodesPreceedingDoubleEdges, numberOfNodes);
+    return assembleTour(hamiltonSubcycle, nodesAdjacentToDoubleEdges, numberOfNodes);
   }
 }
 
