@@ -41,19 +41,17 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_approx)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_approx)] = false;
     drawing::BTSP_APPROX_RESULT = approximation::approximate(drawing::EUCLIDEAN, ProblemType::BTSP_approx);
-    drawing::INITIALIZED[static_cast<unsigned int>(ProblemType::BTSP_approx)] = true;
+    drawing::updateOrder(drawing::BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;
-    exactsolver::Result res = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
-    drawing::updateOrder(res.tour, ProblemType::BTSP_exact);
-    drawing::BTSP_EXACT_RESULT = res;
+    drawing::BTSP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
+    drawing::updateOrder(drawing::BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSPP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSPP_exact)] = false;
-    exactsolver::Result res = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact);
-    drawing::updateOrder(res.tour, ProblemType::BTSPP_exact);
-    drawing::BTSPP_EXACT_RESULT = res;
+    drawing::BTSPP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact);
+    drawing::updateOrder(drawing::BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)] = false;

@@ -4,7 +4,7 @@
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
-#include <unordered_set>
+#include <unordered_map>
 #include <vector>
 
 #include "draw/definitions.hpp"
@@ -50,9 +50,9 @@ static std::vector<unsigned int> backAndForth(const std::vector<size_t>& vecIn) 
 static std::vector<unsigned int> assembleTour(
     const std::vector<size_t>& hamiltonSubcycle, const std::vector<std::vector<size_t>>& nodesPreceedingDoubleEdges,
     const size_t numberOfNodes) {
-  std::unordered_set<size_t> doubleEdgeStarts;
-  for (const std::vector<size_t>& doubleEdgeSegment : nodesPreceedingDoubleEdges) {
-    doubleEdgeStarts.insert(doubleEdgeSegment[0]);
+  std::unordered_map<size_t, size_t> doubleEdgeStarts;
+  for (size_t i = 0; i < nodesPreceedingDoubleEdges.size(); ++i) {
+    doubleEdgeStarts.insert({nodesPreceedingDoubleEdges[i][0], i});
   }
 
   std::vector<unsigned int> hamiltoncycle;
@@ -62,7 +62,7 @@ static std::vector<unsigned int> assembleTour(
     hamiltoncycle.push_back(u);
     if (doubleEdgeStarts.contains(u)) {
       doubleEdgeStarts.erase(u);
-      const std::vector<unsigned int> tmp = backAndForth(nodesPreceedingDoubleEdges[u]);
+      const std::vector<unsigned int> tmp = backAndForth(nodesPreceedingDoubleEdges[doubleEdgeStarts[u]]);
       hamiltoncycle.insert(hamiltoncycle.end(), tmp.begin(), tmp.end());
     }
   }
@@ -100,9 +100,20 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
       }
     }
 
+    // DEBUG
+    std::cerr << "nodesPreceedingDoubleEdges\n " << nodesPreceedingDoubleEdges;
+
     // find euler tour
-    std::vector<size_t> eulerSubtour     = eulertour(graph);
+    std::vector<size_t> eulerSubtour = eulertour(graph);
+
+    // DEBUG
+    std::cerr << "eulerSubtour\n" << eulerSubtour;
+
     std::vector<size_t> hamiltonSubcycle = shortcutToHamiltoncycle(eulerSubtour, numberOfNodes);
+
+    // DEBUG
+    std::cerr << "hamiltonSubcycle\n" << hamiltonSubcycle;
+
     return assembleTour(hamiltonSubcycle, nodesPreceedingDoubleEdges, numberOfNodes);
   }
 }
@@ -112,7 +123,7 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     AdjacencyMatrixGraph biconnectedGraph = biconnectedSpanningGraph(euclidean);
 
     // DEBUG
-    std::cerr << "undirected\n" << biconnectedGraph;
+    // std::cerr << "undirected\n" << biconnectedGraph;
 
     const EarDecomposition ears = schmidt(biconnectedGraph);  // calculate proper ear decomposition
 

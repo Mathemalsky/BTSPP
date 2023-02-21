@@ -24,6 +24,8 @@ std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTI
 std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 bool DRAW_OPEN_EAR_DECOMPOSITION;
 bool DRAW_BICONNECTED_GRAPH;
+bool DRAW_EULERIAN_GRAPH;
+bool DRAW_HAMILTON_CYCLE;
 std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
 std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
 std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
@@ -44,12 +46,12 @@ void updatePointsfFromEuclidean() {
 }
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
-  if (type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
+  if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
     ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD);
     std::memcpy(ORDER[(unsigned int) type].data(), order.data(), bytes_of(order));
     std::memcpy(ORDER[(unsigned int) type].data() + order.size(), order.data(), PATH_OVERHEAD * sizeof(unsigned int));
   }
-  if (type == ProblemType::BTSPP_exact) {
+  else if (type == ProblemType::BTSPP_exact) {
     ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
     ORDER[(unsigned int) type][0] = order.back();
     std::memcpy(ORDER[(unsigned int) type].data() + 1, order.data(), bytes_of(order));

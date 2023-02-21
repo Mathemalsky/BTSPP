@@ -90,6 +90,12 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
   if (DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawOpenEarDecomposition(programs.drawLine, BTSP_APPROX_RESULT.openEarDecomposition);
   }
+  if (DRAW_EULERIAN_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
+    // draw
+  }
+  if (DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
+    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+  }
   typeInt = static_cast<unsigned int>(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
