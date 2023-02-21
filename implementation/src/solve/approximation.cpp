@@ -12,6 +12,8 @@
 #include "graph/graph.hpp"
 #include "graph/algorithm.hpp"
 
+#include "solve/commonfunctions.hpp"
+
 // DEBUG
 #include <iostream>
 #include "utility/utils.hpp"
@@ -28,6 +30,7 @@ static std::vector<size_t> shortcutToHamiltoncycle(
   for (const size_t u : eulertourInEarDecomposition) {
     if (!visited[u]) {
       hamiltoncycle.push_back(static_cast<unsigned int>(u));
+      visited[u] = true;
     }
   }
   return hamiltoncycle;
@@ -71,7 +74,8 @@ static std::vector<unsigned int> assembleTour(
 
 static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& ears, const size_t numberOfNodes) {
   if (ears.ears.size() == 1) {
-    return std::vector<unsigned int>(ears.ears[0].begin(), ears.ears[0].end());  // cast down to unsigned int
+    // cast down to unsigned int and cut off last node which is same as first
+    return std::vector<unsigned int>(ears.ears[0].begin(), ears.ears[0].end() - 1);
   }
   else {
     AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
@@ -118,9 +122,10 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
   }
 }
 
-Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
+Result approximate(const Euclidean& euclidean, const ProblemType problemType, const bool printInfo) {
   if (problemType == ProblemType::BTSP_approx) {
-    AdjacencyMatrixGraph biconnectedGraph = biconnectedSpanningGraph(euclidean);
+    double maxEdgeWeight;
+    AdjacencyMatrixGraph biconnectedGraph = biconnectedSpanningGraph(euclidean, maxEdgeWeight);
 
     // DEBUG
     // std::cerr << "undirected\n" << biconnectedGraph;
@@ -128,27 +133,37 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType) {
     const EarDecomposition ears = schmidt(biconnectedGraph);  // calculate proper ear decomposition
 
     // DEBUG
-    std::cerr << "ears\n" << ears.ears;
+    // std::cerr << "ears\n" << ears.ears;
 
     const AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
 
     // DBEUG
-    std::cerr << "fromEars\n" << fromEars;
+    // std::cerr << "fromEars\n" << fromEars;
 
     const AdjacencyListGraph minimal = fromEars.removeUncriticalEdges();
 
     // DBEUG
-    std::cerr << "minimal\n" << minimal;
+    // std::cerr << "minimal\n" << minimal;
 
     const EarDecomposition openEars = schmidt(minimal);
 
     // DEBUG
     std::cerr << "openEars\n" << openEars.ears;
 
-    // find hamiltonian cycle
     const std::vector<unsigned int> tour = hamiltonCycleInSquare(openEars, euclidean.numberOfNodes());
 
-    return Result{biconnectedGraph, openEars, tour};
+    std::cout << "hamiltoncycle\n" << tour;
+
+    const Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
+    const double objective    = euclidean.weight(bottleneckEdge);
+
+    if (printInfo) {
+      std::cout << "objective           : " << objective << std::endl;
+      std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
+      std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
+    }
+
+    return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
   }
   else {
     throw std::runtime_error("Unknown problem type");

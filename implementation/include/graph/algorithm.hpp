@@ -146,8 +146,7 @@ template <typename G>
 std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<UndirectedGraph, G>) {
   G workingCopy = graph;
   std::vector<size_t> eulertour;
-  eulertour.reserve(graph.numberOfEdges());
-  std::vector<bool> visited(graph.numberOfNodes(), false);
+  eulertour.reserve(graph.numberOfEdges() + 1);
   std::stack<size_t> nodeStack;
   nodeStack.push(findNonIsolatedNode(graph));
 
@@ -158,15 +157,13 @@ std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Undirec
       nodeStack.pop();
     }
     else {
-      if (visited[top]) {
-        eulertour.push_back(top);
-      }
       const size_t v = workingCopy.neighbourAny(top);
       workingCopy.removeEdge(Edge{top, v});  // remove an edge adjacent to top
       nodeStack.push(v);                     // put the node at the other end of the edge on the stack
-      visited[top] = true;
     }
   }
+
+  eulertour.resize(graph.numberOfEdges());  // cut off the last node which is same as first
   return eulertour;
 }
 
@@ -177,7 +174,7 @@ std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Undirec
  * \param euclidean complete graph, providing distances between nodes.
  * \return undirected AdjacencyMatrixGraph
  */
-AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean);
+AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double& maxEdgeWeight);
 
 /*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph

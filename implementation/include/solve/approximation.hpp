@@ -12,8 +12,9 @@ struct Result {
   AdjacencyMatrixGraph biconnectedGraph;
   EarDecomposition openEarDecomposition;
   std::vector<unsigned int> tour;
-  // const Edge bottleneckEdge;
+  double opt;
+  Edge bottleneckEdge;
 };
 
-Result approximate(const Euclidean& euclidean, const ProblemType problemType);
+Result approximate(const Euclidean& euclidean, const ProblemType problemType, const bool printInfo = true);
 }  // namespace approximation

@@ -232,12 +232,6 @@ public:
 
   bool adjacent(const Edge& e) const override { return adjacent(e.u, e.v); }
 
-  size_t numberOfEdges() const override {
-    return std::accumulate(
-        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
-        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
-  }
-
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
@@ -375,6 +369,13 @@ public:
    */
   bool connected() const override;
 
+  size_t numberOfEdges() const override {
+    return std::accumulate(
+               pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+               [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); })
+           / 2;
+  }
+
   bool biconnected() const { return checkBiconnectivity(*this); }
 
   Edges edges() const { return Edges(pAdjacencyList); }
@@ -469,6 +470,12 @@ public:
    * \return true if the graph is connected, else false
    */
   bool connected() const override { return undirected().connected(); }
+
+  size_t numberOfEdges() const override {
+    return std::accumulate(
+        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
+  }
 
   bool biconnected() const { return checkBiconnectivity(this->undirected()); }
 

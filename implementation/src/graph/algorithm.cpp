@@ -36,7 +36,7 @@ private:
   const size_t pNumberOfNodes;
 };
 
-AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean) {
+AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double& maxEdgeWeight) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
 
   const Index index(numberOfNodes);
@@ -69,6 +69,8 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean) {
 
     graph.compressMatrix();  // matrix became uncommpressed when adding edges
   }
+
+  maxEdgeWeight = euclidean.weight(index.edge(edgeIndeces[edgeCounter - 1]));  // for lower bound on opt
 
   return graph;
 }
