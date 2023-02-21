@@ -64,11 +64,12 @@ static std::vector<unsigned int> assembleTour(
   for (const size_t u : hamiltonSubcycle) {
     hamiltoncycle.push_back(u);
     if (doubleEdgeStarts.contains(u)) {
-      doubleEdgeStarts.erase(u);
       const std::vector<unsigned int> tmp = backAndForth(nodesPreceedingDoubleEdges[doubleEdgeStarts[u]]);
       hamiltoncycle.insert(hamiltoncycle.end(), tmp.begin(), tmp.end());
+      doubleEdgeStarts.erase(u);
     }
   }
+  assert(doubleEdgeStarts.empty() && "Couldn't insert all subtours!");
   return hamiltoncycle;
 }
 
@@ -161,6 +162,7 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType, co
       std::cout << "objective           : " << objective << std::endl;
       std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
       std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
+      assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
     }
 
     return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
