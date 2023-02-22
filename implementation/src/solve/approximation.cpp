@@ -97,8 +97,8 @@ static void resolveDoubleEdges(
         // shortcut edge connecting successor of u in ear an v
         const size_t segmentStartIndex = doubleEdgeSegment[0];
         const size_t u                 = ear[segmentStartIndex];
-        const size_t v                 = graph.neighbourAnyExcept(
-                            u, std::unordered_set<size_t>{ear[segmentStartIndex - 1], ear[segmentStartIndex + 1]});
+        const std::unordered_set<size_t> forbiddenNeighbours{ear[segmentStartIndex - 1], ear[segmentStartIndex + 1]};
+        const size_t v = graph.neighbourAnyExcept(u, [&](const size_t w) { return forbiddenNeighbours.contains(w); });
         graph.removeEdge(u, v);
         graph.addEdge(ear[segmentStartIndex + 1], v);
 
