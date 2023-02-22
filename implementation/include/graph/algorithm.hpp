@@ -163,7 +163,7 @@ std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Undirec
     }
   }
 
-  eulertour.resize(graph.numberOfEdges());  // cut off the last node which is same as first
+  eulertour.pop_back();  // cut off the last node which is same as first
   return eulertour;
 }
 

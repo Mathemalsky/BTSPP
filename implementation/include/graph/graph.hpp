@@ -29,10 +29,16 @@ bool checkBiconnectivity(const G& graph);
  * \brief The Edge struct represents an edge from u to v in directed graphs or just between u and v in undirected graphs
  */
 struct Edge {
-  Edge(const size_t u, const size_t v) : u(u), v(u) {}
-  bool operator!=(const Edge& other) { return u != other.u || v != other.v; }
   size_t u;
   size_t v;
+
+  /*!
+   * @brief edges with different outgoing node or different ingoing node are different
+   * @details parallel edges are not different
+   * @param other edge to compare
+   * @return true if different, else otherwise
+   */
+  bool operator!=(const Edge& other) { return u != other.u || v != other.v; }
 
   /*!
    * \brief reverse creates a new add directed from v to u
@@ -264,11 +270,21 @@ public:
   template <typename func>
   size_t neighbourAnyExcept(const size_t u, func&& criteria) {
     for (const size_t v : pAdjacencyList[u]) {
-      if (criteria(v)) {
+      if (!criteria(v)) {
         return v;
       }
     }
     throw std::runtime_error("There is no node adjacent to " + std::to_string(u) + "except the given ones!");
+  }
+
+  template <typename func>
+  size_t neighbourAnyPrefer(const size_t u, func&& criteria) {
+    for (const size_t v : pAdjacencyList[u]) {
+      if (criteria(v)) {
+        return v;
+      }
+    }
+    return neighbourAny(u);
   }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }

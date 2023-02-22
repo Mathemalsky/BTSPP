@@ -23,6 +23,7 @@
 
 namespace approximation {
 
+/*
 static std::vector<unsigned int> shortcutToHamiltoncycle(
     const std::vector<size_t>& eulertourInEarDecomposition, const size_t numberOfNodes) {
   std::vector<bool> visited(numberOfNodes, false);
@@ -37,7 +38,9 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
   }
   return hamiltoncycle;
 }
+*/
 
+/*
 static std::vector<size_t> backAndForth(const std::vector<size_t>& vecIn) {
   std::vector<size_t> vecOut;
   vecOut.reserve(vecIn.size());
@@ -51,6 +54,7 @@ static std::vector<size_t> backAndForth(const std::vector<size_t>& vecIn) {
 
   return vecOut;
 }
+*/
 
 /*
 static std::vector<unsigned int> assembleTour(
@@ -76,6 +80,7 @@ earPositionsAdjacentToDoubleEdges, const size_t numberOfNodes) { std::unordered_
 }
 */
 
+/*
 static void resolveDoubleEdges(
     AdjacencyListGraph& graph, std::vector<std::vector<size_t>>& earPositionsAdjacentToDoubleEdges,
     const std::vector<size_t>& ear) {
@@ -87,12 +92,6 @@ static void resolveDoubleEdges(
       if (doubleEdgeSegment.size() > 2) {  // if the last edge is not the only one in this segment
         doubleEdgeSegment.pop_back();
 
-        // remove all the other edges
-        /*
-        for (size_t i = 0; i < doubleEdgeSegment.size() - 1; ++i) {
-          graph.removeEdge(ear[doubleEdgeSegment[i]], ear[doubleEdgeSegment[i + 1]]);
-        }
-        */
 
         // shortcut edge connecting successor of u in ear an v
         const size_t segmentStartIndex = doubleEdgeSegment[0];
@@ -119,11 +118,6 @@ static void resolveDoubleEdges(
     }
     else {
       // remove all edges except for the last
-      /*
-      for (size_t i = 0; i < doubleEdgeSegment.size() - 2; ++i) {
-        graph.removeEdge(ear[doubleEdgeSegment[i]], ear[doubleEdgeSegment[i + 1]]);
-      }
-      */
 
       // shortcut edge connecting successor of u in ear an v
       const size_t segmentStartIndex = doubleEdgeSegment[0];
@@ -142,6 +136,7 @@ static void resolveDoubleEdges(
     }
   }
 }
+*/
 
 static size_t yInEar(const AdjacencyListGraph& graph, const std::vector<size_t>& ear) {
   for (size_t i = 1; i < ear.size() - 1; ++i) {
@@ -149,6 +144,58 @@ static size_t yInEar(const AdjacencyListGraph& graph, const std::vector<size_t>&
       return i;
     }
   }
+  throw std::runtime_error("There is no degree 2 node in this ear!");
+}
+
+/*!
+ * @brief
+ * @details Differs from eulertour in prefering edges with special properties
+ * @param graph
+ * @param digraph
+ * @return
+ */
+static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const AdjacencyListDigraph& digraph) {
+  AdjacencyListGraph workingCopy = graph;
+  std::vector<size_t> eulertour;
+  eulertour.reserve(graph.numberOfEdges() + 1);
+  std::stack<size_t> nodeStack;
+  nodeStack.push(findNonIsolatedNode(graph));
+
+  while (!nodeStack.empty()) {
+    const size_t top = nodeStack.top();
+    if (workingCopy.degree(top) == 0) {
+      eulertour.push_back(top);
+      nodeStack.pop();
+    }
+    else {
+      const size_t v = workingCopy.neighbourAnyPrefer(top, [&](const size_t v) { return digraph.adjacent(v, top); });
+      workingCopy.removeEdge(Edge{top, v});  // remove an edge adjacent to top
+      nodeStack.push(v);                     // put the node at the other end of the edge on the stack
+    }
+  }
+
+  eulertour.pop_back();  // cut off the last node which is same as first
+  return eulertour;
+}
+
+static std::vector<unsigned int> shortcutToHamiltoncycle(
+    const std::vector<size_t>& longEulertour, const AdjacencyListDigraph& digraph, AdjacencyListGraph& eulertourGraph) {
+  AdjacencyListGraph graph(digraph.numberOfNodes());
+
+  for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
+    const size_t u = longEulertour[i - 1];
+    const size_t w = longEulertour[i];
+    const size_t v = longEulertour[i + 1];
+
+    if (digraph.adjacent(w, u) && digraph.adjacent(w, v)) {
+      eulertourGraph.removeEdge(w, u);
+      eulertourGraph.removeEdge(w, v);
+      eulertourGraph.addEdge(u, v);
+    }
+  }
+
+  std::vector<size_t> hamiltoncycle = eulertour(eulertourGraph);
+  return std::vector<unsigned int>(hamiltoncycle.begin(), hamiltoncycle.end());
 }
 
 static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& ears, const size_t numberOfNodes) {
@@ -159,7 +206,7 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
   else {
     AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
     AdjacencyListDigraph digraph(numberOfNodes);
-    Edge lastDoubledEdges{0, 0};
+    Edge lastDoubledEdge{0, 0};
 
     // first ear is trivial
     const std::vector<size_t>& firstEar = ears.ears.back();
@@ -177,10 +224,10 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
         const size_t u = ear[i];
         const size_t v = ear[i + 1];
         if (graph.degree(u) % 2 == 1) {
-          graph.removeEdge(u, v);  // MAYBE ADD INSTEAD
+          graph.addEdge(u, v);  // MAYBE REMOVE INSTEAD
           digraph.addEdge(u, v);
           digraph.addEdge(v, u);
-          lastDoubledEdges = Edge{u, v};
+          lastDoubledEdge = Edge{u, v};
         }
         else {
           // direct edge towards y
@@ -192,13 +239,18 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
           }
         }
       }
-      if (lastDoubledEdges != Edge(0, 0)) {
-        digraph.removeEdge(lastDoubledEdges);
-        digraph.removeEdge(lastDoubledEdges.reverse());
+      if (lastDoubledEdge != Edge(0, 0)) {
+        graph.removeEdge(lastDoubledEdge);
+        digraph.removeEdge(lastDoubledEdge);
+        digraph.removeEdge(lastDoubledEdge.reverse());
       }
     }
 
+    const std::vector<size_t> eulertour = findEulertour(graph, digraph);
+    return shortcutToHamiltoncycle(eulertour, digraph, graph);
+
     // DEPRECATED
+    /*
     for (long i = ears.ears.size() - 2; i >= 0; --i) {
       const std::vector<size_t>& ear = ears.ears[i];
       bool doublePreviousEdge        = false;
@@ -239,6 +291,7 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
     // std::cerr << "hamiltonSubcycle\n" << hamiltonSubcycle;
 
     // return assembleTour(hamiltonSubcycle, earPositionsAdjacentToDoubleEdges, numberOfNodes);
+    */
   }
 }
 
