@@ -29,6 +29,8 @@ bool checkBiconnectivity(const G& graph);
  * \brief The Edge struct represents an edge from u to v in directed graphs or just between u and v in undirected graphs
  */
 struct Edge {
+  Edge(const size_t u, const size_t v) : u(u), v(u) {}
+  bool operator!=(const Edge& other) { return u != other.u || v != other.v; }
   size_t u;
   size_t v;
 
@@ -413,7 +415,6 @@ public:
 /*!
  * \brief The AdjacencyListDigraph class implements directed graphs based on adjacency lists.
  * \details The functions checking for connectivity are checking for connectivity in the sense of weak connectivity.
- * Digraphs can have antiparallel edges.
  */
 class AdjacencyListDigraph : public AdjListGraph, public DirectedGraph {
 private:
@@ -517,7 +518,8 @@ public:
 
 /*!
  * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as sparse matrix.
- * \details Graphs with adjacency matrix storage are generally assumed to be weighted graphs.
+ * \details Graphs with adjacency matrix storage are generally assumed to be simple (without parallel edges) weighted
+ * graphs.
  */
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 private:
@@ -724,7 +726,7 @@ public:
 /*!
  * \brief The AdjacencyMatrixGraph class implements the concrete class for directed graphs.
  * \details The functions checking for connectivity are checking for connectivity in the sense of weak connectivity.
- * Digraphs my have antiparallel edges.
+ * Digraphs may have antiparallel edges.
  */
 class AdjacencyMatrixDigraph : public AdjMatGraph, public DirectedGraph {
 private:

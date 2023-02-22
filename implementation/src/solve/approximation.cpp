@@ -98,7 +98,7 @@ static void resolveDoubleEdges(
         const size_t segmentStartIndex = doubleEdgeSegment[0];
         const size_t u                 = ear[segmentStartIndex];
         const size_t v                 = graph.neighbourAnyExcept(
-                            u, std::unordered_set<size_t>{ear[segmentStartIndex - 1], ear[segmentStartIndex + 1]});
+            u, std::unordered_set<size_t>{ear[segmentStartIndex - 1], ear[segmentStartIndex + 1]});
         graph.removeEdge(u, v);
         graph.addEdge(ear[segmentStartIndex + 1], v);
 
@@ -143,6 +143,14 @@ static void resolveDoubleEdges(
   }
 }
 
+static size_t yInEar(const AdjacencyListGraph& graph, const std::vector<size_t>& ear) {
+  for (size_t i = 1; i < ear.size() - 1; ++i) {
+    if (graph.degree(ear[i]) == 2) {
+      return i;
+    }
+  }
+}
+
 static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& ears, const size_t numberOfNodes) {
   if (ears.ears.size() == 1) {
     // cast down to unsigned int and cut off last node which is same as first
@@ -150,8 +158,47 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
   }
   else {
     AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
+    AdjacencyListDigraph digraph(numberOfNodes);
+    Edge lastDoubledEdges{0, 0};
 
-    // make degrees even
+    // first ear is trivial
+    const std::vector<size_t>& firstEar = ears.ears.back();
+    for (size_t i = 0; i < firstEar.size() - 2; ++i) {
+      digraph.addEdge(firstEar[i], firstEar[i + 1]);
+    }
+    digraph.addEdge(firstEar.back(), firstEar[firstEar.size() - 2]);
+
+    // the other ears are more complicated
+    for (long j = ears.ears.size() - 2; j >= 0; --j) {
+      const std::vector<size_t>& ear = ears.ears[j];
+      const size_t y                 = yInEar(graph, ear);
+      digraph.addEdge(ear[0], ear[1]);  // add the first add directing into the ear
+      for (size_t i = 1; i < ear.size() - 1; ++i) {
+        const size_t u = ear[i];
+        const size_t v = ear[i + 1];
+        if (graph.degree(u) % 2 == 1) {
+          graph.removeEdge(u, v);  // MAYBE ADD INSTEAD
+          digraph.addEdge(u, v);
+          digraph.addEdge(v, u);
+          lastDoubledEdges = Edge{u, v};
+        }
+        else {
+          // direct edge towards y
+          if (i < y) {
+            digraph.addEdge(u, v);
+          }
+          else {
+            digraph.addEdge(v, u);
+          }
+        }
+      }
+      if (lastDoubledEdges != Edge(0, 0)) {
+        digraph.removeEdge(lastDoubledEdges);
+        digraph.removeEdge(lastDoubledEdges.reverse());
+      }
+    }
+
+    // DEPRECATED
     for (long i = ears.ears.size() - 2; i >= 0; --i) {
       const std::vector<size_t>& ear = ears.ears[i];
       bool doublePreviousEdge        = false;
