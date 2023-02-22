@@ -1,8 +1,11 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <numeric>
+#include <stdexcept>
+#include <string>  // can be removed when error handling is implemented
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -256,6 +259,16 @@ public:
     return pAdjacencyList[u][0];
   }
 
+  template <typename func>
+  size_t neighbourAnyExcept(const size_t u, func&& criteria) {
+    for (const size_t v : pAdjacencyList[u]) {
+      if (criteria(v)) {
+        return v;
+      }
+    }
+    throw std::runtime_error("There is no node adjacent to " + std::to_string(u) + "except the given ones!");
+  }
+
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
   void removeAllEdges() {
@@ -387,6 +400,13 @@ public:
     assert(removed2 && "Edge to be removed does not exist in graph!");
   }
 
+  void removeEdge(const size_t u, const size_t v) {
+    [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[u], v);
+    assert(removed && "Edge to be removed does not exist in graph!");
+    [[maybe_unused]] const bool removed2 = removeAnyElementByValue(pAdjacencyList[v], u);
+    assert(removed2 && "Edge to be removed does not exist in graph!");
+  }
+
   AdjacencyListGraph removeUncriticalEdges() const;
 };
 
@@ -483,6 +503,11 @@ public:
 
   void removeEdge(const Edge& e) {
     [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.u], e.v);
+    assert(removed && "Edge to be removed does not exist in graph!");
+  }
+
+  void removeEdge(const size_t u, const size_t v) {
+    [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[u], v);
     assert(removed && "Edge to be removed does not exist in graph!");
   }
 
