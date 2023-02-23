@@ -138,6 +138,7 @@ static void resolveDoubleEdges(
 }
 */
 
+/*
 static size_t yInEar(const AdjacencyListGraph& graph, const std::vector<size_t>& ear) {
   for (size_t i = 1; i < ear.size() - 1; ++i) {
     if (graph.degree(ear[i]) == 2) {
@@ -146,6 +147,7 @@ static size_t yInEar(const AdjacencyListGraph& graph, const std::vector<size_t>&
   }
   throw std::runtime_error("There is no degree 2 node in this ear!");
 }
+*/
 
 /*!
  * @brief
@@ -215,7 +217,6 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
   else {
     AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
     AdjacencyListDigraph digraph(numberOfNodes);
-    Edge lastDoubledEdge{0, 0};
 
     // first ear is trivial
     const std::vector<size_t>& firstEar = ears.ears.back();
@@ -227,32 +228,47 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
     // the other ears are more complicated
     for (long j = ears.ears.size() - 2; j >= 0; --j) {
       const std::vector<size_t>& ear = ears.ears[j];
-      const size_t y                 = yInEar(graph, ear);
+      // const size_t y                 = yInEar(graph, ear);
+      size_t earPosOfLastDoubledEdge = 0;
+      struct EdgeIndex {
+        Edge e;
+        size_t index;
+      };
+      std::vector<EdgeIndex> edgesToBeDirected;
       digraph.addEdge(ear[0], ear[1]);  // add the first add directing into the ear
+
       for (size_t i = 1; i < ear.size() - 1; ++i) {
         const size_t u = ear[i];
         const size_t v = ear[i + 1];
         if (graph.degree(u) % 2 == 1) {
-          graph.addEdge(u, v);  // MAYBE REMOVE INSTEAD
+          graph.addEdge(u, v);
           digraph.addEdge(u, v);
           digraph.addEdge(v, u);
-          lastDoubledEdge = Edge{u, v};
+          earPosOfLastDoubledEdge = i;
         }
         else {
-          // direct edge towards y
-          if (i < y) {
-            digraph.addEdge(u, v);
-          }
-          else {
-            digraph.addEdge(v, u);
-          }
+          edgesToBeDirected.push_back(EdgeIndex{Edge{u, v}, i});
         }
       }
-      if (lastDoubledEdge != Edge{0, 0}) {
+
+      // implicitly detect a node y and direct the edges according to paper
+      if (earPosOfLastDoubledEdge != 0) {
+        const Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
         graph.removeEdge(lastDoubledEdge);
         graph.removeEdge(lastDoubledEdge);
+
         digraph.removeEdge(lastDoubledEdge);
         digraph.removeEdge(lastDoubledEdge.reverse());
+
+        for (const EdgeIndex& edge : edgesToBeDirected) {
+          if (edge.index < earPosOfLastDoubledEdge) {
+            digraph.addEdge(edge.e);
+          }
+          else {
+            // the case of equality is implicitly excluded, because then the edge would have been doubled
+            digraph.addEdge(edge.e.reverse());
+          }
+        }
       }
     }
 
