@@ -159,7 +159,7 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
   std::vector<size_t> eulertour;
   eulertour.reserve(graph.numberOfEdges() + 1);
   std::stack<size_t> nodeStack;
-  nodeStack.push(findNonIsolatedNode(graph));
+  nodeStack.push(0);  // the graph is connected so we start at node 0
 
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
@@ -174,23 +174,32 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
     }
   }
 
-  eulertour.pop_back();  // cut off the last node which is same as first
+  // eulertour.pop_back();  // cut off the last node which is same as first
   return eulertour;
 }
 
 static std::vector<unsigned int> shortcutToHamiltoncycle(
-    const std::vector<size_t>& longEulertour, const AdjacencyListDigraph& digraph, AdjacencyListGraph& eulertourGraph) {
+    const std::vector<size_t>& longEulertour, AdjacencyListDigraph& digraph, AdjacencyListGraph& eulertourGraph) {
   AdjacencyListGraph graph(digraph.numberOfNodes());
+
+  // DEBUG
+  std::cerr << "longEulertour\n" << longEulertour;
 
   for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
     const size_t u = longEulertour[i - 1];
     const size_t w = longEulertour[i];
     const size_t v = longEulertour[i + 1];
 
-    if (digraph.adjacent(w, u) && digraph.adjacent(w, v)) {
+    if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
+      // DEBUG
+      // std::cerr << "u: " << u << "\nw: " << w << "\nv: " << v << "\n\n";
+
       eulertourGraph.removeEdge(w, u);
       eulertourGraph.removeEdge(w, v);
       eulertourGraph.addEdge(u, v);
+
+      digraph.removeEdge(w, u);
+      digraph.removeEdge(w, v);
     }
   }
 
@@ -239,7 +248,8 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
           }
         }
       }
-      if (lastDoubledEdge != Edge(0, 0)) {
+      if (lastDoubledEdge != Edge{0, 0}) {
+        graph.removeEdge(lastDoubledEdge);
         graph.removeEdge(lastDoubledEdge);
         digraph.removeEdge(lastDoubledEdge);
         digraph.removeEdge(lastDoubledEdge.reverse());

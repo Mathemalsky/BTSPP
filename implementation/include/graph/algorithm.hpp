@@ -142,8 +142,16 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
   throw std::runtime_error("All nodes in graph are isolated!");
 }
 
+/*!
+ * @brief finds an euler tour in graph
+ * @tparam G type of graph
+ * @param graph an instance of a simple graph, all nodes are required to have even degree, all nodes with nonzero degree
+ * must be connected (in fact 2-edge-connected)
+ * @return vector containing the nodes in the order they appear in the tour. The first node isn't added as last node
+ * again.
+ */
 template <typename G>
-std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<UndirectedGraph, G>) {
+std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Graph, G>) {
   G workingCopy = graph;
   std::vector<size_t> eulertour;
   eulertour.reserve(graph.numberOfEdges() + 1);
