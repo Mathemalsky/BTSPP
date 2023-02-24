@@ -23,33 +23,31 @@
 
 namespace approximation {
 
-struct Nodecut {
-  Edge e;
-  size_t node;
-};
-
-static std::vector<Nodecut> reduceToGminus(const AdjacencyListDigraph& digraph, AdjacencyListGraph& graph) {
+static std::vector<size_t> reduceToGminus(const AdjacencyListDigraph& digraph, AdjacencyListGraph& graph) {
   AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
   for (const Edge& e : digraph.edges()) {
     reverseDirgaph.addEdge(e.reverse());
   }
 
-  std::vector<Nodecut> nodecuts;
-  for (const u : reverseDirgaph.nodes()) {
+  std::vector<size_t> cuttedNodes;
+  for (const size_t u : reverseDirgaph.nodes()) {
     if (reverseDirgaph.degree(u) == 2) {
       const size_t v = reverseDirgaph.neighbours(u)[0];
       const size_t w = reverseDirgaph.neighbours(u)[1];
       graph.removeEdge(u, v);
       graph.removeEdge(u, w);
       graph.addEdge(v, w);
-      nodecuts.emplace_back(Edge{v, w}, u);
+      cuttedNodes.push_back(u);
     }
   }
-  return nodecuts;
+  return cuttedNodes;
 }
 
-static void insertNodecuts(std::vector<size_t>& eulertour, const std::vector<Nodecut>& nodecuts) {
-  // insert nodes in eulertoor
+static void insertNodecuts(std::vector<size_t>& eulertour, const std::vector<size_t>& cuttedNodes) {
+  eulertour.reserve(eulertour.size() + cuttedNodes.size());
+  for (size_t i = eulertour.size() - 1; i > 0; --i) {
+    // if()
+  }
 }
 
 /*!
@@ -67,7 +65,7 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
   std::stack<size_t> nodeStack;
   nodeStack.push(0);  // the graph is connected so we start at node 0
 
-  std::vector<Nodecut> nodecuts = reduceToGminus(digraph, workingCopy);
+  std::vector<size_t> cuttedNodes = reduceToGminus(digraph, workingCopy);
 
   // DEBUG
   std::cerr << "digraph\n" << digraph;
@@ -92,7 +90,7 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
   }
 
   // CONZINUE HERE
-  insertNodecuts(eulertour, nodecuts);
+  insertNodecuts(eulertour, cuttedNodes);
   return eulertour;
 }
 
