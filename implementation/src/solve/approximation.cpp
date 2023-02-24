@@ -23,6 +23,35 @@
 
 namespace approximation {
 
+struct Nodecut {
+  Edge e;
+  size_t node;
+};
+
+static std::vector<Nodecut> reduceToGminus(const AdjacencyListDigraph& digraph, AdjacencyListGraph& graph) {
+  AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
+  for (const Edge& e : digraph.edges()) {
+    reverseDirgaph.addEdge(e.reverse());
+  }
+
+  std::vector<Nodecut> nodecuts;
+  for (const u : reverseDirgaph.nodes()) {
+    if (reverseDirgaph.degree(u) == 2) {
+      const size_t v = reverseDirgaph.neighbours(u)[0];
+      const size_t w = reverseDirgaph.neighbours(u)[1];
+      graph.removeEdge(u, v);
+      graph.removeEdge(u, w);
+      graph.addEdge(v, w);
+      nodecuts.emplace_back(Edge{v, w}, u);
+    }
+  }
+  return nodecuts;
+}
+
+static void insertNodecuts(std::vector<size_t>& eulertour, const std::vector<Nodecut>& nodecuts) {
+  // insert nodes in eulertoor
+}
+
 /*!
  * @brief finds euler tour in multigraph in compliance with the direction of corresponding edges in digraph
  * @details differs from eulertour in prefering edges with special properties
@@ -38,6 +67,11 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
   std::stack<size_t> nodeStack;
   nodeStack.push(0);  // the graph is connected so we start at node 0
 
+  std::vector<Nodecut> nodecuts = reduceToGminus(digraph, workingCopy);
+
+  // DEBUG
+  std::cerr << "digraph\n" << digraph;
+
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
     if (workingCopy.degree(top) == 0) {
@@ -45,11 +79,20 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
       nodeStack.pop();
     }
     else {
-      const size_t v = workingCopy.neighbourAnyPrefer(top, [&](const size_t v) { return digraph.adjacent(v, top); });
+      // DEBUG
+      // std::cerr << "neighbours\n" << workingCopy.neighbours(top);
+
+      const size_t v = workingCopy.neighbourAny(top);
       workingCopy.removeEdge(Edge{top, v});  // remove an edge adjacent to top
       nodeStack.push(v);                     // put the node at the other end of the edge on the stack
+
+      // DBEUG
+      // std::cerr << "chosen: " << v << std::endl;
     }
   }
+
+  // CONZINUE HERE
+  insertNodecuts(eulertour, nodecuts);
   return eulertour;
 }
 
@@ -71,6 +114,25 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
       digraph.removeEdge(w, v);
     }
   }
+
+  /*
+  std::vector<unsigned int> hamiltoncycle;
+  hamiltoncycle.reserve(digraph.numberOfNodes() + 1);
+  hamiltoncycle.push_back(longEulertour[0]);
+
+  for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
+    const size_t u = longEulertour[i - 1];
+    const size_t w = longEulertour[i];
+    const size_t v = longEulertour[i + 1];
+    if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
+      hamiltoncycle.push_back(v);
+      ++i;  // skip next node
+    }
+    else {
+      hamiltoncycle.push_back(w);
+    }
+  }
+  */
 
   std::vector<size_t> hamiltoncycle = eulertour(eulertourGraph);
   return std::vector<unsigned int>(hamiltoncycle.begin(), hamiltoncycle.end());

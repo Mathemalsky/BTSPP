@@ -227,6 +227,35 @@ protected:
  * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as list.
  */
 class AdjListGraph : public Modifyable {
+private:
+  class Nodes {
+  private:
+    class Iterator {
+    public:
+      Iterator(const size_t pos) : pPosition(pos) {}
+
+      size_t operator*() const { return pPosition; }
+
+      Iterator& operator++() {
+        ++pPosition;
+        return *this;
+      }
+
+      bool operator!=(const Iterator& other) const { return pPosition != other.pPosition; }
+
+    private:
+      size_t pPosition;
+    };  // end Iterator class
+
+  public:
+    Nodes(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
+
+    Iterator begin() const { return Iterator(0); }
+    Iterator end() const { return Iterator(pNumberOfNodes); }
+
+  private:
+    const size_t pNumberOfNodes;
+  };  // end Nodes class
 public:
   AdjListGraph()  = default;
   ~AdjListGraph() = default;
@@ -288,6 +317,8 @@ public:
   }
 
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
+
+  Nodes nodes() const { return Nodes(pAdjacencyList.size()); }
 
   void removeAllEdges() {
     for (std::vector<size_t>& vec : pAdjacencyList) {
