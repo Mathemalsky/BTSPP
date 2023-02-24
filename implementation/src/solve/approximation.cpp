@@ -186,6 +186,7 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
 
   // DEBUG
   std::cerr << "longEulertour\n" << longEulertour;
+  // std::cerr << "digraph\n" << digraph << std::endl;
 
   for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
     const size_t u = longEulertour[i - 1];
@@ -194,7 +195,9 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
 
     if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
       // DEBUG
-      // std::cerr << "u: " << u << "\nw: " << w << "\nv: " << v << "\n\n";
+      // std::cerr << "u: " << u << "\nw: " << w << "\nv: " << v << "\n";
+
+      // std::cerr << "digraph\n" << digraph << std::endl;
 
       eulertourGraph.removeEdge(w, u);
       eulertourGraph.removeEdge(w, v);
@@ -208,6 +211,26 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
   std::vector<size_t> hamiltoncycle = eulertour(eulertourGraph);
   return std::vector<unsigned int>(hamiltoncycle.begin(), hamiltoncycle.end());
 }
+
+// DEBUG
+struct EdgeIndex {
+  Edge e;
+  size_t index;
+};
+
+/*
+std::ostream& operator<<(std::ostream& os, const EdgeIndex& ei) {
+  return os << ei.e << " index: " << ei.index;
+}
+
+template<typename Type>
+void printVec(const std::vector<Type>& vec) {
+  const size_t size = vec.size();
+  for (size_t i = 0; i < size; ++i) {
+    std::cerr << vec[i] << (i == size - 1 ? "" : " ");
+  }
+}
+*/
 
 static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& ears, const size_t numberOfNodes) {
   if (ears.ears.size() == 1) {
@@ -229,17 +252,22 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
     for (long j = ears.ears.size() - 2; j >= 0; --j) {
       const std::vector<size_t>& ear = ears.ears[j];
       // const size_t y                 = yInEar(graph, ear);
-      size_t earPosOfLastDoubledEdge = 0;
-      struct EdgeIndex {
-        Edge e;
-        size_t index;
-      };
-      std::vector<EdgeIndex> edgesToBeDirected;
-      digraph.addEdge(ear[0], ear[1]);  // add the first add directing into the ear
 
+      digraph.addEdge(ear[0], ear[1]);  // add the first edge directing into the ear
+      size_t earPosOfLastDoubledEdge = 0;
+
+      std::vector<EdgeIndex> edgesToBeDirected;
       for (size_t i = 1; i < ear.size() - 1; ++i) {
         const size_t u = ear[i];
         const size_t v = ear[i + 1];
+
+        // DEBUG
+        /*
+        if (i == ear.size() - 2) {
+          std::cerr << "u: " << u << " degree(u): " << graph.degree(u) << std::endl;
+          std::cerr << "v: " << v << std::endl;
+        }
+        */
         if (graph.degree(u) % 2 == 1) {
           graph.addEdge(u, v);
           digraph.addEdge(u, v);
@@ -248,6 +276,15 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
         }
         else {
           edgesToBeDirected.push_back(EdgeIndex{Edge{u, v}, i});
+
+          // DEBUG
+          /*
+          std::cerr << "edges to be directed\n";
+          for(EdgeIndex& ei : edgesToBeDirected) {
+            std::cerr << ei.e << " index: " << ei.index << std::endl;
+          }*/
+          // printVec(edgesToBeDirected);
+          // std::cerr << Edge{u, v} << " added to edgesToBeDirected" << std::endl;
         }
       }
 
@@ -266,6 +303,19 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
           }
           else {
             // the case of equality is implicitly excluded, because then the edge would have been doubled
+            digraph.addEdge(edge.e.reverse());
+
+            // DEBUG
+            // std::cerr << "should add reverse edge " << edge.e.reverse() << std::endl;
+          }
+        }
+      }
+      else {
+        for (const EdgeIndex& edge : edgesToBeDirected) {
+          if (edge.index != ear.size() - 2) {
+            digraph.addEdge(edge.e);
+          }
+          else {
             digraph.addEdge(edge.e.reverse());
           }
         }
