@@ -139,7 +139,9 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
     const size_t v = longEulertour[i + 1];
     if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
       hamiltoncycle.push_back(v);
-      ++i;  // skip next node in consideration because it's already added to hamiltoncycle
+      digraph.removeEdge(w, u);  // prevent the node from beeing skipped again between the same 2 nodes
+      digraph.removeEdge(w, v);
+      ++i;  // do not consider next node for skipping. It's alredy added.
     }
     else {
       hamiltoncycle.push_back(w);
