@@ -23,13 +23,13 @@
 
 namespace approximation {
 
-static std::vector<size_t> reduceToGminus(const AdjacencyListDigraph& digraph, AdjacencyListGraph& graph) {
+static std::unordered_set<size_t> reduceToGminus(const AdjacencyListDigraph& digraph, AdjacencyListGraph& graph) {
   AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
   for (const Edge& e : digraph.edges()) {
     reverseDirgaph.addEdge(e.reverse());
   }
 
-  std::vector<size_t> cuttedNodes;
+  std::unordered_set<size_t> cuttedNodes;
   for (const size_t u : reverseDirgaph.nodes()) {
     if (reverseDirgaph.degree(u) == 2) {
       const size_t v = reverseDirgaph.neighbours(u)[0];
@@ -37,16 +37,28 @@ static std::vector<size_t> reduceToGminus(const AdjacencyListDigraph& digraph, A
       graph.removeEdge(u, v);
       graph.removeEdge(u, w);
       graph.addEdge(v, w);
-      cuttedNodes.push_back(u);
+      cuttedNodes.insert(u);
     }
   }
   return cuttedNodes;
 }
 
-static void insertNodecuts(std::vector<size_t>& eulertour, const std::vector<size_t>& cuttedNodes) {
+static void insertNodecuts(
+    std::vector<size_t>& eulertour, std::unordered_set<size_t>& cuttedNodes, const AdjacencyListDigraph& digraph) {
   eulertour.reserve(eulertour.size() + cuttedNodes.size());
   for (size_t i = eulertour.size() - 1; i > 0; --i) {
-    // if()
+    const size_t v = eulertour[i];
+    const size_t w = eulertour[i - 1];
+    for (const size_t u : digraph.neighbours(v)) {
+      if (cuttedNodes.contains(u) && digraph.adjacent(w, u)) {
+        eulertour.insert(eulertour.begin() + i, u);
+        cuttedNodes.erase(u);
+        break;
+
+        // DEBUG
+        std::cerr << "insert " << u << " between " << v << " and " << w << std::endl;
+      }
+    }
   }
 }
 
@@ -65,10 +77,13 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
   std::stack<size_t> nodeStack;
   nodeStack.push(0);  // the graph is connected so we start at node 0
 
-  std::vector<size_t> cuttedNodes = reduceToGminus(digraph, workingCopy);
+  std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, workingCopy);
 
   // DEBUG
   std::cerr << "digraph\n" << digraph;
+
+  // DEBUG
+  std::cerr << "workingCopy reduced to G minus\n" << workingCopy;
 
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
@@ -89,15 +104,16 @@ static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const 
     }
   }
 
-  // CONZINUE HERE
-  insertNodecuts(eulertour, cuttedNodes);
+  std::cerr << "eulertour in G minus\n" << eulertour;
+
+  insertNodecuts(eulertour, cuttedNodes, digraph);
   return eulertour;
 }
 
 static std::vector<unsigned int> shortcutToHamiltoncycle(
     const std::vector<size_t>& longEulertour, AdjacencyListDigraph& digraph, AdjacencyListGraph& eulertourGraph) {
+  /*
   AdjacencyListGraph graph(digraph.numberOfNodes());
-
   for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
     const size_t u = longEulertour[i - 1];
     const size_t w = longEulertour[i];
@@ -111,9 +127,8 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
       digraph.removeEdge(w, u);
       digraph.removeEdge(w, v);
     }
-  }
+  }*/
 
-  /*
   std::vector<unsigned int> hamiltoncycle;
   hamiltoncycle.reserve(digraph.numberOfNodes() + 1);
   hamiltoncycle.push_back(longEulertour[0]);
@@ -124,16 +139,16 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
     const size_t v = longEulertour[i + 1];
     if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
       hamiltoncycle.push_back(v);
-      ++i;  // skip next node
+      ++i;  // skip next node in consideration because it's already added to hamiltoncycle
     }
     else {
       hamiltoncycle.push_back(w);
     }
   }
-  */
 
-  std::vector<size_t> hamiltoncycle = eulertour(eulertourGraph);
-  return std::vector<unsigned int>(hamiltoncycle.begin(), hamiltoncycle.end());
+  // std::vector<size_t> hamiltoncycle = eulertour(eulertourGraph);
+  // return std::vector<unsigned int>(hamiltoncycle.begin(), hamiltoncycle.end());
+  return hamiltoncycle;
 }
 
 static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& ears, const size_t numberOfNodes) {

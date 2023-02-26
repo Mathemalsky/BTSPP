@@ -11,7 +11,7 @@
 #include "graph/graph.hpp"
 
 Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
-  std::array<uint_fast32_t, 2> random_data{1881946853, 3289339722};
+  std::array<uint_fast32_t, 2> random_data{817766148, 51558885};
   // std::random_device src;
   // std::generate(random_data.begin(), random_data.end(), std::ref(src));
 
