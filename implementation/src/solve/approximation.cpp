@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <iostream>
 #include <numeric>
 #include <ranges>
 #include <stdexcept>
@@ -17,7 +18,6 @@
 #include "solve/commonfunctions.hpp"
 
 // DEBUG
-#include <iostream>
 #include "utility/utils.hpp"
 #include "graph/ostream.hpp"
 
@@ -44,91 +44,40 @@ static std::unordered_set<size_t> reduceToGminus(const AdjacencyListDigraph& dig
 }
 
 static void insertNodecuts(
-    std::vector<size_t>& eulertour, std::unordered_set<size_t>& cuttedNodes, const AdjacencyListDigraph& digraph) {
-  eulertour.reserve(eulertour.size() + cuttedNodes.size());
-  for (size_t i = eulertour.size() - 1; i > 0; --i) {
-    const size_t v = eulertour[i];
-    const size_t w = eulertour[i - 1];
+    std::vector<size_t>& eulertourInGMinus, std::unordered_set<size_t>& cuttedNodes,
+    const AdjacencyListDigraph& digraph) {
+  eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
+  for (size_t i = eulertourInGMinus.size() - 1; i > 0; --i) {
+    const size_t v = eulertourInGMinus[i];
+    const size_t w = eulertourInGMinus[i - 1];
     for (const size_t u : digraph.neighbours(v)) {
       if (cuttedNodes.contains(u) && digraph.adjacent(w, u)) {
-        eulertour.insert(eulertour.begin() + i, u);
+        eulertourInGMinus.insert(eulertourInGMinus.begin() + i, u);
         cuttedNodes.erase(u);
         break;
-
-        // DEBUG
-        std::cerr << "insert " << u << " between " << v << " and " << w << std::endl;
       }
     }
   }
 }
 
-/*!
- * @brief finds euler tour in multigraph in compliance with the direction of corresponding edges in digraph
- * @details differs from eulertour in prefering edges with special properties
- * @param graph
- * @param digraph
- * @return vector containing the nodes in the order they appear in the tour, the first node is also appended as last
- * node
- */
-static std::vector<size_t> findEulertour(const AdjacencyListGraph& graph, const AdjacencyListDigraph& digraph) {
-  AdjacencyListGraph workingCopy = graph;
-  std::vector<size_t> eulertour;
-  eulertour.reserve(graph.numberOfEdges() + 1);
-  std::stack<size_t> nodeStack;
-  nodeStack.push(0);  // the graph is connected so we start at node 0
-
-  std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, workingCopy);
+static std::vector<size_t> findEulertour(AdjacencyListGraph& graph, const AdjacencyListDigraph& digraph) {
+  std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
 
   // DEBUG
   std::cerr << "digraph\n" << digraph;
+  std::cerr << "graph reduced to G minus\n" << graph;
+
+  std::vector<size_t> eulertourInGMinus = eulertour(graph);
 
   // DEBUG
-  std::cerr << "workingCopy reduced to G minus\n" << workingCopy;
+  std::cerr << "eulertour in G minus\n" << eulertourInGMinus;
 
-  while (!nodeStack.empty()) {
-    const size_t top = nodeStack.top();
-    if (workingCopy.degree(top) == 0) {
-      eulertour.push_back(top);
-      nodeStack.pop();
-    }
-    else {
-      // DEBUG
-      // std::cerr << "neighbours\n" << workingCopy.neighbours(top);
-
-      const size_t v = workingCopy.neighbourAny(top);
-      workingCopy.removeEdge(Edge{top, v});  // remove an edge adjacent to top
-      nodeStack.push(v);                     // put the node at the other end of the edge on the stack
-
-      // DBEUG
-      // std::cerr << "chosen: " << v << std::endl;
-    }
-  }
-
-  std::cerr << "eulertour in G minus\n" << eulertour;
-
-  insertNodecuts(eulertour, cuttedNodes, digraph);
-  return eulertour;
+  insertNodecuts(eulertourInGMinus, cuttedNodes, digraph);
+  return eulertourInGMinus;
 }
 
 static std::vector<unsigned int> shortcutToHamiltoncycle(
-    const std::vector<size_t>& longEulertour, AdjacencyListDigraph& digraph, AdjacencyListGraph& eulertourGraph) {
-  /*
-  AdjacencyListGraph graph(digraph.numberOfNodes());
-  for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
-    const size_t u = longEulertour[i - 1];
-    const size_t w = longEulertour[i];
-    const size_t v = longEulertour[i + 1];
-
-    if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
-      eulertourGraph.removeEdge(w, u);
-      eulertourGraph.removeEdge(w, v);
-      eulertourGraph.addEdge(u, v);
-
-      digraph.removeEdge(w, u);
-      digraph.removeEdge(w, v);
-    }
-  }*/
-
+    const std::vector<size_t>& longEulertour, AdjacencyListDigraph& digraph) {
   std::vector<unsigned int> hamiltoncycle;
   hamiltoncycle.reserve(digraph.numberOfNodes() + 1);
   hamiltoncycle.push_back(longEulertour[0]);
@@ -147,9 +96,6 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(
       hamiltoncycle.push_back(w);
     }
   }
-
-  // std::vector<size_t> hamiltoncycle = eulertour(eulertourGraph);
-  // return std::vector<unsigned int>(hamiltoncycle.begin(), hamiltoncycle.end());
   return hamiltoncycle;
 }
 
@@ -227,12 +173,12 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
       }
     }
 
-    const std::vector<size_t> eulertour = findEulertour(graph, digraph);
+    const std::vector<size_t> longEulertour = findEulertour(graph, digraph);
 
     // DEBUG
-    std::cerr << "longEulertour\n" << eulertour;
+    std::cerr << "longEulertour\n" << longEulertour;
 
-    return shortcutToHamiltoncycle(eulertour, digraph, graph);
+    return shortcutToHamiltoncycle(longEulertour, digraph);
   }
 }
 

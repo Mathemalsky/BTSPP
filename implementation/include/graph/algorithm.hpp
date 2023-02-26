@@ -153,15 +153,15 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
 template <typename G>
 std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Graph, G>) {
   G workingCopy = graph;
-  std::vector<size_t> eulertour;
-  eulertour.reserve(graph.numberOfEdges() + 1);
+  std::vector<size_t> tour;
+  tour.reserve(graph.numberOfEdges() + 1);
   std::stack<size_t> nodeStack;
   nodeStack.push(findNonIsolatedNode(graph));
 
   while (!nodeStack.empty()) {
     const size_t top = nodeStack.top();
     if (workingCopy.degree(top) == 0) {
-      eulertour.push_back(top);
+      tour.push_back(top);
       nodeStack.pop();
     }
     else {
@@ -171,8 +171,7 @@ std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Graph, 
     }
   }
 
-  eulertour.pop_back();  // cut off the last node which is same as first
-  return eulertour;
+  return tour;
 }
 
 /*!
