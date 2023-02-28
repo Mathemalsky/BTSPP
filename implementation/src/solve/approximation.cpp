@@ -17,10 +17,6 @@
 
 #include "solve/commonfunctions.hpp"
 
-// DEBUG
-#include "utility/utils.hpp"
-#include "graph/ostream.hpp"
-
 namespace approximation {
 
 static std::unordered_set<size_t> reduceToGminus(const AdjacencyListDigraph& digraph, AdjacencyListGraph& graph) {
@@ -62,16 +58,7 @@ static void insertNodecuts(
 
 static std::vector<size_t> findEulertour(AdjacencyListGraph& graph, const AdjacencyListDigraph& digraph) {
   std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
-
-  // DEBUG
-  std::cerr << "digraph\n" << digraph;
-  std::cerr << "graph reduced to G minus\n" << graph;
-
-  std::vector<size_t> eulertourInGMinus = eulertour(graph);
-
-  // DEBUG
-  std::cerr << "eulertour in G minus\n" << eulertourInGMinus;
-
+  std::vector<size_t> eulertourInGMinus  = eulertour(graph);
   insertNodecuts(eulertourInGMinus, cuttedNodes, digraph);
   return eulertourInGMinus;
 }
@@ -174,10 +161,6 @@ static std::vector<unsigned int> hamiltonCycleInSquare(const EarDecomposition& e
     }
 
     const std::vector<size_t> longEulertour = findEulertour(graph, digraph);
-
-    // DEBUG
-    std::cerr << "longEulertour\n" << longEulertour;
-
     return shortcutToHamiltoncycle(longEulertour, digraph);
   }
 }
@@ -190,16 +173,9 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType, co
     const AdjacencyListGraph fromEars           = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
     const AdjacencyListGraph minimal            = fromEars.removeUncriticalEdges();
     const EarDecomposition openEars             = schmidt(minimal);  // calculate proper ear decomposition
-
-    // DEBUG
-    std::cerr << "openEars\n" << openEars.ears;
-
-    const std::vector<unsigned int> tour = hamiltonCycleInSquare(openEars, euclidean.numberOfNodes());
-
-    std::cout << "hamiltoncycle\n" << tour;
-
-    const Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
-    const double objective    = euclidean.weight(bottleneckEdge);
+    const std::vector<unsigned int> tour        = hamiltonCycleInSquare(openEars, euclidean.numberOfNodes());
+    const Edge bottleneckEdge                   = findBottleneck(euclidean, tour, true);
+    const double objective                      = euclidean.weight(bottleneckEdge);
 
     if (printInfo) {
       std::cout << "objective           : " << objective << std::endl;

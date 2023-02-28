@@ -303,7 +303,7 @@ public:
         return v;
       }
     }
-    throw std::runtime_error("There is no node adjacent to " + std::to_string(u) + "except the given ones!");
+    throw std::runtime_error("There is no node adjacent to " + std::to_string(u) + "not matching the criteria!");
   }
 
   template <typename func>
@@ -354,9 +354,11 @@ private:
       }
 
       Iterator& operator++() {
+        assert(pPosition.outerIndex < pAdjacencyList.size() && "Iterator is already behind end!");
+
         ++pPosition.innerIndex;
-        while (pPosition.outerIndex < pAdjacencyList.size() && (endOfNeighbours() || !toLowerIndex())) {
-          if (endOfNeighbours()) {
+        while (pPosition.outerIndex < pAdjacencyList.size() && (outOfNeighbours() || !toLowerIndex())) {
+          if (outOfNeighbours()) {
             pPosition.innerIndex = 0;
             ++pPosition.outerIndex;
           }
@@ -374,7 +376,7 @@ private:
       }
 
     private:
-      bool endOfNeighbours() const { return pPosition.innerIndex == pAdjacencyList[pPosition.outerIndex].size(); }
+      bool outOfNeighbours() const { return pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size(); }
 
       const std::vector<std::vector<size_t>>& pAdjacencyList;
       AdjListPos pPosition;
@@ -482,7 +484,7 @@ private:
 
       Iterator& operator++() {
         ++pPosition.innerIndex;
-        while (pPosition.innerIndex == pAdjacencyList[pPosition.outerIndex].size()
+        while (pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size()
                && pPosition.outerIndex < pAdjacencyList.size()) {
           pPosition.innerIndex = 0;
           ++pPosition.outerIndex;
