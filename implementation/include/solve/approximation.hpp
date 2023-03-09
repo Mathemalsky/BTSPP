@@ -11,6 +11,7 @@ namespace approximation {
 struct Result {
   AdjacencyMatrixGraph biconnectedGraph;
   EarDecomposition openEarDecomposition;
+  std::vector<unsigned int> longEulertour;
   std::vector<unsigned int> tour;
   double opt;
   Edge bottleneckEdge;
