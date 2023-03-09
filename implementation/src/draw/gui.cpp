@@ -60,9 +60,7 @@ void drawImgui() {
     ImGui::Checkbox("biconnectd graph", &drawing::DRAW_BICONNECTED_GRAPH);
     ImGui::SameLine();
     ImGui::Checkbox("open ear decomp.", &drawing::DRAW_OPEN_EAR_DECOMPOSITION);
-    ImGui::Checkbox("eulerian graph", &drawing::DRAW_EULERIAN_GRAPH);
-    ImGui::SameLine();
-    ImGui::Checkbox("hamilton_cycle", &drawing::DRAW_HAMILTON_CYCLE);
+    ImGui::Checkbox("hamilton cycle", &drawing::DRAW_HAMILTON_CYCLE);
 
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[(unsigned int) ProblemType::BTSP_exact]);
     ImGui::SliderFloat(

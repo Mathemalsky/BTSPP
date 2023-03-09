@@ -29,7 +29,6 @@ static void initDrawingVariables() {
   drawing::COLOUR                      = drawing::INITIAL_COLOUR;
   drawing::DRAW_BICONNECTED_GRAPH      = drawing::INITIAL_DRAW_BICONNECTED_GRAPH;
   drawing::DRAW_OPEN_EAR_DECOMPOSITION = drawing::INITIAL_DRAW_OPEN_EAR_DECOMPOSITION;
-  drawing::DRAW_EULERIAN_GRAPH         = drawing::INITIAL_DRAW_EULERIAN_GRAPH;
   drawing::DRAW_HAMILTON_CYCLE         = drawing::INITIAL_DRAW_HAMILTON_CYCLE;
   drawing::INITIALIZED                 = drawing::INITIAL_ACTIVENESS;
   drawing::THICKNESS                   = drawing::INITIAL_THICKNESS;

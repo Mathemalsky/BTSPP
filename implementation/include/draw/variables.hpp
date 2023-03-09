@@ -23,7 +23,6 @@ extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS
 extern std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 extern bool DRAW_OPEN_EAR_DECOMPOSITION;
 extern bool DRAW_BICONNECTED_GRAPH;
-extern bool DRAW_EULERIAN_GRAPH;
 extern bool DRAW_HAMILTON_CYCLE;
 extern std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
 extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;

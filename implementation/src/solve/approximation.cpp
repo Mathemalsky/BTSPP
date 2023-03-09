@@ -174,15 +174,13 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType, co
     const EarDecomposition openEars             = schmidt(minimal);  // calculate proper ear decomposition
 
     if (openEars.ears.size() == 1) {
-      longEulertour =
+      tour =
           std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
-      tour = longEulertour;
     }
     else {
       GraphPair graphpair           = constructGraphPair(openEars, euclidean.numberOfNodes());
       const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-      longEulertour = std::vector<unsigned int>(tmp.begin(), tmp.end() - 1);  // do not repeat first node
-      tour          = shortcutToHamiltoncycle(longEulertour, graphpair.digraph);
+      tour = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
     }
     const Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
     const double objective    = euclidean.weight(bottleneckEdge);
@@ -194,7 +192,7 @@ Result approximate(const Euclidean& euclidean, const ProblemType problemType, co
       assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
     }
 
-    return Result{biconnectedGraph, openEars, longEulertour, tour, objective, bottleneckEdge};
+    return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
   }
   else {
     throw std::runtime_error("Unknown problem type");

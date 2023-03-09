@@ -90,9 +90,6 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
   if (DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawOpenEarDecomposition(programs.drawLine, BTSP_APPROX_RESULT.openEarDecomposition);
   }
-  if (DRAW_EULERIAN_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    // draw
-  }
   if (DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);

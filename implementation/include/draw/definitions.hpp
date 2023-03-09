@@ -44,7 +44,6 @@ constexpr std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_
 
 constexpr bool INITIAL_DRAW_BICONNECTED_GRAPH      = false;
 constexpr bool INITIAL_DRAW_OPEN_EAR_DECOMPOSITION = false;
-constexpr bool INITIAL_DRAW_EULERIAN_GRAPH         = false;
 constexpr bool INITIAL_DRAW_HAMILTON_CYCLE         = false;
 
 constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_THICKNESS{
