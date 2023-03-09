@@ -9,31 +9,42 @@
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
 
-namespace graph {
+#include "solve/approximation.hpp"
+#include "solve/exactsolver.hpp"
+
+namespace drawing {
 extern Euclidean EUCLIDEAN;
 extern std::vector<float> POINTS_F;
-extern std::unordered_map<ProblemType, std::vector<unsigned int>> ORDER;
+
+extern bool SHOW_SETTINGS_WINDOW;
+extern bool SHOW_DEBUG_WINDOW;
+
+extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
+extern std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+extern bool DRAW_OPEN_EAR_DECOMPOSITION;
+extern bool DRAW_BICONNECTED_GRAPH;
+extern bool DRAW_HAMILTON_CYCLE;
+extern std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
+extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
+extern std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+extern RGBA_COLOUR CLEAR_COLOUR;
+extern RGBA_COLOUR VERTEX_COLOUR;
+
+extern approximation::Result BTSP_APPROX_RESULT;
+extern exactsolver::Result BTSP_EXACT_RESULT;
+extern exactsolver::Result BTSPP_EXACT_RESULT;
 
 void updatePointsfFromEuclidean();
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
-}  // namespace graph
-
-namespace imguiwindow {
-extern bool SHOW_SETTINGS_WINDOW;
-extern std::unordered_map<ProblemType, bool> ACTIVE;
-extern std::unordered_map<ProblemType, std::array<float, 4>> COLOR;  // 4th float currently unused
-extern std::unordered_map<ProblemType, float> THICKNESS;
-extern std::array<float, 4> VERTEX_COLOR;  // 4th float currently unused
-
-}  // namespace imguiwindow
+}  // namespace drawing
 
 namespace input {
 extern std::unordered_map<int, bool> STATE;
 
 namespace mouse {
-extern double x;
-extern double y;
+extern Point2D MOUSE_LEFT_CLICKED;
+extern int NODE_IN_MOTION;
 }  // namespace mouse
 }  // namespace input
 
@@ -43,5 +54,5 @@ extern int WIDTH;
 }  // namespace mainwindow
 
 namespace slowEvents {
-extern std::unordered_map<ProblemType, bool> SOLVE;
+extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
 }  // namespace slowEvents

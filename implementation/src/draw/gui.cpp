@@ -11,6 +11,16 @@
 #include "draw/definitions.hpp"
 #include "draw/variables.hpp"
 
+const char* imguiVersionHints() {
+  // GL 4.4 + GLSL 440
+  const char* glsl_version = "#version 440";
+  glfwWindowHint(GLFW_SAMPLES, 4);  // 4x antialiasing
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+  return glsl_version;
+}
+
 void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -27,39 +37,48 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-void initImGuiWindows() {
-  // settings window
-  imguiwindow::SHOW_SETTINGS_WINDOW = imguiwindow::INITIAL_SHOW_SETTINGS_WINDOW;
-  for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-    imguiwindow::ACTIVE[type]    = imguiwindow::INITIAL_ACTIVENESS.at(type);
-    imguiwindow::COLOR[type]     = imguiwindow::INITIAL_COLOR.at(type);
-    imguiwindow::THICKNESS[type] = imguiwindow::INITIAL_THICKNESS.at(type);
-  }
-  imguiwindow::VERTEX_COLOR = imguiwindow::INITIAL_VERTEX_COLOR;
-}
-
 void drawImgui() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
-  if (imguiwindow::SHOW_SETTINGS_WINDOW) {
-    ImGui::Begin("Settings", &imguiwindow::SHOW_SETTINGS_WINDOW);
-    ImGui::Text("mouse x = %f", input::mouse::x);  // DEBUG
-    ImGui::Text("mouse y = %f", input::mouse::y);  // DEBUG
+  if (drawing::SHOW_DEBUG_WINDOW) {
+    ImGui::Begin("Debug", &drawing::SHOW_DEBUG_WINDOW);
     ImGui::Text(
-      "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        "Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::End();
+  }
 
-    ImGui::Spacing();
-    ImGui::Checkbox("BTSP exact", &imguiwindow::ACTIVE[ProblemType::BTSP_exact]);
-    ImGui::SliderFloat("thickness##BTSP exact", &imguiwindow::THICKNESS[ProblemType::BTSP_exact], 0.0f, 20.0f, "%.1f");
-    ImGui::ColorEdit3("##BTSP exact", (float*) &imguiwindow::COLOR[ProblemType::BTSP_exact]);
+  if (drawing::SHOW_SETTINGS_WINDOW) {
+    ImGui::Begin("Settings", &drawing::SHOW_SETTINGS_WINDOW);
 
-    ImGui::Checkbox("TSP  exact", &imguiwindow::ACTIVE[ProblemType::TSP_exact]);
-    ImGui::ColorEdit3("##TSP exact", (float*) &imguiwindow::COLOR[ProblemType::TSP_exact]);
-    ImGui::SliderFloat("thickness##TSP exact", &imguiwindow::THICKNESS[ProblemType::TSP_exact], 0.0f, 30.0f);
+    ImGui::Checkbox("BTSP approx", &drawing::ACTIVE[(unsigned int) ProblemType::BTSP_approx]);
+    ImGui::ColorEdit3("##BTSP approx", (float*) &drawing::COLOUR[(unsigned int) ProblemType::BTSP_approx]);
+    ImGui::SliderFloat(
+        "thickness##BTSP approx", &drawing::THICKNESS[(unsigned int) ProblemType::BTSP_approx], 0.0f, 30.0f, "%.1f");
 
-    ImGui::ColorEdit3("vertex color", (float*) &imguiwindow::VERTEX_COLOR);
+    ImGui::Checkbox("biconnectd graph", &drawing::DRAW_BICONNECTED_GRAPH);
+    ImGui::SameLine();
+    ImGui::Checkbox("open ear decomp.", &drawing::DRAW_OPEN_EAR_DECOMPOSITION);
+    ImGui::Checkbox("hamilton cycle", &drawing::DRAW_HAMILTON_CYCLE);
+
+    ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[(unsigned int) ProblemType::BTSP_exact]);
+    ImGui::SliderFloat(
+        "thickness##BTSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::BTSP_exact], 0.0f, 20.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSP exact", (float*) &drawing::COLOUR[(unsigned int) ProblemType::BTSP_exact]);
+
+    ImGui::Checkbox("BTSPP exact", &drawing::ACTIVE[(unsigned int) ProblemType::BTSPP_exact]);
+    ImGui::SliderFloat(
+        "thickness##BTSPP exact", &drawing::THICKNESS[(unsigned int) ProblemType::BTSPP_exact], 0.0f, 20.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSPP exact", (float*) &drawing::COLOUR[(unsigned int) ProblemType::BTSPP_exact]);
+
+    ImGui::Checkbox("TSP  exact", &drawing::ACTIVE[(unsigned int) ProblemType::TSP_exact]);
+    ImGui::ColorEdit3("##TSP exact", (float*) &drawing::COLOUR[(unsigned int) ProblemType::TSP_exact]);
+    ImGui::SliderFloat(
+        "thickness##TSP exact", &drawing::THICKNESS[(unsigned int) ProblemType::TSP_exact], 0.0f, 30.0f, "%.1f");
+
+    ImGui::ColorEdit4("clear colour", (float*) &drawing::CLEAR_COLOUR);
+    ImGui::ColorEdit3("vertex colour", (float*) &drawing::VERTEX_COLOUR);
     ImGui::End();
   }
 

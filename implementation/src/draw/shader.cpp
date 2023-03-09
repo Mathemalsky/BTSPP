@@ -18,7 +18,7 @@ static constexpr const char vertexShaderSource[] = R"glsl(
   }
 )glsl";
 
-static constexpr const char lineVertexShader[] = R"glsl(
+static constexpr const char pathVertexShaderSource[] = R"glsl(
   #version 440 core
   layout(std430, binding = 0) buffer lineVertex
   {
@@ -75,6 +75,44 @@ static constexpr const char lineVertexShader[] = R"glsl(
   }
 )glsl";
 
+static constexpr const char lineVertexShaderSource[] = R"glsl(
+  #version 440 core
+
+  uniform vec4 u_ends;
+  uniform float u_thickness;
+  uniform vec2 u_resolution;
+
+  void main() {
+    int triangle_vertex  = gl_VertexID % 6;
+    vec2 begin = u_ends.xy;
+    vec2 end   = u_ends.zw;
+    vec2 direction = normalize(end - begin);
+    vec2 perpendicular = vec2(-direction.y, direction.x);
+    vec2 offset = u_thickness * perpendicular / u_resolution;
+
+    vec2 pos;
+    if(triangle_vertex == 0 || triangle_vertex == 2 || triangle_vertex == 5) {
+      pos = begin;
+      if(triangle_vertex == 0) {
+        pos -= offset;
+      }
+      else {
+        pos += offset;
+      }
+    }
+    else {
+      pos = end;
+      if(triangle_vertex == 4) {
+        pos += offset;
+      }
+      else {
+        pos -= offset;
+      }
+    }
+    gl_Position = vec4(pos, 0.0, 1.0);
+  }
+)glsl";
+
 static constexpr const char circleShaderSource[] = R"glsl(
   #version 440 core
   layout(points) in;
@@ -101,10 +139,10 @@ static constexpr const char fragmentShaderSource[] = R"glsl(
   #version 440 core
   layout (location = 0) out vec4 fragColor;
 
-  uniform vec4 u_color;
+  uniform vec4 u_colour;
 
   void main() {
-    fragColor = u_color;
+    fragColor = u_colour;
   }
 )glsl";
 
@@ -140,7 +178,7 @@ void ShaderProgram::setUniform(const char* name, const float val1, const float v
 }
 
 void ShaderProgram::setUniform(
-  const char* name, const float val1, const float val2, const float val3, const float val4) const {
+    const char* name, const float val1, const float val2, const float val3, const float val4) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
   GL_CALL(glUniform4f(location, val1, val2, val3, val4);)
@@ -167,16 +205,18 @@ static GLuint compileShader(const GLenum shaderType, const GLchar* shaderSource)
   return shader;
 }
 
-ShaderCollection::ShaderCollection()
-  : pVertexShader(compileShader(GL_VERTEX_SHADER, vertexShaderSource))
-  , pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource))
-  , pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource))
-  , pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShader)) {
+ShaderCollection::ShaderCollection() :
+  pVertexShader(compileShader(GL_VERTEX_SHADER, vertexShaderSource)),
+  pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource)),
+  pPathVertexShader(compileShader(GL_VERTEX_SHADER, pathVertexShaderSource)),
+  pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource)),
+  pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShaderSource)) {
 }
 
 ShaderCollection::~ShaderCollection() {
   GL_CALL(glDeleteShader(pVertexShader);)
   GL_CALL(glDeleteShader(pCircleShader);)
+  GL_CALL(glDeleteShader(pPathVertexShader);)
   GL_CALL(glDeleteShader(pFragmentShader);)
   GL_CALL(glDeleteShader(pLineVertexShader);)
 }
@@ -190,10 +230,18 @@ ShaderProgram ShaderCollection::linkCircleDrawProgram() const {
   return circleProgram;
 }
 
-ShaderProgram ShaderCollection::linkLineSegementDrawProgram() const {
-  const ShaderProgram lineSegmentProgram;
-  lineSegmentProgram.attachShader(pLineVertexShader);
-  lineSegmentProgram.attachShader(pFragmentShader);
-  lineSegmentProgram.link();
-  return lineSegmentProgram;
+ShaderProgram ShaderCollection::linkPathSegementDrawProgram() const {
+  const ShaderProgram pathSegmentProgram;
+  pathSegmentProgram.attachShader(pPathVertexShader);
+  pathSegmentProgram.attachShader(pFragmentShader);
+  pathSegmentProgram.link();
+  return pathSegmentProgram;
+}
+
+ShaderProgram ShaderCollection::linkLineDrawProgram() const {
+  const ShaderProgram lineProgram;
+  lineProgram.attachShader(pLineVertexShader);
+  lineProgram.attachShader(pFragmentShader);
+  lineProgram.link();
+  return lineProgram;
 }
