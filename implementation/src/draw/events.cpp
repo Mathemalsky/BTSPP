@@ -64,22 +64,8 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
  *                                           callback helper functions
  **********************************************************************************************************************/
 
-static void toggleSettingsWindow() {
-  if (drawing::SHOW_SETTINGS_WINDOW) {
-    drawing::SHOW_SETTINGS_WINDOW = false;
-  }
-  else {
-    drawing::SHOW_SETTINGS_WINDOW = true;
-  }
-}
-
-static void toggleDebugWindow() {
-  if (drawing::SHOW_DEBUG_WINDOW) {
-    drawing::SHOW_DEBUG_WINDOW = false;
-  }
-  else {
-    drawing::SHOW_DEBUG_WINDOW = true;
-  }
+static void toggle(bool& value) {
+  value = !value;
 }
 
 static void selectNodeToMove(GLFWwindow* window) {
@@ -102,20 +88,32 @@ void keyCallback(
     [[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action,
     [[maybe_unused]] int mods) {
   if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
-    toggleDebugWindow();
+    toggle(drawing::SHOW_DEBUG_WINDOW);
   }
   if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
-    toggleSettingsWindow();
+    toggle(drawing::SHOW_SETTINGS_WINDOW);
   }
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
     for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-      if (drawing::ACTIVE[(unsigned int) type]) {
-        slowEvents::SOLVE[(unsigned int) type] = true;
+      if (drawing::ACTIVE[std::to_underlying(type)]) {
+        slowEvents::SOLVE[std::to_underlying(type)] = true;
       }
     }
+  }
+  if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]);
+  }
+  if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
+  }
+  if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
+  }
+  if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
   }
 }
 

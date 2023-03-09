@@ -37,3 +37,7 @@ key   | function
 `ESC` | close application
 `F3`  | toggle visibility of settings window
 `R`   | recompute solution(s)
+`1`   | toggle drawing of BTSP approximation
+`3`   | toggle drawing of BTSP exact solution
+`4`   | toggle drawing of BTSPP exact solution
+`5`   | toggle drawing of TSP exact solution
