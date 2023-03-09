@@ -35,6 +35,10 @@ extern approximation::Result BTSP_APPROX_RESULT;
 extern exactsolver::Result BTSP_EXACT_RESULT;
 extern exactsolver::Result BTSPP_EXACT_RESULT;
 
+extern std::vector<unsigned int> LONG_EULERTOUR;
+
+void updateLongEulerTour(const std::vector<unsigned int>& longEulertour);
+
 void updatePointsfFromEuclidean();
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);

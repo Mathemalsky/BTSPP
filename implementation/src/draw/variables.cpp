@@ -36,6 +36,14 @@ approximation::Result BTSP_APPROX_RESULT;
 exactsolver::Result BTSP_EXACT_RESULT;
 exactsolver::Result BTSPP_EXACT_RESULT;
 
+std::vector<unsigned int> LONG_EULERTOUR;
+
+void updateLongEulerTour(const std::vector<unsigned int>& longEulertour) {
+  LONG_EULERTOUR.resize(LONG_EULERTOUR.size() + PATH_OVERHEAD);
+  std::memcpy(LONG_EULERTOUR.data(), longEulertour.data(), bytes_of(longEulertour));
+  std::memcpy(LONG_EULERTOUR.data() + longEulertour.size(), longEulertour.data(), PATH_OVERHEAD * sizeof(unsigned int));
+}
+
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
   const std::vector<Point2D> points = EUCLIDEAN.verteces();

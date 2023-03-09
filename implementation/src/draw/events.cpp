@@ -42,6 +42,7 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_approx)] = false;
     drawing::BTSP_APPROX_RESULT = approximation::approximate(drawing::EUCLIDEAN, ProblemType::BTSP_approx);
     drawing::updateOrder(drawing::BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
+    drawing::updateLongEulerTour(drawing::BTSP_APPROX_RESULT.longEulertour);
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;

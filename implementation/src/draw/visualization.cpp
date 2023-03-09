@@ -48,9 +48,12 @@ static const Buffers& setUpBufferMemory(const unsigned int numberOfNodes) {
 
   const VertexBuffer& coordinates     = *new VertexBuffer(drawing::POINTS_F, 2);  // components per vertex
   const ShaderBuffer& tourCoordinates = *new ShaderBuffer(drawing::POINTS_F);     // copy vertex coords to shader buffer
-  const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(numberOfNodes + 3));  // just allocate memory
+  const ShaderBuffer& tour =
+      *new ShaderBuffer(std::vector<unsigned int>(numberOfNodes + drawing::PATH_OVERHEAD));  // just allocate memory
+  const ShaderBuffer& longEulertour =
+      *new ShaderBuffer(std::vector<unsigned int>(2 * numberOfNodes + drawing::PATH_OVERHEAD));  // just allocate memory
 
-  return *new Buffers{coordinates, tour, tourCoordinates};
+  return *new Buffers{coordinates, tour, tourCoordinates, longEulertour};
 }
 
 static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {

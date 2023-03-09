@@ -91,7 +91,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
     drawOpenEarDecomposition(programs.drawLine, BTSP_APPROX_RESULT.openEarDecomposition);
   }
   if (DRAW_EULERIAN_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    // draw
+    drawPath(programs.drawPathSegments, buffers.longEulertour, LONG_EULERTOUR, THICKNESS[typeInt], COLOUR[typeInt]);
   }
   if (DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
