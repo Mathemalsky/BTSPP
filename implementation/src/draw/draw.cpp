@@ -37,9 +37,8 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
   glDrawArrays(GL_POINTS, 0, EUCLIDEAN.numberOfNodes());  // start at index 0
 }
 
-static void drawPath(
-    const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
-    const float thickness, const RGBA_COLOUR& colour) {
+static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer,
+                     const std::vector<unsigned int>& order, const float thickness, const RGBA_COLOUR& colour) {
   shaderBuffer.bufferSubData(order);
   drawPathSegments.use();
   drawPathSegments.setUniform("u_thickness", thickness);

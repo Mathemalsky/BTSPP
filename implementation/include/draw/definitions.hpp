@@ -15,12 +15,12 @@ using RGBA_COLOUR = std::array<float, 4>;  // 4th float currently unused
 
 namespace namedInts {
 constexpr int INVALID = -1;
-}
+}  // namespace namedInts
 
 namespace problemType {
 constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> PROBLEM_TYPES = {
     ProblemType::BTSP_approx, ProblemType::BTSP_exact, ProblemType::BTSPP_exact, ProblemType::TSP_exact};
-}
+}  // namespace problemType
 
 namespace drawing {
 constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = true;
@@ -36,10 +36,10 @@ constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTI
 };
 
 constexpr std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_COLOUR{
-    RGBA_COLOUR{0.0f, 1.0f, 0.0f, 1.0f},  // BTSP_approx
-    RGBA_COLOUR{1.0f, 1.0f, 0.0f, 1.0f},  // BTSP_exact
-    RGBA_COLOUR{0.3f, 0.7f, 0.2f, 1.0f},  // BTSPP_exact
-    RGBA_COLOUR{1.0f, 0.0f, 0.0f, 1.0f}   // TSP_exact
+    RGBA_COLOUR{0.0f, 1.0f, 0.0f, 1.0f}, // BTSP_approx
+    RGBA_COLOUR{1.0f, 1.0f, 0.0f, 1.0f}, // BTSP_exact
+    RGBA_COLOUR{0.3f, 0.7f, 0.2f, 1.0f}, // BTSPP_exact
+    RGBA_COLOUR{1.0f, 0.0f, 0.0f, 1.0f}  // TSP_exact
 };
 
 constexpr bool INITIAL_DRAW_BICONNECTED_GRAPH      = false;
@@ -60,7 +60,7 @@ constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 0.0f, 0.0f, 1.0f};
 namespace input {
 namespace mouse {
 constexpr int INITIAL_NODE_IN_MOTION = namedInts::INVALID;
-}
+}  // namespace mouse
 }  // namespace input
 
 namespace mainwindow {

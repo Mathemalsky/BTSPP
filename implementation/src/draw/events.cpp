@@ -84,9 +84,8 @@ static void selectNodeToMove(GLFWwindow* window) {
  *                                                      callbacks
  **********************************************************************************************************************/
 
-void keyCallback(
-    [[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action,
-    [[maybe_unused]] int mods) {
+void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action,
+                 [[maybe_unused]] int mods) {
   if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
     toggle(drawing::SHOW_DEBUG_WINDOW);
   }

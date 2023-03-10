@@ -56,7 +56,10 @@ struct Edge {
  * \brief The Directionality enum can be Directed or Undirected
  * \details This enum can be passed as template argument to some graph classes.
  */
-enum class Directionality { Undirected, Directed };
+enum class Directionality {
+  Undirected,
+  Directed
+};
 
 class EdgeWeight {
 public:
@@ -347,7 +350,8 @@ private:
       };
 
       Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
-        pAdjacencyList(adjacencyList), pPosition(pos) {}
+        pAdjacencyList(adjacencyList),
+        pPosition(pos) {}
 
       Edge operator*() const {
         return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]};
@@ -434,9 +438,8 @@ public:
   bool connected() const override;
 
   size_t numberOfEdges() const override {
-    return std::accumulate(
-               pAdjacencyList.begin(), pAdjacencyList.end(), 0,
-               [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); })
+    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+                           [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); })
            / 2;
   }
 
@@ -476,7 +479,8 @@ private:
         size_t innerIndex;
       };
       Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
-        pAdjacencyList(adjacencyList), pPosition(pos) {}
+        pAdjacencyList(adjacencyList),
+        pPosition(pos) {}
 
       Edge operator*() const {
         return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]};
@@ -542,9 +546,8 @@ public:
   bool connected() const override { return undirected().connected(); }
 
   size_t numberOfEdges() const override {
-    return std::accumulate(
-        pAdjacencyList.begin(), pAdjacencyList.end(), 0,
-        [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
+    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+                           [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
   }
 
   bool biconnected() const { return checkBiconnectivity(this->undirected()); }
@@ -593,7 +596,8 @@ private:
 
   public:
     Neighbours(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const size_t node) :
-      pAdjacencyMatrix(adjacencyMatrix), pNode(node) {
+      pAdjacencyMatrix(adjacencyMatrix),
+      pNode(node) {
       assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
     }
 
@@ -675,7 +679,8 @@ private:
       };
 
       Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
-        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {
+        pAdjacencyMatrix(adjacencyMatrix),
+        pPosition(pos) {
         assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
       }
 
@@ -723,8 +728,8 @@ private:
      */
     Iterator begin() const {
       assert(pAdjacencyMatrix.rows() > 1 && "Adjacency matrix with less than 2 rows has no entries below diagonal!");
-      Iterator it(
-          pAdjacencyMatrix, Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.outerIndexPtr()[1]), 0});
+      Iterator it(pAdjacencyMatrix,
+                  Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.outerIndexPtr()[1]), 0});
       return it.valid() ? it : ++it;
     }
 
@@ -789,7 +794,8 @@ private:
       };
 
       Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
-        pAdjacencyMatrix(adjacencyMatrix), pPosition(pos) {
+        pAdjacencyMatrix(adjacencyMatrix),
+        pPosition(pos) {
         assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
       }
 
@@ -882,7 +888,9 @@ private:
     class Iterator {
     public:
       Iterator(const std::vector<size_t>& adjacencyList, const size_t root, const size_t pos) :
-        pAdjacencyList(adjacencyList), pRoot(root), pPosition(pos) {}
+        pAdjacencyList(adjacencyList),
+        pRoot(root),
+        pPosition(pos) {}
 
       Edge operator*() const {
         assert(pPosition != pRoot && "No outging edge from root node!");

@@ -105,6 +105,6 @@ bool AdjacencyMatrixGraph::connected() const {
  **********************************************************************************************************************/
 
 AdjacencyMatrixGraph AdjacencyMatrixDigraph::undirected() const {
-  return AdjacencyMatrixGraph(
-      pAdjacencyMatrix + Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(pAdjacencyMatrix.transpose()));
+  return AdjacencyMatrixGraph(pAdjacencyMatrix
+                              + Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(pAdjacencyMatrix.transpose()));
 }

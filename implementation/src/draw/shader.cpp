@@ -177,8 +177,8 @@ void ShaderProgram::setUniform(const char* name, const float val1, const float v
   GL_CALL(glUniform2f(location, val1, val2);)
 }
 
-void ShaderProgram::setUniform(
-    const char* name, const float val1, const float val2, const float val3, const float val4) const {
+void ShaderProgram::setUniform(const char* name, const float val1, const float val2, const float val3,
+                               const float val4) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
   GL_CALL(glUniform4f(location, val1, val2, val3, val4);)
@@ -210,8 +210,7 @@ ShaderCollection::ShaderCollection() :
   pCircleShader(compileShader(GL_GEOMETRY_SHADER, circleShaderSource)),
   pPathVertexShader(compileShader(GL_VERTEX_SHADER, pathVertexShaderSource)),
   pFragmentShader(compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource)),
-  pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShaderSource)) {
-}
+  pLineVertexShader(compileShader(GL_VERTEX_SHADER, lineVertexShaderSource)) {}
 
 ShaderCollection::~ShaderCollection() {
   GL_CALL(glDeleteShader(pVertexShader);)

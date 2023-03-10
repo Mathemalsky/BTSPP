@@ -2,9 +2,9 @@
 
 #include <array>
 #include <cstddef>
-#include <vector>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"

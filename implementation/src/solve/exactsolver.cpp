@@ -190,9 +190,8 @@ static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Inde
           if (l == j) {
             continue;
           }
-          if (intersect(
-                  LineSegment{euclidean.position(i), euclidean.position(j)},
-                  LineSegment{euclidean.position(k), euclidean.position(l)})) {
+          if (intersect(LineSegment{euclidean.position(i), euclidean.position(j)},
+                        LineSegment{euclidean.position(k), euclidean.position(l)})) {
             entries.push_back(Entry(row, index.variableX(i, j), 1.0));  // Here we are putting 4 constraints into one
             entries.push_back(Entry(row, index.variableX(k, l), 1.0));  // by abusing the fact, that at most one of
             entries.push_back(Entry(row, index.variableX(j, i), 1.0));  // edges {(i,j), (j,i)} and at most on of
@@ -206,8 +205,8 @@ static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Inde
   return row - index.numConstraints();
 }
 
-static void forbidCrossing(
-    HighsModel& model, std::vector<Entry>& entries, const Euclidean& euclidean, const Index& index) {
+static void forbidCrossing(HighsModel& model, std::vector<Entry>& entries, const Euclidean& euclidean,
+                           const Index& index) {
   const size_t numOfAntiCrossingConstraints = setAntiCrossingConstraints(entries, index, euclidean);
   setAntiCrossingBounds(model, numOfAntiCrossingConstraints);
   model.lp_.num_row_ += numOfAntiCrossingConstraints;
@@ -311,7 +310,9 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
     return Result{tour, info.objective_function_value, findBottleneck(euclidean, tour, false)};
   }
   else if (problemType == ProblemType::TSP_exact) {
-    return Result{tour, info.objective_function_value, Edge{0, 0}};
+    return Result{
+        tour, info.objective_function_value, Edge{0, 0}
+    };
   }
   else {
     throw std::runtime_error("Unknown problem type.");

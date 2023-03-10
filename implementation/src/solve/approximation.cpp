@@ -12,8 +12,8 @@
 
 #include "draw/definitions.hpp"
 
-#include "graph/graph.hpp"
 #include "graph/algorithm.hpp"
+#include "graph/graph.hpp"
 
 #include "solve/commonfunctions.hpp"
 
@@ -44,9 +44,8 @@ static std::unordered_set<size_t> reduceToGminus(const AdjacencyListDigraph& dig
   return cuttedNodes;
 }
 
-static void insertNodecuts(
-    std::vector<size_t>& eulertourInGMinus, std::unordered_set<size_t>& cuttedNodes,
-    const AdjacencyListDigraph& digraph) {
+static void insertNodecuts(std::vector<size_t>& eulertourInGMinus, std::unordered_set<size_t>& cuttedNodes,
+                           const AdjacencyListDigraph& digraph) {
   eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
   for (size_t i = eulertourInGMinus.size() - 1; i > 0; --i) {
     const size_t v = eulertourInGMinus[i];
@@ -68,8 +67,8 @@ static std::vector<size_t> findEulertour(AdjacencyListGraph& graph, const Adjace
   return eulertourInGMinus;
 }
 
-static std::vector<unsigned int> shortcutToHamiltoncycle(
-    const std::vector<unsigned int>& longEulertour, AdjacencyListDigraph& digraph) {
+static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsigned int>& longEulertour,
+                                                         AdjacencyListDigraph& digraph) {
   std::vector<unsigned int> hamiltoncycle;
   hamiltoncycle.reserve(digraph.numberOfNodes() + 1);
   hamiltoncycle.push_back(longEulertour[0]);
@@ -125,7 +124,10 @@ static GraphPair constructGraphPair(const EarDecomposition& ears, const size_t n
         earPosOfLastDoubledEdge = i;
       }
       else {
-        edgesToBeDirected.push_back(EdgeIndex{Edge{u, v}, i});
+        edgesToBeDirected.push_back(EdgeIndex{
+            Edge{u, v},
+            i
+        });
       }
     }
 

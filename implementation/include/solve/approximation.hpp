@@ -4,8 +4,8 @@
 
 #include "definitions.hpp"
 
-#include "graph/graph.hpp"
 #include "graph/algorithm.hpp"
+#include "graph/graph.hpp"
 
 namespace approximation {
 struct Result {

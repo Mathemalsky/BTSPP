@@ -2,7 +2,8 @@
 
 template <>
 VertexBuffer::VertexBuffer(const std::vector<float>& dat, const GLuint componentsPerVertex) :
-  pComponentsPerVertex(componentsPerVertex), pType(GL_FLOAT) {
+  pComponentsPerVertex(componentsPerVertex),
+  pType(GL_FLOAT) {
   GL_CALL(glGenBuffers(1, &pID);)
   this->bind();
   GL_CALL(glBufferData(GL_ARRAY_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)

@@ -1,7 +1,7 @@
 #include "solve/euclideandistancegraph.hpp"
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <iterator>
 #include <random>
