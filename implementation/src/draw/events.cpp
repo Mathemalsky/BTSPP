@@ -80,6 +80,24 @@ static void selectNodeToMove(GLFWwindow* window) {
   }
 }
 
+static void cycleBTSPApproxDisplay() {
+  if (drawing::DRAW_BICONNECTED_GRAPH) {
+    drawing::DRAW_BICONNECTED_GRAPH      = false;
+    drawing::DRAW_OPEN_EAR_DECOMPOSITION = true;
+  }
+  else if (drawing::DRAW_OPEN_EAR_DECOMPOSITION) {
+    drawing::DRAW_OPEN_EAR_DECOMPOSITION = false;
+    drawing::DRAW_HAMILTON_CYCLE         = true;
+  }
+  else if (drawing::DRAW_HAMILTON_CYCLE) {
+    drawing::DRAW_HAMILTON_CYCLE    = false;
+    drawing::DRAW_BICONNECTED_GRAPH = true;
+  }
+  else {
+    drawing::DRAW_BICONNECTED_GRAPH = true;
+  }
+}
+
 /***********************************************************************************************************************
  *                                                      callbacks
  **********************************************************************************************************************/
@@ -113,6 +131,9 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
   }
   if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
+  }
+  if (key == GLFW_KEY_T && action == GLFW_PRESS && drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]) {
+    cycleBTSPApproxDisplay();
   }
 }
 
