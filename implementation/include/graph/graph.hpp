@@ -11,8 +11,7 @@
 #include <Eigen/SparseCore>
 
 #include "graph/geometry.hpp"
-
-#include "utility/utils.hpp"
+#include "graph/utils.hpp"
 
 /***********************************************************************************************************************
  *                                  forward declare functions from algorithm header
