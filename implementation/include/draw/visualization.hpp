@@ -1,3 +1,5 @@
 #pragma once
 
-int visualize(const unsigned int numberOfNodes);
+#include "graph/graph.hpp"
+
+int visualize(const graph::Euclidean& euclidean);

@@ -2,6 +2,11 @@
 
 #include "draw/visualization.hpp"
 
+#include "graph/graph.hpp"
+
+#include "solve/euclideandistancegraph.hpp"
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
-  return visualize(std::atoi(argv[1]));
+  graph::Euclidean euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
+  return visualize(euclidean);
 }
