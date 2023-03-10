@@ -42,12 +42,14 @@ AdjacencyListGraph AdjacencyListGraph::removeUncriticalEdges() const {
   AdjacencyListGraph experimentalCopy = *this;
 
   for (const Edge& e : this->edges()) {
-    experimentalCopy.removeEdge(e);
-    if (experimentalCopy.biconnected()) {
-      saveCopy = experimentalCopy;
-    }
-    else {
-      experimentalCopy = saveCopy;
+    if (experimentalCopy.degree(e.u) > 2 && experimentalCopy.degree(e.v) > 2) {
+      experimentalCopy.removeEdge(e);
+      if (experimentalCopy.biconnected()) {
+        saveCopy = experimentalCopy;
+      }
+      else {
+        experimentalCopy = saveCopy;
+      }
     }
   }
   return saveCopy;
