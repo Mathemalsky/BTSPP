@@ -20,14 +20,14 @@ std::vector<float> POINTS_F;
 bool SHOW_DEBUG_WINDOW;
 bool SHOW_SETTINGS_WINDOW;
 
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
-std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
+std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 bool DRAW_OPEN_EAR_DECOMPOSITION;
 bool DRAW_BICONNECTED_GRAPH;
 bool DRAW_HAMILTON_CYCLE;
-std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
-std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
+std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
+std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 RGBA_COLOUR CLEAR_COLOUR;
 RGBA_COLOUR VERTEX_COLOUR;
 
@@ -56,7 +56,7 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
     std::memcpy(ORDER[(unsigned int) type].data() + 1, order.data(), bytes_of(order));
     ORDER[(unsigned int) type].back() = order[0];
   }
-  INITIALIZED[static_cast<unsigned int>(type)] = true;
+  INITIALIZED[std::to_underlying(type)] = true;
 }
 }  // namespace drawing
 
@@ -75,5 +75,5 @@ int WIDTH;
 }  // namespace mainwindow
 
 namespace slowEvents {
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
+std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
 }  // namespace slowEvents

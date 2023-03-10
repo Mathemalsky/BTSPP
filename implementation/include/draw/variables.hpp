@@ -19,14 +19,14 @@ extern std::vector<float> POINTS_F;
 extern bool SHOW_SETTINGS_WINDOW;
 extern bool SHOW_DEBUG_WINDOW;
 
-extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
-extern std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
+extern std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 extern bool DRAW_OPEN_EAR_DECOMPOSITION;
 extern bool DRAW_BICONNECTED_GRAPH;
 extern bool DRAW_HAMILTON_CYCLE;
-extern std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
-extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
-extern std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+extern std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
+extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
+extern std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 extern RGBA_COLOUR CLEAR_COLOUR;
 extern RGBA_COLOUR VERTEX_COLOUR;
 
@@ -54,5 +54,5 @@ extern int WIDTH;
 }  // namespace mainwindow
 
 namespace slowEvents {
-extern std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
+extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
 }  // namespace slowEvents
