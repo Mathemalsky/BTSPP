@@ -5,6 +5,7 @@
 
 #include <Eigen/SparseCore>
 
+namespace graph {
 using Entry = Eigen::Triplet<EdgeWeight>;
 
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes) {
@@ -23,9 +24,7 @@ public:
   Index(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
   size_t numberOfEdges() const { return pNumberOfNodes * (pNumberOfNodes - 1) / 2; }
-  size_t edgeIndex(const size_t i, const size_t j) const {
-    return i > j ? 0.5 * (i * i - i) + j : 0.5 * (j * j - j) + i;
-  }
+  size_t edgeIndex(const size_t i, const size_t j) const { return i > j ? 0.5 * (i * i - i) + j : 0.5 * (j * j - j) + i; }
 
   Edge edge(const unsigned int k) const {
     const unsigned int i = std::floor(std::sqrt(0.25 + 2 * k) + 0.5);
@@ -74,3 +73,4 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
 
   return graph;
 }
+}  // namespace graph

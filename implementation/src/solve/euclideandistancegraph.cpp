@@ -10,7 +10,7 @@
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
 
-Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
   std::array<uint_fast32_t, 2> random_data{2407893799, 27884848};
   std::random_device src;
   std::generate(random_data.begin(), random_data.end(), std::ref(src));
@@ -23,11 +23,11 @@ Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
   seed.param(std::ostream_iterator<uint_fast32_t>(std::cerr, " "));
   std::cerr << "\n";
 
-  std::vector<Point2D> positions(numOfNodes);
+  std::vector<graph::Point2D> positions(numOfNodes);
   std::uniform_real_distribution<double> distribution(-0.95, 0.95);
-  for (Point2D& point : positions) {
+  for (graph::Point2D& point : positions) {
     point.x = distribution(generator);
     point.y = distribution(generator);
   }
-  return Euclidean(std::move(positions));
+  return graph::Euclidean(std::move(positions));
 }

@@ -37,8 +37,8 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
   glDrawArrays(GL_POINTS, 0, EUCLIDEAN.numberOfNodes());  // start at index 0
 }
 
-static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer,
-                     const std::vector<unsigned int>& order, const float thickness, const RGBA_COLOUR& colour) {
+static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
+                     const float thickness, const RGBA_COLOUR& colour) {
   shaderBuffer.bufferSubData(order);
   drawPathSegments.use();
   drawPathSegments.setUniform("u_thickness", thickness);
@@ -49,7 +49,7 @@ static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& 
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - PATH_OVERHEAD));
 }
 
-static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float thickness, const RGBA_COLOUR& colour) {
+static void drawEdge(const ShaderProgram& drawLine, const graph::Edge& e, const float thickness, const RGBA_COLOUR& colour) {
   drawLine.use();
   drawLine.setUniform("u_ends", POINTS_F[2 * e.u], POINTS_F[2 * e.u + 1], POINTS_F[2 * e.v], POINTS_F[2 * e.v + 1]);
   drawLine.setUniform("u_thickness", thickness);
@@ -62,18 +62,17 @@ static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float t
 
 template <typename G>
 static void drawGraph(const ShaderProgram& drawLine, const G& graph, const RGBA_COLOUR& colour) {
-  for (const Edge& e : graph.edges()) {
+  for (const graph::Edge& e : graph.edges()) {
     drawEdge(drawLine, e, 5.0f, colour);
   }
 }
 
-static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const EarDecomposition& openEarDecomp) {
+static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const graph::EarDecomposition& openEarDecomp) {
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
-    RGBA_COLOUR colour =
-        COLOUR[static_cast<unsigned int>(ProblemType::BTSP_approx)] * ((float) i / (openEarDecomp.ears.size() - 1));
+    RGBA_COLOUR colour = COLOUR[static_cast<unsigned int>(ProblemType::BTSP_approx)] * ((float) i / (openEarDecomp.ears.size() - 1));
     for (unsigned int j = chain.size() - 1; j > 0; --j) {
-      drawEdge(drawLine, Edge{chain[j], chain[j - 1]}, 5.0f, colour);
+      drawEdge(drawLine, graph::Edge{chain[j], chain[j - 1]}, 5.0f, colour);
     }
   }
 }

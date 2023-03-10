@@ -242,7 +242,7 @@ BreakConstructorInitializers: AfterColon
 BreakStringLiterals: true
 
 # The column limit
-ColumnLimit: 120
+ColumnLimit: 140
 
 # The number of characters to use for indentation of constructor initializer lists
 ConstructorInitializerIndentWidth: 2

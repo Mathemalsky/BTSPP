@@ -20,13 +20,13 @@
 namespace approximation {
 
 struct GraphPair {
-  AdjacencyListDigraph digraph;
-  AdjacencyListGraph graph;
+  graph::AdjacencyListDigraph digraph;
+  graph::AdjacencyListGraph graph;
 };
 
-static std::unordered_set<size_t> reduceToGminus(const AdjacencyListDigraph& digraph, AdjacencyListGraph& graph) {
-  AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
-  for (const Edge& e : digraph.edges()) {
+static std::unordered_set<size_t> reduceToGminus(const graph::AdjacencyListDigraph& digraph, graph::AdjacencyListGraph& graph) {
+  graph::AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
+  for (const graph::Edge& e : digraph.edges()) {
     reverseDirgaph.addEdge(e.reverse());
   }
 
@@ -45,7 +45,7 @@ static std::unordered_set<size_t> reduceToGminus(const AdjacencyListDigraph& dig
 }
 
 static void insertNodecuts(std::vector<size_t>& eulertourInGMinus, std::unordered_set<size_t>& cuttedNodes,
-                           const AdjacencyListDigraph& digraph) {
+                           const graph::AdjacencyListDigraph& digraph) {
   eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
   for (size_t i = eulertourInGMinus.size() - 1; i > 0; --i) {
     const size_t v = eulertourInGMinus[i];
@@ -60,7 +60,7 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus, std::unordere
   }
 }
 
-static std::vector<size_t> findEulertour(AdjacencyListGraph& graph, const AdjacencyListDigraph& digraph) {
+static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const graph::AdjacencyListDigraph& digraph) {
   std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
   std::vector<size_t> eulertourInGMinus  = eulertour(graph);
   insertNodecuts(eulertourInGMinus, cuttedNodes, digraph);
@@ -68,7 +68,7 @@ static std::vector<size_t> findEulertour(AdjacencyListGraph& graph, const Adjace
 }
 
 static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsigned int>& longEulertour,
-                                                         AdjacencyListDigraph& digraph) {
+                                                         graph::AdjacencyListDigraph& digraph) {
   std::vector<unsigned int> hamiltoncycle;
   hamiltoncycle.reserve(digraph.numberOfNodes() + 1);
   hamiltoncycle.push_back(longEulertour[0]);
@@ -90,9 +90,9 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsig
   return hamiltoncycle;
 }
 
-static GraphPair constructGraphPair(const EarDecomposition& ears, const size_t numberOfNodes) {
-  AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
-  AdjacencyListDigraph digraph(numberOfNodes);
+static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const size_t numberOfNodes) {
+  graph::AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
+  graph::AdjacencyListDigraph digraph(numberOfNodes);
 
   // in the first (or last) ear there is never an edge to be deleted
   const std::vector<size_t>& firstEar = ears.ears.back();
@@ -109,7 +109,7 @@ static GraphPair constructGraphPair(const EarDecomposition& ears, const size_t n
     size_t earPosOfLastDoubledEdge = 0;
 
     struct EdgeIndex {
-      Edge e;
+      graph::Edge e;
       size_t index;
     };
     std::vector<EdgeIndex> edgesToBeDirected;
@@ -125,7 +125,7 @@ static GraphPair constructGraphPair(const EarDecomposition& ears, const size_t n
       }
       else {
         edgesToBeDirected.push_back(EdgeIndex{
-            Edge{u, v},
+            graph::Edge{u, v},
             i
         });
       }
@@ -133,7 +133,7 @@ static GraphPair constructGraphPair(const EarDecomposition& ears, const size_t n
 
     // implicitly detect a node y and direct the edges according to paper
     if (earPosOfLastDoubledEdge != 0) {
-      const Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
+      const graph::Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
       graph.removeEdge(lastDoubledEdge);
       graph.removeEdge(lastDoubledEdge);
 
@@ -165,27 +165,26 @@ static GraphPair constructGraphPair(const EarDecomposition& ears, const size_t n
   return GraphPair{digraph, graph};
 }
 
-Result approximate(const Euclidean& euclidean, const ProblemType problemType, const bool printInfo) {
+Result approximate(const graph::Euclidean& euclidean, const ProblemType problemType, const bool printInfo) {
   if (problemType == ProblemType::BTSP_approx) {
     double maxEdgeWeight;
     std::vector<unsigned int> tour, longEulertour;
-    const AdjacencyMatrixGraph biconnectedGraph = biconnectedSpanningGraph(euclidean, maxEdgeWeight);
-    const EarDecomposition ears                 = schmidt(biconnectedGraph);
-    const AdjacencyListGraph fromEars           = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
-    const AdjacencyListGraph minimal            = fromEars.removeUncriticalEdges();
-    const EarDecomposition openEars             = schmidt(minimal);  // calculate proper ear decomposition
+    const graph::AdjacencyMatrixGraph biconnectedGraph = biconnectedSpanningGraph(euclidean, maxEdgeWeight);
+    const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
+    const graph::AdjacencyListGraph fromEars           = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+    const graph::AdjacencyListGraph minimal            = fromEars.removeUncriticalEdges();
+    const graph::EarDecomposition openEars             = schmidt(minimal);  // calculate proper ear decomposition
 
     if (openEars.ears.size() == 1) {
-      tour =
-          std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
+      tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
     }
     else {
       GraphPair graphpair           = constructGraphPair(openEars, euclidean.numberOfNodes());
       const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-      tour = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
+      tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
     }
-    const Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
-    const double objective    = euclidean.weight(bottleneckEdge);
+    const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
+    const double objective           = euclidean.weight(bottleneckEdge);
 
     if (printInfo) {
       std::cout << "objective           : " << objective << std::endl;

@@ -13,8 +13,8 @@
  *                                               fast events
  **********************************************************************************************************************/
 
-static Point2D transformCoordinates(const double x, const double y) {
-  return Point2D{2.0 * x / mainwindow::WIDTH - 1.0, -2.0 * y / mainwindow::HEIGHT + 1.0};
+static graph::Point2D transformCoordinates(const double x, const double y) {
+  return graph::Point2D{2.0 * x / mainwindow::WIDTH - 1.0, -2.0 * y / mainwindow::HEIGHT + 1.0};
 }
 
 static void moveNode(GLFWwindow* window, const Buffers& buffers) {
@@ -45,7 +45,7 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSP_exact)] = false;
-    drawing::BTSP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
+    drawing::BTSP_EXACT_RESULT                                            = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
     drawing::updateOrder(drawing::BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::BTSPP_exact)]) {
@@ -55,7 +55,7 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   }
   if (slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)]) {
     slowEvents::SOLVE[static_cast<unsigned int>(ProblemType::TSP_exact)] = false;
-    exactsolver::Result res = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
+    exactsolver::Result res                                              = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
     drawing::updateOrder(res.tour, ProblemType::TSP_exact);
   }
 }
@@ -102,8 +102,7 @@ static void cycleBTSPApproxDisplay() {
  *                                                      callbacks
  **********************************************************************************************************************/
 
-void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action,
-                 [[maybe_unused]] int mods) {
+void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
   if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
     toggle(drawing::SHOW_DEBUG_WINDOW);
   }

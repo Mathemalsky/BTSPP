@@ -13,10 +13,18 @@
 #include "graph/geometry.hpp"
 #include "graph/utils.hpp"
 
+namespace graph {
+
 /***********************************************************************************************************************
  *                                  forward declare functions from algorithm header
  **********************************************************************************************************************/
 
+/*!
+ * @brief checks if the graph is biconnected
+ * @tparam G type of graph
+ * @param graph
+ * @return true if the graph is biconnected
+ */
 template <typename G>
 bool checkBiconnectivity(const G& graph);
 
@@ -87,16 +95,17 @@ public:
 private:
   double pCost;
 };
+}  // namespace graph
 
 /*
  * Eigen needs some hints to deal with the custom type.
  */
 namespace Eigen {
 template <>
-struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
-  typedef EdgeWeight Real;
-  typedef EdgeWeight NonInteger;
-  typedef EdgeWeight Nested;
+struct NumTraits<graph::EdgeWeight> : GenericNumTraits<graph::EdgeWeight> {
+  typedef graph::EdgeWeight Real;
+  typedef graph::EdgeWeight NonInteger;
+  typedef graph::EdgeWeight Nested;
 
   enum {
     IsInteger             = 0,
@@ -109,6 +118,8 @@ struct NumTraits<EdgeWeight> : GenericNumTraits<EdgeWeight> {
   };
 };
 }  // namespace Eigen
+
+namespace graph {
 
 /***********************************************************************************************************************
  *                                                  graph classes
@@ -170,9 +181,7 @@ private:
       };
       Iterator(const Position& pos) : pPosition(pos) {}
 
-      Edge operator*() const {
-        return Edge{pPosition.index / pPosition.numberOfNodes, pPosition.index % pPosition.numberOfNodes};
-      }
+      Edge operator*() const { return Edge{pPosition.index / pPosition.numberOfNodes, pPosition.index % pPosition.numberOfNodes}; }
 
       Iterator& operator++() {
         ++pPosition.index;
@@ -352,9 +361,7 @@ private:
         pAdjacencyList(adjacencyList),
         pPosition(pos) {}
 
-      Edge operator*() const {
-        return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]};
-      }
+      Edge operator*() const { return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]}; }
 
       Iterator& operator++() {
         assert(pPosition.outerIndex < pAdjacencyList.size() && "Iterator is already behind end!");
@@ -374,9 +381,7 @@ private:
 
       bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
 
-      bool toLowerIndex() const {
-        return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex;
-      }
+      bool toLowerIndex() const { return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex; }
 
     private:
       bool outOfNeighbours() const { return pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size(); }
@@ -481,14 +486,11 @@ private:
         pAdjacencyList(adjacencyList),
         pPosition(pos) {}
 
-      Edge operator*() const {
-        return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]};
-      }
+      Edge operator*() const { return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]}; }
 
       Iterator& operator++() {
         ++pPosition.innerIndex;
-        while (pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size()
-               && pPosition.outerIndex < pAdjacencyList.size()) {
+        while (pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size() && pPosition.outerIndex < pAdjacencyList.size()) {
           pPosition.innerIndex = 0;
           ++pPosition.outerIndex;
         }
@@ -531,9 +533,7 @@ public:
     pAdjacencyList[out].push_back(in);
   }
 
-  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
-    pAdjacencyList[e.u].push_back(e.v);
-  }
+  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override { pAdjacencyList[e.u].push_back(e.v); }
 
   /*!
    * \brief AdjacencyListDiGraph::connected checks the graph is connected
@@ -600,13 +600,9 @@ private:
       assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
     }
 
-    Iterator begin() const {
-      return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode]);
-    }
+    Iterator begin() const { return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode]); }
 
-    Iterator end() const {
-      return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode + 1]);
-    }
+    Iterator end() const { return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode + 1]); }
 
   private:
     const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
@@ -656,9 +652,7 @@ protected:
     pAdjacencyMatrix.insert(out, in) = edgeWeight;
   }
 
-  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) override {
-    pAdjacencyMatrix.insert(e.u, e.v) = edgeWeight;
-  }
+  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { pAdjacencyMatrix.insert(e.u, e.v) = edgeWeight; }
 };
 
 /*!
@@ -716,8 +710,7 @@ private:
     };  // end Iterator class
 
   public:
-    Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) :
-      pAdjacencyMatrix(adjacencyMatrix) {}
+    Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) : pAdjacencyMatrix(adjacencyMatrix) {}
 
     /*!
      * \brief begin returns a an Iterator to the begin of the strictly lower triangle in adjacency matrix.
@@ -727,8 +720,7 @@ private:
      */
     Iterator begin() const {
       assert(pAdjacencyMatrix.rows() > 1 && "Adjacency matrix with less than 2 rows has no entries below diagonal!");
-      Iterator it(pAdjacencyMatrix,
-                  Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.outerIndexPtr()[1]), 0});
+      Iterator it(pAdjacencyMatrix, Iterator::SparseMatrixPos{static_cast<size_t>(pAdjacencyMatrix.outerIndexPtr()[1]), 0});
       return it.valid() ? it : ++it;
     }
 
@@ -820,8 +812,7 @@ private:
     };  // end Iterator class
 
   public:
-    Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) :
-      pAdjacencyMatrix(adjacencyMatrix) {}
+    Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) : pAdjacencyMatrix(adjacencyMatrix) {}
 
     Iterator begin() const { return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0}); }
 
@@ -847,9 +838,7 @@ public:
   AdjacencyMatrixDigraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
-  void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
-    AdjMatGraph::addEdge(out, in, edgeWeight);
-  }
+  void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override { AdjMatGraph::addEdge(out, in, edgeWeight); }
 
   void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { addEdge(e.u, e.v, edgeWeight); }
 
@@ -965,3 +954,5 @@ private:
   std::vector<size_t> pAdjacencyList;
   std::vector<size_t> pExplorationOrder;
 };
+
+}  // namespace graph

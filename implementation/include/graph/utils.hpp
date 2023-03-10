@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 
+namespace graph {
 template <typename Type>
 bool removeAnyElementByValue(std::vector<Type>& vec, const Type& val) {
   typename std::vector<Type>::iterator it = std::find(vec.begin(), vec.end(), val);
@@ -13,3 +14,4 @@ bool removeAnyElementByValue(std::vector<Type>& vec, const Type& val) {
   vec.pop_back();
   return true;
 }
+}  // namespace graph

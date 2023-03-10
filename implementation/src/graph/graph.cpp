@@ -9,6 +9,8 @@
 
 #include "graph/algorithm.hpp"
 
+namespace graph {
+
 /***********************************************************************************************************************
  *                                                adjacency list graph
  **********************************************************************************************************************/
@@ -64,8 +66,7 @@ AdjacencyListGraph AdjacencyListDigraph::undirected() const {
   AdjacencyListGraph undirected(numberOfNodes);
   for (size_t i = 0; i < numberOfNodes; ++i) {
     for (size_t j = 0; j < degree(i); ++j) {
-      if (std::find(undirected.neighbours(i).begin(), undirected.neighbours(i).end(), j)
-          == undirected.neighbours(i).end()) {
+      if (std::find(undirected.neighbours(i).begin(), undirected.neighbours(i).end(), j) == undirected.neighbours(i).end()) {
         undirected.addEdge(i, j);  // add reverse directed add if not yet existing
       }
     }
@@ -107,6 +108,6 @@ bool AdjacencyMatrixGraph::connected() const {
  **********************************************************************************************************************/
 
 AdjacencyMatrixGraph AdjacencyMatrixDigraph::undirected() const {
-  return AdjacencyMatrixGraph(pAdjacencyMatrix
-                              + Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(pAdjacencyMatrix.transpose()));
+  return AdjacencyMatrixGraph(pAdjacencyMatrix + Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(pAdjacencyMatrix.transpose()));
 }
+}  // namespace graph

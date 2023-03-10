@@ -47,7 +47,7 @@ static const Buffers& setUpBufferMemory(const unsigned int numberOfNodes) {
 
   const VertexBuffer& coordinates     = *new VertexBuffer(drawing::POINTS_F, 2);  // components per vertex
   const ShaderBuffer& tourCoordinates = *new ShaderBuffer(drawing::POINTS_F);     // copy vertex coords to shader buffer
-  const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(numberOfNodes + 3));  // just allocate memory
+  const ShaderBuffer& tour            = *new ShaderBuffer(std::vector<unsigned int>(numberOfNodes + 3));  // just allocate memory
 
   return *new Buffers{coordinates, tour, tourCoordinates};
 }
@@ -70,8 +70,7 @@ int visualize(const unsigned int numberOfNodes) {
   }
 
   // create window in specified size
-  GLFWwindow* window =
-      glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
+  GLFWwindow* window = glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
   if (window == nullptr)
     return -1;
   glfwMakeContextCurrent(window);

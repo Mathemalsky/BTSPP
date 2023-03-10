@@ -9,12 +9,12 @@
 
 namespace approximation {
 struct Result {
-  AdjacencyMatrixGraph biconnectedGraph;
-  EarDecomposition openEarDecomposition;
+  graph::AdjacencyMatrixGraph biconnectedGraph;
+  graph::EarDecomposition openEarDecomposition;
   std::vector<unsigned int> tour;
   double opt;
-  Edge bottleneckEdge;
+  graph::Edge bottleneckEdge;
 };
 
-Result approximate(const Euclidean& euclidean, const ProblemType problemType, const bool printInfo = true);
+Result approximate(const graph::Euclidean& euclidean, const ProblemType problemType, const bool printInfo = true);
 }  // namespace approximation

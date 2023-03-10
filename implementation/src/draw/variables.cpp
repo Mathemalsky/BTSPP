@@ -14,7 +14,7 @@
 #include "solve/exactsolver.hpp"
 
 namespace drawing {
-Euclidean EUCLIDEAN;
+graph::Euclidean EUCLIDEAN;
 std::vector<float> POINTS_F;
 
 bool SHOW_DEBUG_WINDOW;
@@ -37,7 +37,7 @@ exactsolver::Result BTSPP_EXACT_RESULT;
 
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
-  const std::vector<Point2D> points = EUCLIDEAN.verteces();
+  const std::vector<graph::Point2D> points = EUCLIDEAN.verteces();
   for (size_t i = 0; i < points.size(); ++i) {
     POINTS_F[2 * i]     = (float) points[i].x;
     POINTS_F[2 * i + 1] = (float) points[i].y;
@@ -64,7 +64,7 @@ namespace input {
 std::unordered_map<int, bool> STATE;
 
 namespace mouse {
-Point2D MOUSE_LEFT_CLICKED;
+graph::Point2D MOUSE_LEFT_CLICKED;
 int NODE_IN_MOTION;
 }  // namespace mouse
 }  // namespace input

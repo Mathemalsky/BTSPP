@@ -36,9 +36,7 @@ public:
   size_t xOutConstraints() const { return pNumberOfNodes; }
   size_t xConstraints() const { return xInConstraints() + xOutConstraints(); }
   size_t uConstraints() const { return (pNumberOfNodes - 1) * (pNumberOfNodes - 2); }
-  size_t cConstraints() const {
-    return (pType == ProblemType::BTSP_exact || pType == ProblemType::BTSPP_exact ? xVariables() : 0);
-  }
+  size_t cConstraints() const { return (pType == ProblemType::BTSP_exact || pType == ProblemType::BTSPP_exact ? xVariables() : 0); }
   size_t numConstraints() const { return xConstraints() + uConstraints() + cConstraints(); }
 
   size_t constraintXin(const size_t j) const { return j; }
@@ -55,7 +53,7 @@ private:
   const ProblemType pType;
 };
 
-static void setTSPcost(HighsModel& model, const Index& index, const Euclidean& euclidean, const size_t numberOfNodes) {
+static void setTSPcost(HighsModel& model, const Index& index, const graph::Euclidean& euclidean, const size_t numberOfNodes) {
   model.lp_.col_cost_.resize(model.lp_.num_col_);
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
@@ -164,7 +162,7 @@ static void setMillerTuckerZemlinMatrix(std::vector<Entry>& entries, const Index
   }
 }
 
-static void setCConstraints(std::vector<Entry>& entries, const Index& index, const Euclidean& euclidean) {
+static void setCConstraints(std::vector<Entry>& entries, const Index& index, const graph::Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   for (size_t j = 0; j < numberOfNodes; ++j) {
     for (size_t i = j + 1; i < numberOfNodes; ++i) {
@@ -177,7 +175,7 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
   }
 }
 
-static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Index& index, const Euclidean& euclidean) {
+static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Index& index, const graph::Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   size_t row                 = index.numConstraints();
   for (unsigned int i = 0; i < numberOfNodes; ++i) {
@@ -190,8 +188,8 @@ static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Inde
           if (l == j) {
             continue;
           }
-          if (intersect(LineSegment{euclidean.position(i), euclidean.position(j)},
-                        LineSegment{euclidean.position(k), euclidean.position(l)})) {
+          if (graph::intersect(graph::LineSegment{euclidean.position(i), euclidean.position(j)},
+                               graph::LineSegment{euclidean.position(k), euclidean.position(l)})) {
             entries.push_back(Entry(row, index.variableX(i, j), 1.0));  // Here we are putting 4 constraints into one
             entries.push_back(Entry(row, index.variableX(k, l), 1.0));  // by abusing the fact, that at most one of
             entries.push_back(Entry(row, index.variableX(j, i), 1.0));  // edges {(i,j), (j,i)} and at most on of
@@ -205,14 +203,13 @@ static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Inde
   return row - index.numConstraints();
 }
 
-static void forbidCrossing(HighsModel& model, std::vector<Entry>& entries, const Euclidean& euclidean,
-                           const Index& index) {
+static void forbidCrossing(HighsModel& model, std::vector<Entry>& entries, const graph::Euclidean& euclidean, const Index& index) {
   const size_t numOfAntiCrossingConstraints = setAntiCrossingConstraints(entries, index, euclidean);
   setAntiCrossingBounds(model, numOfAntiCrossingConstraints);
   model.lp_.num_row_ += numOfAntiCrossingConstraints;
 }
 
-Result solve(const Euclidean& euclidean, const ProblemType problemType) {
+Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   const Index index(numberOfNodes, problemType);
 
@@ -250,9 +247,9 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
   A.setFromTriplets(entries.begin(), entries.end());
 
   // copy data from eigen sparse matrix into HiGHs sparse matrix
-  model.lp_.a_matrix_.format_ = MatrixFormat::kColwise;  // use column compressed storage order
-  model.lp_.a_matrix_.start_.assign(A.outerIndexPtr(), A.outerIndexPtr() + A.cols());  // copy start indeces of columns
-  model.lp_.a_matrix_.start_.push_back(A.nonZeros());  // add number of nonZeros in the end
+  model.lp_.a_matrix_.format_ = MatrixFormat::kColwise;                                    // use column compressed storage order
+  model.lp_.a_matrix_.start_.assign(A.outerIndexPtr(), A.outerIndexPtr() + A.cols());      // copy start indeces of columns
+  model.lp_.a_matrix_.start_.push_back(A.nonZeros());                                      // add number of nonZeros in the end
   model.lp_.a_matrix_.index_.assign(A.innerIndexPtr(), A.innerIndexPtr() + A.nonZeros());  // copy inner indeces
   model.lp_.a_matrix_.value_.assign(A.valuePtr(), A.valuePtr() + A.nonZeros());            // copy values
 
@@ -311,7 +308,7 @@ Result solve(const Euclidean& euclidean, const ProblemType problemType) {
   }
   else if (problemType == ProblemType::TSP_exact) {
     return Result{
-        tour, info.objective_function_value, Edge{0, 0}
+        tour, info.objective_function_value, graph::Edge{0, 0}
     };
   }
   else {

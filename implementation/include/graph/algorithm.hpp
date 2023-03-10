@@ -8,6 +8,8 @@
 
 #include "graph/graph.hpp"
 
+namespace graph {
+
 /***********************************************************************************************************************
  *                                             types for graph algorithms
  **********************************************************************************************************************/
@@ -190,3 +192,5 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+
+}  // namespace graph

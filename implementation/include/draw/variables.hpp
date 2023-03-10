@@ -13,7 +13,7 @@
 #include "solve/exactsolver.hpp"
 
 namespace drawing {
-extern Euclidean EUCLIDEAN;
+extern graph::Euclidean EUCLIDEAN;
 extern std::vector<float> POINTS_F;
 
 extern bool SHOW_SETTINGS_WINDOW;
@@ -43,7 +43,7 @@ namespace input {
 extern std::unordered_map<int, bool> STATE;
 
 namespace mouse {
-extern Point2D MOUSE_LEFT_CLICKED;
+extern graph::Point2D MOUSE_LEFT_CLICKED;
 extern int NODE_IN_MOTION;
 }  // namespace mouse
 }  // namespace input

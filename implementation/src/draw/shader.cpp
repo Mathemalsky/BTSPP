@@ -177,8 +177,7 @@ void ShaderProgram::setUniform(const char* name, const float val1, const float v
   GL_CALL(glUniform2f(location, val1, val2);)
 }
 
-void ShaderProgram::setUniform(const char* name, const float val1, const float val2, const float val3,
-                               const float val4) const {
+void ShaderProgram::setUniform(const char* name, const float val1, const float val2, const float val3, const float val4) const {
   GL_CALL(const GLint location = glGetUniformLocation(pProgramID, name);)
   assert(location != -1 && "could not find uniform");
   GL_CALL(glUniform4f(location, val1, val2, val3, val4);)
