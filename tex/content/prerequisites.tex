@@ -2,10 +2,31 @@
 Before we can move on to the main results, we need to set up a few defitions even though they are quite common because they slightly vary over different publications. In this chapter we review the terms from graph theory and optimization which appear to become most important and frequently used in the main chapters.
 
 \section{Graphs}
-As long as not stated otherwise a graph is undirectedand has neither loops mor parallel edges.
+As long as not stated otherwise a graph is undirectedand has neither loops nor parallel edges.
 
 \begin{definition} [\(k\)-connected]\label{def:k_connected}\ \\
   A graph G is \(k\)-connected if it remains connected after removel of any \(k-1\) nodes and all their adjacent edges.
 \end{definition}
 
-So the terms \(1\)-connected and connected coincides while the word \glqq{} biconnected \grqq{} is an alias to \(2\)-connected.
+So the terms \(1\)-connected and connected coincides while the word ``biconnected'' is an alias to \(2\)-connected.
+
+\section{Bottleneck traveling salesman problem}
+The variants of the \ac{btsp} studied in this thesis differ from the classical \ac{tsp}, also known as min-sum-TSP, in their objective. Because \ac{btsp} minimizes the maximum weight of all edges in the hamilton cycle instead of the sum, it sometimes appears in literature under the term min-max-TSP.
+
+\begin{definition}[Bottleneck traveling salesman problem]\label{def:btsp}\ \\
+  In a hamiltonian graph \(G\) the \ac{btsp} is the problem of finding
+  \begin{equation*}
+    \min\limits_{C} \max\limits_{e \in C} \wt(e),
+  \end{equation*}
+  where \(C\) denotes a hamilton cycle in \(G\) and \(\wt(e)\) the weight of the edge \(e\).
+\end{definition}
+
+If we are not searching for a hamilton cycle but a hamilton path we obtain the \ac{btspp}.
+
+\begin{definition}[Bottleneck traveling salesman path problem]\label{def:btspp}\ \\
+  In a graph \(G\) with a hamilton path from a given node \(s\) to given node \(t\) the \ac{btspp} is the problem of finding
+  \begin{equation*}
+    \min\limits_{P} \max\limits_{e \in P} \wt(e),
+  \end{equation*}
+  where \(P\) is a hamilton path from \(s\) to \(t\).
+\end{definition}
