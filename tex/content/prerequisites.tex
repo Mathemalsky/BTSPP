@@ -2,13 +2,22 @@
 Before we can move on to the main results, we need to set up a few defitions even though they are quite common because they slightly vary over different publications. In this chapter we review the terms from graph theory and optimization which appear to become most important and frequently used in the main chapters.
 
 \section{Graphs}
-As long as not stated otherwise a graph is undirectedand has neither loops nor parallel edges.
+As long as not stated otherwise a graph is undirected and has neither loops nor parallel edges.
 
 \begin{definition} [\(k\)-connected]\label{def:k_connected}\ \\
   A graph G is \(k\)-connected if it remains connected after removel of any \(k-1\) nodes and all their adjacent edges.
 \end{definition}
 
-So the terms \(1\)-connected and connected coincides while the word ``biconnected'' is an alias to \(2\)-connected.
+So the terms \(1\)-connected and connected coincides while the word \enquote{biconnected} is an alias to \(2\)-connected.
+
+\begin{definition}[Power of a graph]\label{def:power_of_graph}\ \\
+  For a natural number \(k\) and a graph \(G = (V, E)\) the term \(G^{k}\) denotes the graph obtained by adding the edge \((u,v)\) to \(H \coloneqq (V, \emptyset)\) if and only if there exists a path from \(u\) to \(v\) in \(G\) containing no more than \(k\) edges.
+\end{definition}
+
+The concept of graph powers has some properties that we are accustomed to from powers on numbers like \(G^1 = G\) and \({(G^a)}^b = {(G^b)}^a = G^{ab}\).
+
+We will primary use the term \enquote{square} of a graph for the case \(k\) equals \(2\).
+
 
 \section{Bottleneck traveling salesman problem}
 The variants of the \ac{btsp} studied in this thesis differ from the classical \ac{tsp}, also known as min-sum-TSP, in their objective. Because \ac{btsp} minimizes the maximum weight of all edges in the hamilton cycle instead of the sum, it sometimes appears in literature under the term min-max-TSP.

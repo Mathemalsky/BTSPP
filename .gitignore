@@ -12,6 +12,8 @@
 
 # allow tex files in tex directory
 !tex/*.tex
+!tex/appendix/*.bib
+!tex/appendix/*.tex
 !tex/content/*.tex
 !tex/style/*.sty
 

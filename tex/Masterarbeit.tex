@@ -4,12 +4,22 @@
 \usepackage[utf8]{inputenc}
 \usepackage[UKenglish]{babel}
 
+\usepackage{csquotes}
+
 \usepackage[printonlyused]{acronym}
+\usepackage[
+  backend=biber,
+  style=alphabetic,
+  sorting=ynt
+  ]{biblatex}
+\addbibresource{appendix/bibliography.bib}
 
 \usepackage{amsmath}
 
 % defintions, examples, theorems, ...
 \usepackage{amsthm}
+
+\usepackage{mathtools}
 
 % definiton
 \theoremstyle{definition}
@@ -43,7 +53,14 @@
 
 \include{content/introduction.tex}
 \include{content/prerequisites.tex}
+\include{content/approximation.tex}
 
+\appendix
 
-\include{content/acronyms.tex}
+\include{appendix/acronyms.tex}
+
+\printbibliography[
+  heading=bibintoc,
+  title={Literature}]
+
 \end{document}
