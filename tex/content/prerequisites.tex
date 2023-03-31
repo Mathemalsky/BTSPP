@@ -8,7 +8,11 @@ As long as not stated otherwise a graph is undirected and has neither loops nor 
   A graph G is \(k\)-connected if it remains connected after removel of any \(k-1\) nodes and all their adjacent edges.
 \end{definition}
 
-So the terms \(1\)-connected and connected coincides while the word \enquote{biconnected} is an alias to \(2\)-connected.
+So the terms \(1\)-connected and connected coincide while the word \enquote{biconnected} is an alias to \(2\)-connected.
+
+\begin{definition}[minimally \(k\)-connected]\label{def:min_k_connected}\ \\
+  A graph \(G = (V, E)\) is minimally \(k\)-connected if removel of any \(e \in E\) loses the property of beeing \(k\)-connected.
+\end{definition}
 
 \begin{definition}[Power of a graph]\label{def:power_of_graph}\ \\
   For a natural number \(k\) and a graph \(G = (V, E)\) the term \(G^{k}\) denotes the graph obtained by adding the edge \((u,v)\) to \(H \coloneqq (V, \emptyset)\) if and only if there exists a path from \(u\) to \(v\) in \(G\) containing no more than \(k\) edges.
@@ -30,6 +34,7 @@ The variants of the \ac{btsp} studied in this thesis differ from the classical \
   where \(C\) denotes a hamilton cycle in \(G\) and \(\wt(e)\) the weight of the edge \(e\).
 \end{definition}
 
+For the sake of imagination the edge weight is sometimes also called \enquote{length}.
 If we are not searching for a hamilton cycle but a hamilton path we obtain the \ac{btspp}.
 
 \begin{definition}[Bottleneck traveling salesman path problem]\label{def:btspp}\ \\
