@@ -9,31 +9,38 @@ On a very abstract level the algorithms contain of three steps:
 \begin{enumerate}
   \item find a bottleneck optimal biconnected subgraph
   \item compute an open ear decomposition of that subgraph
-  \item find an approximative solution using the open ear decompostion\label{enum:approximate}
+  \item find an approximate solution using the open ear decomposition\label{enum:approximate}
 \end{enumerate}
 
-\subsection{finding a bottleneck optimal biconnected subgraph}
+\subsection{Finding a bottleneck optimal biconnected subgraph}
 The bottleneck optimal biconnected subgraph is the graph whose longest edge is shortest among all biconnected subgraphs.
-Parker and Rardin~\cite{ParkerRardin1984} presented an easy implementable algorithm for finding such a subgraph: First all edges are sorted ascending in their weight and then edges are picked from the list until the graph is biconnected. Sorting costs \(\mathcal{O}(\abs{E} \log \abs{E})\) and the \(\mathcal{O}(\abs{E})\) checks for biconnectivity can be performed in \(\mathcal{O}(\abs{E}^2)\) when using Schmidts algorihtm~\cite{schmidt2013}. This leads to a overall runtime of \(\mathcal{O}(\abs{E}^2)\).
+Parker and Rardin~\cite{ParkerRardin1984} presented an easy implementable algorithm for finding such a subgraph: First all edges are sorted ascending in their weight and then edges are picked from the list until the graph is biconnected. Sorting costs \(\mathcal{O}(\abs{E} \log \abs{E})\) and the \(\mathcal{O}(\abs{E})\) checks for biconnectivity can be performed in \(\mathcal{O}(\abs{E}^2)\) when using Schmidts algorithm~\cite{schmidt2013}. This leads to a overall runtime of \(\mathcal{O}(\abs{E}^2)\).
 
-In contrary in~\cite{alstrup2018hamiltonian} the much more sophisticated algorihtm from~\cite{han1995} comes into play. This has two advantages over the naive approach:
+In contrary in~\cite{alstrup2018hamiltonian} the much more sophisticated algorithm from~\cite{han1995} comes into play. This has two advantages over the naive approach:
 \begin{enumerate}
   \item It has linear runtime.
   \item The algorithm produces a minimally biconnected subgraph.
 \end{enumerate}
-The second feature is a requirement for the algorihtm presented to achieve step~\ref{enum:approximate}.
+The second feature is a requirement for the algorithm presented to achieve step~\ref{enum:approximate}.
 
-However the algorithm by Han, Kelsen, Ramachandran and Tarjan comes with some drawbacks:
+However, the algorithm by Han, Kelsen, Ramachandran and Tarjan comes with some drawbacks:
 \begin{enumerate}
   \item The linear runtime comes with large constants.
   \item The algorithm is very bulky and craves very complex memory structures to obtain the proposed linear runtime in practical implementation.
 \end{enumerate}
 
-Therefore the actual implementation sticks to the naive approach with some improvments to meet the requirement for the step~\ref{enum:approximate} algorithm.
+Therefore, the actual implementation sticks to the naive approach with some improvements to meet the requirement for the step~\ref{enum:approximate} algorithm.
+
+\begin{algorithm}
+  \caption{Finding a bottleneck optimal minimally biconnected subgraph}\label{alg:biconnected_subgraph}
+  \begin{algorithmic}
+ 
+  \end{algorithmic}
+  \end{algorithm}
 
 % Algorithmus einfügen
 
-\subsection{computing an open ear decomposition}
-\subsection{finding an approximative solution}
+\subsection{Computing an open ear decomposition}
+\subsection{Finding an approximate solution}
 
 \section{An approximation algorithm for BTSPP}
