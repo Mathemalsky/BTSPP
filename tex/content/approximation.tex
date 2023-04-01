@@ -29,16 +29,26 @@ However, the algorithm by Han, Kelsen, Ramachandran and Tarjan comes with some d
   \item The algorithm is very bulky and craves very complex memory structures to obtain the proposed linear runtime in practical implementation.
 \end{enumerate}
 
-Therefore, the actual implementation sticks to the naive approach with some improvements to meet the requirement for the step~\ref{enum:approximate} algorithm.
+Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) sticks to the naive approach with some improvements. To meet the requirement for the step~\ref{enum:approximate} algorithm we retort to another small alorithm.
 
-\begin{algorithm}
-  \caption{Finding a bottleneck optimal minimally biconnected subgraph}\label{alg:biconnected_subgraph}
-  \begin{algorithmic}
- 
+\begin{algorithm}[ht!]
+  \caption{Finding a bottleneck optimal biconnected subgraph}\label{alg:biconnected_subgraph}
+  \textbf{Input:} complete graph \(K_n = (V, V \times V)\)\\
+  \textbf{Output:} bottleneck optimal biconnected subgraph
+  \begin{algorithmic}[1]
+    \Procedure{biconnectedSubgraph} {$K_n$}
+      \State set \(H \coloneqq (V, \emptyset)\)
+      \State order edges ascending in length
+      \State add the first \(n\) edges to \(H\)\label{code:add_n_edges}
+      \While{\(H\) not biconnected}
+        \State add next edge from the list to \(H\)
+      \EndWhile
+      \State\Return{\(H\)}
+    \EndProcedure
   \end{algorithmic}
-  \end{algorithm}
+\end{algorithm}
 
-% Algorithmus einfügen
+In line~\ref{code:add_n_edges} we add \(n\) edges at once whithout checking for biconnectivity because every biconnected graph with \(n\) vertices has at least \(n\) edges. This bound is tight in case the biconnected subgraph is a cycle. As in the original algorithm by Radin and Parker the runtime is \(\O{\abs{E}^2}\), but by replacing the while loop with a bisection search it can be improved to \(\O{\abs{E}\log \abs{E}}\).
 
 \subsection{Computing an open ear decomposition}
 \subsection{Finding an approximate solution}
