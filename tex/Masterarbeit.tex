@@ -3,9 +3,9 @@
 % language
 \usepackage[utf8]{inputenc}
 \usepackage[UKenglish]{babel}
-
 \usepackage{csquotes}
 
+% general packages
 \usepackage[printonlyused]{acronym}
 \usepackage[
   backend=biber,
@@ -46,28 +46,32 @@
 % surpress indent at begin of paragraph
 \setlength{\parindent}{0pt}
 
+% references in the document
+\usepackage{hyperref}
+\usepackage{cleveref}
+
 % coloneqq
 \usepackage{mathtools}
+
+\hyphenation{bi-con-nec-ted}
 
 \newcommand{\st}{\textrm{s.t.}}
 \newcommand{\wt}{\textrm{wt}}
 \newcommand{\abs}[1]{\vert #1 \vert}
 \renewcommand{\O}[1]{\mathcal{O}(#1)}
 
-\hyphenation{bi-con-nec-ted}
-
 \begin{document}
-\include{content/titlepage}
+\input{content/titlepage}
 
 \tableofcontents
 
-\include{content/introduction}
-\include{content/prerequisites}
-\include{content/approximation}
+\input{content/introduction}
+\input{content/prerequisites}
+\input{content/approximation}
 
 \appendix
 
-\include{appendix/acronyms}
+\input{appendix/acronyms}
 
 \printbibliography[
   heading=bibintoc,
