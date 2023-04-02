@@ -9,8 +9,9 @@
 \usepackage[printonlyused]{acronym}
 \usepackage[
   backend=biber,
+  maxbibnames=99,
+  sorting=ynt,
   style=numeric,
-  sorting=ynt
   ]{biblatex}
 \addbibresource{appendix/bibliography.bib}
 
@@ -53,18 +54,20 @@
 \newcommand{\abs}[1]{\vert #1 \vert}
 \renewcommand{\O}[1]{\mathcal{O}(#1)}
 
+\hyphenation{bi-con-nec-ted}
+
 \begin{document}
-\include{content/titlepage.tex}
+\include{content/titlepage}
 
 \tableofcontents
 
-\include{content/introduction.tex}
-\include{content/prerequisites.tex}
-\include{content/approximation.tex}
+\include{content/introduction}
+\include{content/prerequisites}
+\include{content/approximation}
 
 \appendix
 
-\include{appendix/acronyms.tex}
+\include{appendix/acronyms}
 
 \printbibliography[
   heading=bibintoc,

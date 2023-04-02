@@ -10,6 +10,9 @@
 # allow readme file
 !README.md
 
+# vscode dictionary
+!.vscode/ltex.dictionary.en-GB.txt
+
 # allow tex files in tex directory
 !tex/*.tex
 !tex/appendix/*.bib
