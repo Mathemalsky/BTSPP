@@ -9,7 +9,7 @@
 \usepackage[printonlyused]{acronym}
 \usepackage[
   backend=biber,
-  maxbibnames=99,
+  maxbibnames=42,
   sorting=ynt,
   style=numeric,
   ]{biblatex}
@@ -60,6 +60,30 @@
 \newcommand{\abs}[1]{\vert #1 \vert}
 \renewcommand{\O}[1]{\mathcal{O}(#1)}
 
+\usepackage[
+  nomain,  % suppresses the creation of the main glossary and associated .glo
+           % file (if you use this option, you must create another glossary in
+           % which to put all your entries, e.g., acronym, symbols, numbers or
+           % index)
+  acronym,  % creates a new glossary with the label acronym
+  toc,  % adds the glossaries to the table of contents (an extra LaTeX run is
+        % required with this option)
+  nonumberlist,  % suppresses the associated number lists in the glossaries
+  nopostdot,  % suppresses the default post description dot used by some of the
+              % predefined styles
+  nogroupskip,  % suppresses the default vertical gap between groups used by
+                % some of the predefined styles
+  nohypertypes={acronym},  % suppress the entry hyperlinks for a particular
+                           % glossary or glossaries
+  style=long,  % predefined glossary style
+               % see https://www.dickimaw-books.com/gallery/glossaries-styles/
+               % for more
+]{glossaries}
+
+
+\usepackage{appendix/acronyms} 
+\makeglossaries
+
 \begin{document}
 \input{content/titlepage}
 
@@ -71,7 +95,9 @@
 
 \appendix
 
-\input{appendix/acronyms}
+%\input{appendix/acronyms}
+
+\printacronyms[title={List of Acronyms}]
 
 \printbibliography[
   heading=bibintoc,

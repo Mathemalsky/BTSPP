@@ -14,7 +14,7 @@ On a very abstract level the algorithms contain of three steps:
 
 \subsection{Finding a bottleneck optimal biconnected subgraph}
 The bottleneck optimal biconnected subgraph is the graph whose longest edge is shortest among all biconnected subgraphs.
-Parker and Rardin~\cite{ParkerRardin1984} presented an easy implementable algorithm for finding such a subgraph: First all edges are sorted ascending in their weight and then edges are picked from the list until the graph is biconnected. Sorting costs \(\mathcal{O}(\abs{E} \log \abs{E})\) and the \(\mathcal{O}(\abs{E})\) checks for biconnectivity can be performed in \(\mathcal{O}(\abs{E}^2)\) when using Schmidts algorithm~\cite{schmidt2013}. This leads to a overall runtime of \(\mathcal{O}(\abs{E}^2)\).
+Parker and Rardin~\cite{ParkerRardin1984} presented an easy implementable algorithm for finding such a subgraph: First all edges are sorted ascending in their weight and then edges are picked from the list until the graph is biconnected. Sorting costs \(\mathcal{O}(\abs{E} \log \abs{E})\) and the \(\mathcal{O}(\abs{E})\) checks for biconnectivity can be performed in \(\mathcal{O}(\abs{E}^2)\) when using Schmidts algorithm~\cite{schmidt2013}. This leads to an overall runtime of \(\mathcal{O}(\abs{E}^2)\). We will come back to have a closer look the schmidt algorithm in section~\ref{subsec:open_ear_decomposition}.
 
 In contrary in~\cite{alstrup2018hamiltonian} the much more sophisticated algorithm from~\cite{han1995} comes into play. This has two advantages over the naive approach:
 \begin{enumerate}
@@ -29,7 +29,7 @@ However, the algorithm by Han, Kelsen, Ramachandran and Tarjan comes with some d
   \item The algorithm is very bulky and craves very complex memory structures to obtain the proposed linear runtime in practical implementation.
 \end{enumerate}
 
-Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) sticks to the naive approach with some improvements.
+Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) sticks to the naive approach with some improvements regarding performance.
 
 \begin{algorithm}[ht!]
   \caption{Finding a bottleneck optimal biconnected subgraph}\label{alg:biconnected_subgraph}
@@ -48,6 +48,7 @@ Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) 
   \end{algorithmic}
 \end{algorithm}
 
+% DIREKT BISECTION SEARCH BESCHREIBEN
 In line~\ref{code:add_n_edges}, we add \(n\) edges at once without checking for biconnectivity because every biconnected graph with \(n\) vertices has at least \(n\) edges. This bound is tight in case the biconnected subgraph is a cycle. As in the original algorithm by Rardin and Parker the runtime is \(\O{\abs{E}^2}\), but by replacing the while loop with a bisection search it can be improved to \(\O{\abs{E}\log \abs{E}}\).
 
 \begin{algorithm}[ht!]
@@ -68,7 +69,13 @@ In line~\ref{code:add_n_edges}, we add \(n\) edges at once without checking for 
 
 To meet the requirement for the step~\ref{enum:approximate} algorithm we iterate over all edges \(E_H\) in the graph \(H = (V_H, E_H)\) obtained from algorithm~\ref{alg:biconnected_subgraph} and remove an edge \(e = (u, v)\) if \(H \backslash e\) is still biconnected. Again a check for biconnectivity using Schmidts algorithm can be done in \(\O{\abs{E_H}}\), but if the degree of \(u\) or \(v\) is at most two this already proofs \(e\) \(k\)-essential. Therefore, the runtime is \(\O{\abs{{E_H}}^2}\).
 
-\subsection{Computing an open ear decomposition}
+\subsection{Computing an open ear decomposition}\label{subsec:open_ear_decomposition}
+
+% FORTSETZEN
+An open ear decomposition is a partitioning of a graphs edge set \(E\) into paths, exactly one of which is a cycle. Moreover, all these paths, which are called ears, together must form a sequence starting with the cycle where each end vertex of an ear must be inner vertex of a preceding ear.
+Such an open ear decomposition exists if and only if the graph is biconnected.
+Given any graph \(G\) the schmidt algorithm either finds an open ear decomposition in \(G\) or detects that \(G\) is not biconnected.
+
 \subsection{Finding an approximate solution}
 
 \section{An approximation algorithm for BTSPP}
