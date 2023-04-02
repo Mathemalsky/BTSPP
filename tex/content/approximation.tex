@@ -29,7 +29,7 @@ However, the algorithm by Han, Kelsen, Ramachandran and Tarjan comes with some d
   \item The algorithm is very bulky and craves very complex memory structures to obtain the proposed linear runtime in practical implementation.
 \end{enumerate}
 
-Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) sticks to the naive approach with some improvements. To meet the requirement for the step~\ref{enum:approximate} algorithm we retort to another small alorithm.
+Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) sticks to the naive approach with some improvements.
 
 \begin{algorithm}[ht!]
   \caption{Finding a bottleneck optimal biconnected subgraph}\label{alg:biconnected_subgraph}
@@ -49,6 +49,24 @@ Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) 
 \end{algorithm}
 
 In line~\ref{code:add_n_edges} we add \(n\) edges at once whithout checking for biconnectivity because every biconnected graph with \(n\) vertices has at least \(n\) edges. This bound is tight in case the biconnected subgraph is a cycle. As in the original algorithm by Radin and Parker the runtime is \(\O{\abs{E}^2}\), but by replacing the while loop with a bisection search it can be improved to \(\O{\abs{E}\log \abs{E}}\).
+
+\begin{algorithm}[ht!]
+  \caption{Making minimally biconnected}\label{alg:minimally_biconnected}
+  \textbf{Input: } bottleneck optimal biconnected graph \(H = (V, E)\)\\
+  \textbf{Output: } bottleneck optimal minimally biconnected graph \(H\)
+  \begin{algorithmic}[1]
+    \Procedure{makeMinimallyBiconnected}{$H$}
+      \For{edge \(e\) in \(E\)}
+        \If{\(H \backslash e\) is biconnected}
+          \State remove \(e\) from \(H\)
+        \EndIf
+      \EndFor
+      \State \Return{H}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
+
+To meet the requirement for the step~\ref{enum:approximate} algorithm we iterate over all edges \(E_H\) in the graph \(H = (V_H, E_H)\) obtained from algorithm~\ref{alg:biconnected_subgraph} and remove an edge \(e = (u, v)\) if \(H \backslash e\) is still biconnected. Again a check for biconnectivity using schmidts algorithm can be done in \(\O{\abs{E_H}}\), but if the degree of \(u\) or \(v\) is at most two this already proofs \(e\) \(k\)-essential. Therefore the runtime is \(\O{\abs{{E_H}}^2}\).
 
 \subsection{Computing an open ear decomposition}
 \subsection{Finding an approximate solution}
