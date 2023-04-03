@@ -34,16 +34,16 @@ Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) 
 \begin{algorithm}[ht!]
   \caption{Finding a bottleneck optimal biconnected subgraph}\label{alg:biconnected_subgraph}
   \textbf{Input:} complete graph \(K_n = (V, V \times V)\)\\
-  \textbf{Output:} bottleneck optimal biconnected subgraph
+  \textbf{Output:} bottleneck optimal biconnected subgraph \(G\)
   \begin{algorithmic}[1]
     \Procedure{biconnectedSubgraph} {$K_n$}
-      \State set \(H \coloneqq (V, \emptyset)\)
+      \State set \(G \coloneqq (V, \emptyset)\)
       \State order edges ascending in length
-      \State add the first \(n\) edges to \(H\)\label{code:add_n_edges}
-      \While{\(H\) not biconnected}
-        \State add next edge from the list to \(H\)
+      \State add the first \(n\) edges to \(G\)\label{code:add_n_edges}
+      \While{\(G\) not biconnected}
+        \State add next edge from the list to \(G\)
       \EndWhile
-      \State\Return{\(H\)}
+      \State\Return{\(G\)}
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
@@ -53,28 +53,67 @@ In line~\ref{code:add_n_edges}, we add \(n\) edges at once without checking for 
 
 \begin{algorithm}[ht!]
   \caption{Making minimally biconnected}\label{alg:minimally_biconnected}
-  \textbf{Input: } bottleneck optimal biconnected graph \(H = (V_H, E_H)\)\\
-  \textbf{Output: } bottleneck optimal minimally biconnected graph \(H\)
+  \textbf{Input: } bottleneck optimal biconnected graph \(G = (V_G, E_G)\)\\
+  \textbf{Output: } bottleneck optimal minimally biconnected graph \(G\)
   \begin{algorithmic}[1]
-    \Procedure{makeMinimallyBiconnected}{$H$}
-      \For{edge \(e\) in \(E\)}
-        \If{\(H \backslash e\) is biconnected}
-          \State remove \(e\) from \(H\)
+    \Procedure{makeMinimallyBiconnected}{$G$}
+      \For{edge \(e\) in \(E_G\)}
+        \If{\(G \backslash e\) is biconnected}
+          \State remove \(e\) from \(G\)
         \EndIf
       \EndFor
-      \State \Return{H}
+      \State \Return{G}
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
 
-To meet the requirement for the step~\ref{enum:approximate} algorithm we iterate over all edges \(E_H\) in the graph \(H = (V_H, E_H)\) obtained from algorithm~\ref{alg:biconnected_subgraph} and remove an edge \(e = (u, v)\) if \(H \backslash e\) is still biconnected. Again a check for biconnectivity using Schmidts algorithm can be done in \(\O{\abs{E_H}}\), but if the degree of \(u\) or \(v\) is at most two this already proofs \(e\) \(k\)-essential. Therefore, the runtime is \(\O{\abs{{E_H}}^2}\).
+To meet the requirement for the step~\ref{enum:approximate} algorithm we iterate over all edges \(E_G\) in the graph \(G = (V_G, E_G)\) obtained from algorithm~\ref{alg:biconnected_subgraph} and remove an edge \(e = (u, v)\) if \(G \backslash e\) is still biconnected. Again a check for biconnectivity using Schmidts algorithm can be done in \(\O{\abs{E_G}}\), but if the degree of \(u\) or \(v\) is at most two this already proofs \(e\) \(k\)-essential. Therefore, the runtime is \(\O{\abs{{E_G}}^2}\).
 
 \subsection{Computing an open ear decomposition}\label{subsec:open_ear_decomposition}
 
-% FORTSETZEN
 An open ear decomposition is a partitioning of a graphs edge set \(E\) into paths, exactly one of which is a cycle. Moreover, all these paths, which are called ears, together must form a sequence starting with the cycle where each end vertex of an ear must be inner vertex of a preceding ear.
 Such an open ear decomposition exists if and only if the graph is biconnected.
-Given any graph \(G\) the schmidt algorithm either finds an open ear decomposition in \(G\) or detects that \(G\) is not biconnected.
+Given any graph \(G\) the schmidt algorithm either finds an open ear decomposition in \(G\) or detects that \(G\) is not biconnected. The implementation has one version for checking biconnectivity and one for finding an open ear decomposition to reduce the overhead in both cases. Both omit the check for \(2\)-edge-connectivity contained in schmidts original algorithm~\cite{schmidt2013}.
+
+To avoid redundancy algorithm~\ref{alg:schmidt} combines both purposes. Here we use the weaker term \enquote{chain} as in~\cite{schmidt2013} instead of \enquote{ear} because at this point we do not know if the graph has a proper ear decomposition and the chains are indeed ears.
+First, we perform a \gls{dfs} with arbitrary root \(r\) node on the given graph \(G\). From that we store a \gls{dfs}-tree containing the order the nodes are explored during the \gls{dfs} and the parent node for each node except for the root node \(r\). If there is a node not appearing in the \gls{dfs}-tree, then \(G\) is not even connected and hence not biconnected. Next we mark all nodes as unvisited before we iterate over all nodes in the order they are discovered by the \gls{dfs}.
+% FORTSETZEN
+
+\begin{algorithm}[ht!]
+  \caption{Schmidt algorithm}\label{alg:schmidt}
+  \textbf{Input: } graph \(G = (V, E)\)\\
+  \textbf{Output: }
+  \begin{algorithmic}[1]
+    \Procedure{schmidt}{$G = (V, E)$}
+      \State pick an arbitrary root node \(r \in V\)
+      \State perform a \gls{dfs} on \(G\) starting with \(r\)
+      \If{\(G\) not connected}
+        \State\Return{\(G\) is not biconnected}
+      \EndIf
+      \State mark all nodes as unvisited
+      \For{all nodes \(u \in V\) in the order they are explored by the \gls{dfs}}
+        \For{all unvisited neighbours \(v\) of \(u\)}
+          \If{\(v\) is unvisited}
+            \State mark \(u\) as visited
+            \While{\(v\) is unvisited}
+              \State mark \(v\) as visited
+              \State set \(v\) to its parent in the \gls{dfs}-tree
+              \If{\(v = u\) but \(v \neq r\)}
+                \State\Return{\(G\) is not biconnected}
+              \EndIf
+            \EndWhile
+          \EndIf
+        \EndFor
+      \EndFor
+      \For{all \(v \in V\)}
+        \If{\(v\) is unvisited}
+          \State\Return{\(G\) is not biconnected}
+        \EndIf
+      \EndFor
+      \State\Return{\(G\) is biconnected}
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
 
 \subsection{Finding an approximate solution}
 
