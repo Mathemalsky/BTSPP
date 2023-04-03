@@ -76,32 +76,40 @@ Such an open ear decomposition exists if and only if the graph is biconnected.
 Given any graph \(G\) the schmidt algorithm either finds an open ear decomposition in \(G\) or detects that \(G\) is not biconnected. The implementation has one version for checking biconnectivity and one for finding an open ear decomposition to reduce the overhead in both cases. Both omit the check for \(2\)-edge-connectivity contained in schmidts original algorithm~\cite{schmidt2013}.
 
 To avoid redundancy algorithm~\ref{alg:schmidt} combines both purposes. Here we use the weaker term \enquote{chain} as in~\cite{schmidt2013} instead of \enquote{ear} because at this point we do not know if the graph has a proper ear decomposition and the chains are indeed ears.
-First, we perform a \gls{dfs} with arbitrary root \(r\) node on the given graph \(G\). From that we store a \gls{dfs}-tree containing the order the nodes are explored during the \gls{dfs} and the parent node for each node except for the root node \(r\). If there is a node not appearing in the \gls{dfs}-tree, then \(G\) is not even connected and hence not biconnected. Next we mark all nodes as unvisited before we iterate over all nodes in the order they are discovered by the \gls{dfs}.
-% FORTSETZEN
+First, we perform a \gls{dfs} with arbitrary root \(r\) node on the given graph \(G = (V, E)\). From that we store a \gls{dfstree} containing the order the nodes are explored during the \gls{dfs} and the edge to its parent node for each node except for the root node \(r\). These edges together are \(E_T\) where the \gls{dfstree} is \(T \coloneqq (V_T, E_T)\).
+If there is a node not appearing in the \gls{dfstree} that is \(V \neq V_T\), then \(G\) is not even connected and hence not biconnected.
+We put all edges not contained in the \gls{dfstree} in the set \(B \coloneqq E \backslash E_T\) and call them \enquote{backedges}. Next we mark all nodes as unvisited before we iterate over all nodes \(u \in V\) in the order they are discovered by the \gls{dfs}.
+For all backedges \((u,v) \in B\) where \(v\) is still unvisited, we form a chain \(C\) starting with the backedge \((u,v)\). By adding the restriction we skip considering all trivial chains consisting of a single edge. From \(v\) we trace back up the \gls{dfstree} until we reach an already visited node. Note that in the very first iteration chain starts and ends with \(u = r\) and hence is a cycle.
+% refference to definition of articulation point
+If this happens again later in the algorithm with another node \(w\), then \(w\) is an articulation point and thus \(G\) is not biconnected. If all nodes in \(G\) are visited after the iterations, \(G\) is biconnected and all chains are ears.
 
-\begin{algorithm}[ht!]
+\begin{algorithm}
   \caption{Schmidt algorithm}\label{alg:schmidt}
   \textbf{Input: } graph \(G = (V, E)\)\\
-  \textbf{Output: }
+  \textbf{Output: } open ear decomposition result that \(G\) is not biconnected
   \begin{algorithmic}[1]
     \Procedure{schmidt}{$G = (V, E)$}
       \State pick an arbitrary root node \(r \in V\)
-      \State perform a \gls{dfs} on \(G\) starting with \(r\)
+      \State perform a \gls{dfs} on \(G\) starting with \(r\) to get \gls{dfstree} \(T = (V, E_T)\)
       \If{\(G\) not connected}
         \State\Return{\(G\) is not biconnected}
       \EndIf
+      \State set the set of backedges \(B \coloneqq E \backslash E_T\)
       \State mark all nodes as unvisited
       \For{all nodes \(u \in V\) in the order they are explored by the \gls{dfs}}
-        \For{all unvisited neighbours \(v\) of \(u\)}
+        \For{all \(v\) with \((u,v) \in B\)}
           \If{\(v\) is unvisited}
             \State mark \(u\) as visited
+            \State start a new chain \(C \coloneqq (u, v)\)
             \While{\(v\) is unvisited}
               \State mark \(v\) as visited
-              \State set \(v\) to its parent in the \gls{dfs}-tree
+              \State set \(v\) to its parent in the \gls{dfstree}
+              \State append \(v\) to \(C\)
               \If{\(v = u\) but \(v \neq r\)}
                 \State\Return{\(G\) is not biconnected}
               \EndIf
             \EndWhile
+            \State append \(C\) to the list of chains
           \EndIf
         \EndFor
       \EndFor
@@ -116,5 +124,11 @@ First, we perform a \gls{dfs} with arbitrary root \(r\) node on the given graph 
 \end{algorithm}
 
 \subsection{Finding an approximate solution}
+Having an open ear decomposition the following steps lead to the approximate solution:
+\begin{enumerate}
+  \item add and delete edges in the open ear decomposition to make it an eulerian graph
+  \item find a suitable euler tour in the graph
+  \item shortcut the euler tour to hamilton cycle in the square of the original graph
+\end{enumerate}
 
 \section{An approximation algorithm for BTSPP}

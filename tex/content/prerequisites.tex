@@ -18,7 +18,11 @@ So the terms \(1\)-connected and connected coincide while the word \enquote{bico
   A \(k\)-connected graph \(G\) is minimally \(k\)-connected if every edge in \(G\) is \(k\)-essnetial.
 \end{definition}
 
-\begin{definition}[Power of a graph]\label{def:power_of_graph}\ \\
+\begin{definition}[articulation point]\label{def:articulation_point}\ \\
+  When removal of a node \(v\) and all its adjacent edges from a graph \(G\) disconnects \(G\) then \(v\) is an articulation point.
+\end{definition}
+
+\begin{definition}[power of a graph]\label{def:power_of_graph}\ \\
   For a natural number \(k\) and a graph \(G = (V, E)\) the term \(G^{k}\) denotes the graph obtained by adding the edge \((u,v)\) to \(H \coloneqq (V, \emptyset)\) if and only if there exists a path from \(u\) to \(v\) in \(G\) containing no more than \(k\) edges.
 \end{definition}
 
