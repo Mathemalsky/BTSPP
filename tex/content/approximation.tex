@@ -80,8 +80,7 @@ First, we perform a \gls{dfs} with arbitrary root \(r\) node on the given graph 
 If there is a node not appearing in the \gls{dfstree} that is \(V \neq V_T\), then \(G\) is not even connected and hence not biconnected.
 We put all edges not contained in the \gls{dfstree} in the set \(B \coloneqq E \backslash E_T\) and call them \enquote{backedges}. Next we mark all nodes as unvisited before we iterate over all nodes \(u \in V\) in the order they are discovered by the \gls{dfs}.
 For all backedges \((u,v) \in B\) where \(v\) is still unvisited, we form a chain \(C\) starting with the backedge \((u,v)\). By adding the restriction we skip considering all trivial chains consisting of a single edge. From \(v\) we trace back up the \gls{dfstree} until we reach an already visited node. Note that in the very first iteration chain starts and ends with \(u = r\) and hence is a cycle.
-% refference to definition of articulation point
-If this happens again later in the algorithm with another node \(w\), then \(w\) is an articulation point and thus \(G\) is not biconnected. If all nodes in \(G\) are visited after the iterations, \(G\) is biconnected and all chains are ears.
+If this happens again later in the algorithm with another node \(w\), then \(w\) is an \hyperref[def:articulation_point]{articulation point} and thus \(G\) is not biconnected. If all nodes in \(G\) are visited after the iterations, \(G\) is biconnected and all chains are ears.
 
 \begin{algorithm}
   \caption{Schmidt algorithm}\label{alg:schmidt}
@@ -122,6 +121,9 @@ If this happens again later in the algorithm with another node \(w\), then \(w\)
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
+
+If \(G\) is biconnected, we went over each edge in \(E\) exactly once during the \hyperref[alg:schmidt]{algorithm}. Either as backedge or as edge to its parent. In case the graph is not biconnected the algorithm terminates prematurely. So it terminates in \(\O{\abs{E}}\).
+% A property of an open ear decomposition is that every ear hast at least one inner vertex.
 
 \subsection{Finding an approximate solution}
 Having an open ear decomposition the following steps lead to the approximate solution:
