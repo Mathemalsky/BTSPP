@@ -23,6 +23,10 @@ if(${Visualization} STREQUAL ON)
   find_package(GLEW REQUIRED)
   find_package(glfw3 REQUIRED)
 
+  # compile the imgui library
+  add_subdirectory(lib/imgui)
+
+  # pass the visalization argument to preprocessor to cut of unnecessary code
   add_compile_definitions(VISUALIZATION=1)
 else()
   # lists all sourcefiles to be compiled with the project
@@ -31,8 +35,6 @@ else()
   # lists all header files to be included in the project
   file(GLOB HEADERS "include/*.hpp" "include/graph/*.hpp" "include/solve/*.hpp" "include/utility/*.hpp")
 endif()
-
-add_subdirectory(lib/imgui)
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 

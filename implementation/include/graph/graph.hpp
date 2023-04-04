@@ -563,7 +563,11 @@ public:
     assert(removed && "Edge to be removed does not exist in graph!");
   }
 
-  AdjacencyListDigraph removeUncriticalEdges() const;
+  /*!
+   * @brief creates an undirected graph with the same nodes and edges
+   * @details antiparallel edge are wedded
+   * @return Adjacency list graph
+   */
   AdjacencyListGraph undirected() const;
 };
 

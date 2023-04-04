@@ -30,3 +30,13 @@ inline void printLightred(std::string word) noexcept {
   std::cout << word;
   std::cout << "\033[0m";
 }
+
+/*!
+ * @brief prints the word in yellow
+ * @param word string to be printed
+ */
+inline void printYellow(std::string word) noexcept {
+  std::cout << "\033[1;33m";
+  std::cout << word;
+  std::cout << "\033[0m";
+}

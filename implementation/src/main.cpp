@@ -10,6 +10,8 @@
 
 #include "utility/utils.hpp"
 
+#include "commandinterpreter.hpp"
+
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #if (VISUALIZATION)
   try {
@@ -36,9 +38,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     if (std::atoi(argv[1]) < 3) {
       throw std::invalid_argument("[MAIN] Graph must have at least 3 vertices!");
     }
-    graph::Euclidean euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
+    interpretCommandLine(argc, argv);
   }
-  catch (...) {
+  catch (std::exception& error) {
+    printLightred("Error");
+    std::cerr << ": " << error.what() << std::endl;
+    return -1;
   }
 
 #endif

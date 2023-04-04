@@ -47,6 +47,10 @@ DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   return tree;
 }
 
+/*!
+ * \brief Creates a graph consisting of all edges which are not in the dfs tree.
+ * \return AdjacencyListGraph with same nodes as dfs tree and complement of edges
+ */
 template <typename G>
 AdjacencyListGraph findBackedges(const G& graph, const DfsTree& tree) {
   AdjacencyListGraph backedges(graph.numberOfNodes());
@@ -133,6 +137,12 @@ bool checkBiconnectivity(const G& graph) {
   return true;
 }
 
+/*!
+ * @brief finds a node with at least one neighbour
+ * @tparam G type of graph
+ * @param graph
+ * @return index of non isolated node
+ */
 template <typename G>
 size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
   for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
