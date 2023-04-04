@@ -13,15 +13,16 @@
 #include "utility/utils.hpp"
 
 #include "commandinterpreter.hpp"
+#include "exceptions.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #if (VISUALIZATION)
   try {
     if (argc < 2 || argc != 2 + 1 + SEED_LENGTH) {
-      throw std::invalid_argument("[MAIN] Got " + std::to_string(argc) + " arguments, but expected exactly 2 or additional seed!");
+      throw InvalidArgument("[MAIN] Got " + std::to_string(argc) + " arguments, but expected exactly 2 or additional seed!");
     }
     if (std::atoi(argv[1]) < 3) {
-      throw std::invalid_argument("[MAIN] Graph must have at least 3 vertices!");
+      throw InvalidArgument("[MAIN] Graph must have at least 3 vertices!");
     }
 
     graph::Euclidean euclidean;
@@ -35,12 +36,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
         euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]), seed);
       }
       else {
-        throw std::invalid_argument("Expected a seed!");
+        throw InvalidArgument("Expected a seed!");
       }
     }
     visualize(euclidean);
   }
-  catch (std::exception& error) {
+  catch (Exception& error) {
     printLightred("Error");
     std::cerr << ": " << error.what() << std::endl;
     return -1;
@@ -49,14 +50,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #else
   try {
     if (argc < 3) {
-      throw std::invalid_argument("To few arguments! Got " + std::to_string(argc) + " but expected at least 3!");
+      throw InvalidArgument("To few arguments! Got " + std::to_string(argc) + " but expected at least 3!");
     }
     if (std::atoi(argv[1]) < 3) {
-      throw std::invalid_argument("[MAIN] Graph must have at least 3 vertices!");
+      throw InvalidArgument("[MAIN] Graph must have at least 3 vertices!");
     }
     interpretCommandLine(argc, argv);
   }
-  catch (std::exception& error) {
+  catch (Exception& error) {
     printLightred("Error");
     std::cerr << ": " << error.what() << std::endl;
     return -1;
