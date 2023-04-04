@@ -3,9 +3,18 @@
 ## running the software
 
 ### prerequisites
-- [cmake](https://cmake.org/) is required for compiling
+- [cmake](https://cmake.org/) version 3.20 or higher is required for compiling
 - [dear imgui](https://github.com/ocornut/imgui) is used for graphical output. dear imgui is contained as git submodule but it needs
-- [glfw](https://www.glfw.org/) which needs
+- [glfw](https://www.glfw.org/) Can be installed using the following steps:
+```
+sudo apt-get install xorg-dev
+sudo apt-get install libgl1-mesa-dev
+git clone https://github.com/glfw/glfw.git
+cd glfw && mkdir build && cd build
+cmake -G "Unix Makefiles" ..
+make
+sudo make install
+```
 - [glew](https://github.com/nigels-com/glew) (can be installed by `sudo apt-get install libglew-dev`)
 - [doxygen](https://www.doxygen.nl/) This is optinal for generating documentation.
 - [Eigen3](https://eigen.tuxfamily.org/) Used as implementation for sparse matrices. (I'm using Eigen 3.4)
@@ -15,7 +24,7 @@ Here you probably need to slightly differ from the standard instalation describe
 git clone https://github.com/ERGO-Code/HiGHS.git
 cd HiGhS
 mkdir build && cd build
-cmake -DFAST_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ -DCMAKE_TARGETS=ON -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -O3 -march=native -fPIC" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -O3 -march=native -fPIC"..
+cmake -DFAST_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ -DCMAKE_TARGETS=ON -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -O3 -march=native -fPIC" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -O3 -march=native -fPIC" ..
 cmake --build .
 ctest
 sudo cmake --install .
