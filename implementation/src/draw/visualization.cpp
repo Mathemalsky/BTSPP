@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <stdexcept>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -60,24 +61,24 @@ static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderP
   return vao;
 }
 
-int visualize(const graph::Euclidean& euclidean) {
+void visualize(const graph::Euclidean& euclidean) {
   // set error colback function
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {
-    return -1;
+    throw std::runtime_error("[GLFW] Failed to initialize glfw!");
   }
 
   // create window in specified size
   GLFWwindow* window = glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
-  if (window == nullptr)
-    return -1;
+  if (window == nullptr) {
+    throw std::runtime_error("[GLFW] Failed to create window!");
+  }
   glfwMakeContextCurrent(window);
 
   // initialize glew
   glewExperimental = GL_TRUE;
   if (glewInit()) {
-    std::cerr << "failed to initialize glew\n";
-    return -1;
+    throw std::runtime_error(" [GLEW] Failed to initialize glew!");
   }
 
   const char* glsl_version = imguiVersionHints();
@@ -133,6 +134,4 @@ int visualize(const graph::Euclidean& euclidean) {
   // clean up glfw window
   glfwDestroyWindow(window);
   glfwTerminate();
-
-  return 0;
 }

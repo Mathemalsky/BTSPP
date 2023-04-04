@@ -61,8 +61,7 @@ AdjacencyListGraph findBackedges(const G& graph, const DfsTree& tree) {
 /*!
  * \brief schmidt computes an open ear decomposition
  * \details This function requires the input graph to be biconnected (strongly biconnected in case of directed graph).
- * The algorithm is related to
- * SCHMIDT, Jens M. A simple test on 2-vertex-and 2-edge-connectivity.
+ * The algorithm is related to SCHMIDT, Jens M. A simple test on 2-vertex-and 2-edge-connectivity.
  * Information Processing Letters, 2013, 113. Jg., Nr. 7, S. 241-244.
  * \param graph Instance of a graph, which provides the required member functions.
  * \return Open Ear decomposition as std::vector of ears which are std::vector<size_t>.
@@ -141,7 +140,7 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
       return u;
     }
   }
-  throw std::runtime_error("All nodes in graph are isolated!");
+  throw std::logic_error("[GRAPH] All nodes in graph are isolated!");
 }
 
 /*!

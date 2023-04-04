@@ -20,7 +20,7 @@ static graph::Point2D transformCoordinates(const double x, const double y) {
 static void moveNode(GLFWwindow* window, const Buffers& buffers) {
   double x, y;
   glfwGetCursorPos(window, &x, &y);
-  drawing::EUCLIDEAN.verteces()[input::mouse::NODE_IN_MOTION] = transformCoordinates(x, y);
+  drawing::EUCLIDEAN.vertices()[input::mouse::NODE_IN_MOTION] = transformCoordinates(x, y);
   drawing::updatePointsfFromEuclidean();
   buffers.coordinates.bufferSubData(drawing::POINTS_F);
   buffers.tourCoordinates.bufferSubData(drawing::POINTS_F);
@@ -72,8 +72,8 @@ static void selectNodeToMove(GLFWwindow* window) {
   double x, y;
   glfwGetCursorPos(window, &x, &y);
   input::mouse::MOUSE_LEFT_CLICKED = transformCoordinates(x, y);
-  for (unsigned int i = 0; i < drawing::EUCLIDEAN.verteces().size(); ++i) {
-    if (norm2(drawing::EUCLIDEAN.verteces()[i] - input::mouse::MOUSE_LEFT_CLICKED) < drawing::VETREX_RADIUS) {
+  for (unsigned int i = 0; i < drawing::EUCLIDEAN.vertices().size(); ++i) {
+    if (norm2(drawing::EUCLIDEAN.vertices()[i] - input::mouse::MOUSE_LEFT_CLICKED) < drawing::VETREX_RADIUS) {
       input::mouse::NODE_IN_MOTION = i;
       break;  // move only one point at one at a time
     }

@@ -196,7 +196,7 @@ Result approximate(const graph::Euclidean& euclidean, const ProblemType problemT
     return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
   }
   else {
-    throw std::runtime_error("Unknown problem type");
+    throw std::logic_error("Unknown problem type");
   }
 }
 }  // namespace approximation

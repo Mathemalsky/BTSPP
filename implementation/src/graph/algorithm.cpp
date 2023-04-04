@@ -39,9 +39,9 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
   const size_t numberOfNodes = euclidean.numberOfNodes();
 
   const Index index(numberOfNodes);
-  std::vector<unsigned int> edgeIndeces(index.numberOfEdges());
-  std::iota(edgeIndeces.begin(), edgeIndeces.end(), 0);
-  std::sort(edgeIndeces.begin(), edgeIndeces.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
+  std::vector<unsigned int> edgeIndices(index.numberOfEdges());
+  std::iota(edgeIndices.begin(), edgeIndices.end(), 0);
+  std::sort(edgeIndices.begin(), edgeIndices.end(), [euclidean, index](const unsigned int a, const unsigned int b) {
     return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
   });
 
@@ -49,7 +49,7 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
   std::vector<Entry> entries;
   entries.reserve(numberOfNodes);
   for (unsigned int i = 0; i < numberOfNodes; ++i) {
-    const Edge e = index.edge(edgeIndeces[i]);
+    const Edge e = index.edge(edgeIndices[i]);
     entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     entries.push_back(Entry(e.v, e.u, euclidean.weight(e)));
   }
@@ -63,13 +63,13 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
   while (!graph.biconnected()) {
     assert(edgeCounter < euclidean.numberOfEdges() && "We cannot add more edges than existing.");
 
-    const Edge e = index.edge(edgeIndeces[edgeCounter++]);
+    const Edge e = index.edge(edgeIndices[edgeCounter++]);
     graph.addEdge(e, euclidean.weight(e));
 
     graph.compressMatrix();  // matrix became uncommpressed when adding edges
   }
 
-  maxEdgeWeight = euclidean.weight(index.edge(edgeIndeces[edgeCounter - 1]));  // for lower bound on opt
+  maxEdgeWeight = euclidean.weight(index.edge(edgeIndices[edgeCounter - 1]));  // for lower bound on opt
 
   return graph;
 }

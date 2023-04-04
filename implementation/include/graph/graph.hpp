@@ -219,7 +219,7 @@ public:
   Edges edges() const { return Edges(numberOfNodes()); }
 
   Point2D position(const size_t v) const { return pPositions[v]; }
-  std::vector<Point2D>& verteces() { return pPositions; }
+  std::vector<Point2D>& vertices() { return pPositions; }
 
 private:
   std::vector<Point2D> pPositions;
@@ -314,7 +314,7 @@ public:
         return v;
       }
     }
-    throw std::runtime_error("There is no node adjacent to " + std::to_string(u) + "not matching the criteria!");
+    throw std::logic_error("[GRAPH] There is no node adjacent to " + std::to_string(u) + "not matching the criteria!");
   }
 
   template <typename func>
@@ -578,19 +578,19 @@ private:
   private:
     class Iterator {
     public:
-      Iterator(const int* ptr) : pInnerIndeces(ptr) {}
+      Iterator(const int* ptr) : pInnerIndices(ptr) {}
 
-      size_t operator*() const { return *pInnerIndeces; }
+      size_t operator*() const { return *pInnerIndices; }
 
       Iterator operator++() {
-        ++pInnerIndeces;
+        ++pInnerIndices;
         return *this;
       }
 
-      bool operator!=(const Iterator& other) const { return pInnerIndeces != other.pInnerIndeces; }
+      bool operator!=(const Iterator& other) const { return pInnerIndices != other.pInnerIndices; }
 
     private:
-      const int* pInnerIndeces;
+      const int* pInnerIndices;
     };  // end Iterator class
 
   public:
@@ -678,17 +678,17 @@ private:
       }
 
       Edge operator*() const {
-        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
-        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndeces[pPosition.innerIndex])};
+        const int* const innerIndices = pAdjacencyMatrix.innerIndexPtr();
+        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndices[pPosition.innerIndex])};
       }
 
       Iterator& operator++() {
-        const int* const outerIndeces = pAdjacencyMatrix.outerIndexPtr();
-        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
+        const int* const outerIndices = pAdjacencyMatrix.outerIndexPtr();
+        const int* const innerIndices = pAdjacencyMatrix.innerIndexPtr();
         ++pPosition.innerIndex;
         while (pPosition.innerIndex < static_cast<size_t>(pAdjacencyMatrix.nonZeros()) && !valid()) {
-          if (static_cast<size_t>(innerIndeces[pPosition.innerIndex]) >= pPosition.outerIndex) {
-            pPosition.innerIndex = outerIndeces[pPosition.outerIndex + 1];  // skip rest of the row
+          if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
+            pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
           ++pPosition.outerIndex;  // goes to next row
         }
@@ -698,10 +698,10 @@ private:
       bool operator!=(const Iterator& other) const { return pPosition.innerIndex != other.pPosition.innerIndex; }
 
       bool valid() const {
-        const int* const outerIndeces = pAdjacencyMatrix.outerIndexPtr();
-        const int* const innerIndeces = pAdjacencyMatrix.innerIndexPtr();
-        return pPosition.innerIndex < static_cast<size_t>(outerIndeces[pPosition.outerIndex + 1])  // correct row
-               && static_cast<size_t>(innerIndeces[pPosition.innerIndex]) < pPosition.outerIndex;  // lower triangular
+        const int* const outerIndices = pAdjacencyMatrix.outerIndexPtr();
+        const int* const innerIndices = pAdjacencyMatrix.innerIndexPtr();
+        return pPosition.innerIndex < static_cast<size_t>(outerIndices[pPosition.outerIndex + 1])  // correct row
+               && static_cast<size_t>(innerIndices[pPosition.innerIndex]) < pPosition.outerIndex;  // lower triangular
       }
 
     private:
@@ -791,14 +791,14 @@ private:
       }
 
       Edge operator*() const {
-        const int* innerIndeces = pAdjacencyMatrix.innerIndexPtr();
-        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndeces[pPosition.innerIndex])};
+        const int* innerIndices = pAdjacencyMatrix.innerIndexPtr();
+        return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndices[pPosition.innerIndex])};
       }
 
       Iterator& operator++() {
-        const int* outerIndeces = pAdjacencyMatrix.outerIndexPtr();
+        const int* outerIndices = pAdjacencyMatrix.outerIndexPtr();
         ++pPosition.innerIndex;
-        while (pPosition.innerIndex >= static_cast<size_t>(outerIndeces[pPosition.outerIndex + 1])) {
+        while (pPosition.innerIndex >= static_cast<size_t>(outerIndices[pPosition.outerIndex + 1])) {
           ++pPosition.outerIndex;
         }
         return *this;

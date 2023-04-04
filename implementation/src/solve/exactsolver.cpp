@@ -248,9 +248,9 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
 
   // copy data from eigen sparse matrix into HiGHs sparse matrix
   model.lp_.a_matrix_.format_ = MatrixFormat::kColwise;                                    // use column compressed storage order
-  model.lp_.a_matrix_.start_.assign(A.outerIndexPtr(), A.outerIndexPtr() + A.cols());      // copy start indeces of columns
+  model.lp_.a_matrix_.start_.assign(A.outerIndexPtr(), A.outerIndexPtr() + A.cols());      // copy start indices of columns
   model.lp_.a_matrix_.start_.push_back(A.nonZeros());                                      // add number of nonZeros in the end
-  model.lp_.a_matrix_.index_.assign(A.innerIndexPtr(), A.innerIndexPtr() + A.nonZeros());  // copy inner indeces
+  model.lp_.a_matrix_.index_.assign(A.innerIndexPtr(), A.innerIndexPtr() + A.nonZeros());  // copy inner indices
   model.lp_.a_matrix_.value_.assign(A.valuePtr(), A.valuePtr() + A.nonZeros());            // copy values
 
   Highs highs;

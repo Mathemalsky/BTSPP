@@ -23,6 +23,6 @@ void getOpenglErrors(const char* file, const unsigned int line) {
       std::cerr << error << std::endl;
     }
     std::cerr << "from " << file << ": line " << line << std::endl;
-    throw std::runtime_error("OpenGL error" + std::to_string(error));
+    throw std::runtime_error("[OPEN GL] OpenGL error: " + std::to_string(error));
   }
 }

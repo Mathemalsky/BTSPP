@@ -28,7 +28,7 @@ static void clearWindow(GLFWwindow* window) {
 }
 
 // the vertex buffer object needs to be bound and the attribute vertex_position needs to be enabled
-static void drawVerteces(const ShaderProgram& drawCircles) {
+static void drawVertices(const ShaderProgram& drawCircles) {
   drawCircles.use();  // need to call glUseProgram before setting uniforms
   drawCircles.setUniform("u_steps", 8);
   drawCircles.setUniform("u_radius", VETREX_RADIUS);
@@ -79,7 +79,7 @@ static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const graph:
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
   clearWindow(window);
-  drawVerteces(programs.drawCircles);
+  drawVertices(programs.drawCircles);
 
   unsigned int typeInt = std::to_underlying(ProblemType::BTSP_approx);
   if (DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {

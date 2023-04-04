@@ -37,7 +37,7 @@ exactsolver::Result BTSPP_EXACT_RESULT;
 
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
-  const std::vector<graph::Point2D> points = EUCLIDEAN.verteces();
+  const std::vector<graph::Point2D> points = EUCLIDEAN.vertices();
   for (size_t i = 0; i < points.size(); ++i) {
     POINTS_F[2 * i]     = (float) points[i].x;
     POINTS_F[2 * i + 1] = (float) points[i].y;
@@ -54,7 +54,7 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
     ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
     ORDER[(unsigned int) type][0] = order[1];
     std::memcpy(ORDER[(unsigned int) type].data() + 1, order.data(), bytes_of(order));
-    ORDER[(unsigned int) type].back() = order[order.size() -2];
+    ORDER[(unsigned int) type].back() = order[order.size() - 2];
   }
   INITIALIZED[std::to_underlying(type)] = true;
 }
