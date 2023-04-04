@@ -10,12 +10,17 @@
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
 
-graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
-  std::array<uint_fast32_t, 2> random_data{2407893799, 27884848};
-  std::random_device src;
-  std::generate(random_data.begin(), random_data.end(), std::ref(src));
+#include "solve/definitions.hpp"
 
-  std::seed_seq seed(random_data.begin(), random_data.end());
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
+  std::array<uint_fast32_t, SEED_LENGTH> randomData;
+  std::random_device src;
+  std::generate(randomData.begin(), randomData.end(), std::ref(src));
+  return generateEuclideanDistanceGraph(numOfNodes, randomData);
+}
+
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes, const std::array<uint_fast32_t, SEED_LENGTH>& randomData) {
+  std::seed_seq seed(randomData.begin(), randomData.end());
   std::default_random_engine generator;
   generator.seed(seed);
 

@@ -7,3 +7,5 @@ enum class ProblemType : unsigned int {
   TSP_exact,
   NUMBER_OF_OPTIONS
 };
+
+constexpr unsigned int SEED_LENGTH = 2;

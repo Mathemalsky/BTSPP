@@ -1,5 +1,6 @@
 #include "commandinterpreter.hpp"
 
+#include <array>
 #include <iostream>
 #include <string>
 #include <unordered_set>
@@ -13,13 +14,35 @@
 
 #include "utility/utils.hpp"
 
+bool findSeed(std::array<uint_fast32_t, SEED_LENGTH>& seed, char* argv[], int& i) {
+  if (std::string(argv[i]) == "-seed") {
+    for (unsigned int j = 0; j < SEED_LENGTH; ++j) {
+      seed[j] = std::atoi(argv[++i]);
+    }
+    return true;
+  }
+  return false;
+}
+
 void interpretCommandLine(const int argc, char* argv[]) {
   std::unordered_set<std::string> arguments;
+  bool seeded = false;
+  std::array<uint_fast32_t, SEED_LENGTH> seed;
   for (int i = 2; i < argc; ++i) {
+    if (findSeed(seed, argv, i)) {
+      seeded = true;
+      continue;
+    }
     arguments.insert(std::string(argv[i]));
   }
 
-  graph::Euclidean euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
+  graph::Euclidean euclidean;
+  if (seeded) {
+    euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]), seed);
+  }
+  else {
+    euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
+  }
 
   if (arguments.contains("-btsp")) {
     const approximation::Result res = approximation::approximate(euclidean, ProblemType::BTSP_approx);

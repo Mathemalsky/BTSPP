@@ -262,7 +262,6 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
 
   const HighsModelStatus& model_status = highs.getModelStatus();
   assert(model_status == HighsModelStatus::kOptimal);
-  //  std::cout << "Model status: " << highs.modelStatusToString(model_status) << std::endl;
 
   const HighsInfo& info = highs.getInfo();
   std::cout << "Simplex iteration count : " << info.simplex_iteration_count << std::endl;
@@ -271,27 +270,7 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
   std::cout << "Dual    solution status : " << highs.solutionStatusToString(info.dual_solution_status) << std::endl;
   std::cout << "Basis                   : " << highs.basisValidityToString(info.basis_validity) << std::endl;
 
-  // Get the solution values and basis
-  const HighsSolution& solution = highs.getSolution();
-  // const HighsBasis& basis = highs.getBasis();
-  // const HighsLp& lp = highs.getLp();  // get a const reference to the LP data in HiGHS
-
-  // Report the primal solution values
-  /*
-  for (int col = 0; col < lp.num_col_; col++) {
-    std::cout << "Column " << col;
-    if (info.primal_solution_status)
-      std::cout << "; value = " << solution.col_value[col];
-    std::cout << std::endl;
-  }
-
-  for (int row = 0; row < lp.num_row_; row++) {
-    std::cout << "Row    " << row;
-    if (info.primal_solution_status)
-      std::cout << "; value = " << solution.row_value[row];
-    std::cout << std::endl;
-  }
-  */
+  const HighsSolution& solution = highs.getSolution();  // get variables of optimal solution
 
   std::vector<unsigned int> tour(numberOfNodes);
   tour[0] = 0;  // circle starts by definition with node 0

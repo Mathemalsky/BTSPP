@@ -1,3 +1,4 @@
+#include <array>
 #include <cstdlib>
 #include <iostream>
 #include <stdexcept>
@@ -6,6 +7,7 @@
 
 #include "graph/graph.hpp"
 
+#include "solve/definitions.hpp"
 #include "solve/euclideandistancegraph.hpp"
 
 #include "utility/utils.hpp"
@@ -15,13 +17,27 @@
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #if (VISUALIZATION)
   try {
-    if (argc != 2) {
-      throw std::invalid_argument("[MAIN] Got " + std::to_string(argc) + " arguments, but expected exactly 2!");
+    if (argc < 2 || argc != 2 + 1 + SEED_LENGTH) {
+      throw std::invalid_argument("[MAIN] Got " + std::to_string(argc) + " arguments, but expected exactly 2 or additional seed!");
     }
     if (std::atoi(argv[1]) < 3) {
       throw std::invalid_argument("[MAIN] Graph must have at least 3 vertices!");
     }
-    graph::Euclidean euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
+
+    graph::Euclidean euclidean;
+    if (argc == 2) {
+      euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
+    }
+    else {
+      std::array<uint_fast32_t, SEED_LENGTH> seed;
+      int i = 2;
+      if (findSeed(seed, argv, i)) {
+        euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]), seed);
+      }
+      else {
+        throw std::invalid_argument("Expected a seed!");
+      }
+    }
     visualize(euclidean);
   }
   catch (std::exception& error) {
