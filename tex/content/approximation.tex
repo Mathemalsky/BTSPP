@@ -1,5 +1,6 @@
 \chapter{Approximation}
 
+In~\cite{garfinkel1978} Garfinkel and Gilbert proved, that no approximation algorithm for \gls{btsp} can exist, unless \(P = NP\), if edge weights can take arbitrary numbers. So we limit ourselves to graphs where the edge weights are non-negative and fulfil the triangle inequality. Mostly we focus on graphs with symmetric edge weights. In that case we call the \gls{btsp} metric \gls{btsp}.
 A 2-approximation algorithm for finding a hamiltonian cycle in the square of a biconnected graph was described by Parker and Rardin in~\cite{ParkerRardin1984}. \cite{alstrup2018hamiltonian} gives an improved version with a runtime linear in the number of edges in the graph.
 
 \section{An approximation algorithm for BTSP}
@@ -23,7 +24,7 @@ In contrary in~\cite{alstrup2018hamiltonian} the much more sophisticated algorit
 \end{enumerate}
 The second feature is a requirement for the algorithm presented to achieve step~\ref{enum:approximate}.
 
-However, the algorithm by Han, Kelsen, Ramachandran and Tarjan comes with some drawbacks:
+However, the linear runtime algorithm by Han, Kelsen, Ramachandran and Tarjan comes with some drawbacks:
 \begin{enumerate}
   \item The linear runtime comes with large constants.
   \item The algorithm is very bulky and craves very complex memory structures to obtain the proposed linear runtime in practical implementation.
@@ -40,16 +41,13 @@ Therefore, the actual implementation (Algorithm~\ref{alg:biconnected_subgraph}) 
       \State set \(G \coloneqq (V, \emptyset)\)
       \State order edges ascending in length
       \State add the first \(n\) edges to \(G\)\label{code:add_n_edges}
-      \While{\(G\) not biconnected}
-        \State add next edge from the list to \(G\)
-      \EndWhile
+      \State use bisection search to figure out how many more edges are needed 
       \State\Return{\(G\)}
     \EndProcedure
   \end{algorithmic}
 \end{algorithm}
 
-% DIREKT BISECTION SEARCH BESCHREIBEN
-In line~\ref{code:add_n_edges}, we add \(n\) edges at once without checking for biconnectivity because every biconnected graph with \(n\) vertices has at least \(n\) edges. This bound is tight in case the biconnected subgraph is a cycle. As in the original algorithm by Rardin and Parker the runtime is \(\O{\abs{E}^2}\), but by replacing the while loop with a bisection search it can be improved to \(\O{\abs{E}\log \abs{E}}\).
+In line~\ref{code:add_n_edges}, we add shortest \(n\) edges at once without checking for biconnectivity because every biconnected graph with \(n\) vertices has at least \(n\) edges. This bound is tight in case the biconnected subgraph is a cycle. In the original algorithm by Parker and Rardin the check for biconnected after each inserted edge was the bottleneck of runtime. By replacing it with a bisection search we obtain an overall runtime of \(\O{\abs{E}\log \abs{E}}\) for the \hyperref[alg:biconnected_subgraph]{algorithm}.
 
 \begin{algorithm}[ht!]
   \caption{Making minimally biconnected}\label{alg:minimally_biconnected}
@@ -133,4 +131,29 @@ Having an open ear decomposition the following steps lead to the approximate sol
   \item shortcut the euler tour to hamilton cycle in the square of the original graph
 \end{enumerate}
 
+The general idea of the algorithm in~\cite{alstrup2018hamiltonian} is to walk along the edges in the open ear decomposition, starting and ending on an arbitrary node and thereby visiting all other nodes exactly once. We are allowed to skip up to one node row, and we may come back and walk edges again. Note that we can walk edges at most twice because we cannot skip both of its end vertices and no node can be visited twice. On the other hand it is possible to shun edges completely.
+
+\subsection{Proving the approximation guarantee}
+Every hamiltonian cycle in a graph \(G = (V, E)\) is biconnected. Thus, the weight \(Z^\ast\) of the longest edge in the bottleneck optimal biconnected subgraph \(G^\ast\) is a lower bound on value OPT of the bottleneck optimal hamiltonian cycle. In step~\ref{enum:approximate} we shortcut pairs of edges from \(G^\ast\) into one. By triangle inequality this edge is no long than the sum of both edges from the pair.
+So for the objective function value \(\hat{Z}\) of a solution obtained by our approximation algorithm we have:
+\begin{equation}
+  \hat{Z} \stackrel{\Delta-\text{ineq.}}{\leq} 2 Z^\ast \stackrel{Z^\ast \leq OPT}{\leq} 2 \, OPT
+\end{equation}
+A typical approach is to take a look at the parameterized triangle inequality, like in~\cite{bender1999generalizedTriangle}, and indeed we can even generalize these result for graphs complying with the parameterized triangle inequality, which is
+\begin{equation*}
+  \wt(e_{uw}) \leq \tau \left(\wt\left(e_{uv}\right) + \wt\left(e_{vw}\right)\right)
+\end{equation*}
+for \(e_{uv} \coloneqq (u,v) \in E\) with \(u,v,w \in V\) and pairwise distinct. For \(\tau \in [0.5,1)\) inequality is tightened whereas for \(\tau > 1\) it is a relaxation.
+For a graph that meets the \(\tau\)-triangle inequality we get
+\begin{equation}
+  \hat{Z} \stackrel{\tau-\Delta-\text{ineq.}}{\leq} 2 \tau Z^\ast \stackrel{Z^\ast \leq OPT}{\leq} 2 \tau \, OPT.
+\end{equation}
+
+
+% crossing
 \section{An approximation algorithm for BTSPP}
+For paths is \gls{btsp} is a bit more complicated since compared to normal \gls{btsp} we have less symmetry in the problem. Here there are dedicates vertices \(s\) and \(t\) while for \gls{btsp} it does not matter where to start.
+
+
+% more difficutl
+% crossing can be necessary
