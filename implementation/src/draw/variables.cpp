@@ -2,9 +2,9 @@
 
 #include <array>
 #include <cstddef>
-#include <vector>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
@@ -14,20 +14,20 @@
 #include "solve/exactsolver.hpp"
 
 namespace drawing {
-Euclidean EUCLIDEAN;
+graph::Euclidean EUCLIDEAN;
 std::vector<float> POINTS_F;
 
 bool SHOW_DEBUG_WINDOW;
 bool SHOW_SETTINGS_WINDOW;
 
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
-std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
+std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 bool DRAW_OPEN_EAR_DECOMPOSITION;
 bool DRAW_BICONNECTED_GRAPH;
 bool DRAW_HAMILTON_CYCLE;
-std::array<std::vector<unsigned int>, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
-std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
+std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
+std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 RGBA_COLOUR CLEAR_COLOUR;
 RGBA_COLOUR VERTEX_COLOUR;
 
@@ -37,7 +37,7 @@ exactsolver::Result BTSPP_EXACT_RESULT;
 
 void updatePointsfFromEuclidean() {
   POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
-  const std::vector<Point2D> points = EUCLIDEAN.verteces();
+  const std::vector<graph::Point2D> points = EUCLIDEAN.vertices();
   for (size_t i = 0; i < points.size(); ++i) {
     POINTS_F[2 * i]     = (float) points[i].x;
     POINTS_F[2 * i + 1] = (float) points[i].y;
@@ -52,11 +52,11 @@ void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type
   }
   else if (type == ProblemType::BTSPP_exact) {
     ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
-    ORDER[(unsigned int) type][0] = order.back();
+    ORDER[(unsigned int) type][0] = order[1];
     std::memcpy(ORDER[(unsigned int) type].data() + 1, order.data(), bytes_of(order));
-    ORDER[(unsigned int) type].back() = order[0];
+    ORDER[(unsigned int) type].back() = order[order.size() - 2];
   }
-  INITIALIZED[static_cast<unsigned int>(type)] = true;
+  INITIALIZED[std::to_underlying(type)] = true;
 }
 }  // namespace drawing
 
@@ -64,7 +64,7 @@ namespace input {
 std::unordered_map<int, bool> STATE;
 
 namespace mouse {
-Point2D MOUSE_LEFT_CLICKED;
+graph::Point2D MOUSE_LEFT_CLICKED;
 int NODE_IN_MOTION;
 }  // namespace mouse
 }  // namespace input
@@ -75,5 +75,5 @@ int WIDTH;
 }  // namespace mainwindow
 
 namespace slowEvents {
-std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
+std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
 }  // namespace slowEvents

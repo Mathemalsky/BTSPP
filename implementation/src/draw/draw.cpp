@@ -28,7 +28,7 @@ static void clearWindow(GLFWwindow* window) {
 }
 
 // the vertex buffer object needs to be bound and the attribute vertex_position needs to be enabled
-static void drawVerteces(const ShaderProgram& drawCircles) {
+static void drawVertices(const ShaderProgram& drawCircles) {
   drawCircles.use();  // need to call glUseProgram before setting uniforms
   drawCircles.setUniform("u_steps", 8);
   drawCircles.setUniform("u_radius", VETREX_RADIUS);
@@ -37,9 +37,8 @@ static void drawVerteces(const ShaderProgram& drawCircles) {
   glDrawArrays(GL_POINTS, 0, EUCLIDEAN.numberOfNodes());  // start at index 0
 }
 
-static void drawPath(
-    const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
-    const float thickness, const RGBA_COLOUR& colour) {
+static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
+                     const float thickness, const RGBA_COLOUR& colour) {
   shaderBuffer.bufferSubData(order);
   drawPathSegments.use();
   drawPathSegments.setUniform("u_thickness", thickness);
@@ -50,7 +49,7 @@ static void drawPath(
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - PATH_OVERHEAD));
 }
 
-static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float thickness, const RGBA_COLOUR& colour) {
+static void drawEdge(const ShaderProgram& drawLine, const graph::Edge& e, const float thickness, const RGBA_COLOUR& colour) {
   drawLine.use();
   drawLine.setUniform("u_ends", POINTS_F[2 * e.u], POINTS_F[2 * e.u + 1], POINTS_F[2 * e.v], POINTS_F[2 * e.v + 1]);
   drawLine.setUniform("u_thickness", thickness);
@@ -63,27 +62,26 @@ static void drawEdge(const ShaderProgram& drawLine, const Edge& e, const float t
 
 template <typename G>
 static void drawGraph(const ShaderProgram& drawLine, const G& graph, const RGBA_COLOUR& colour) {
-  for (const Edge& e : graph.edges()) {
+  for (const graph::Edge& e : graph.edges()) {
     drawEdge(drawLine, e, 5.0f, colour);
   }
 }
 
-static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const EarDecomposition& openEarDecomp) {
+static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const graph::EarDecomposition& openEarDecomp) {
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
-    RGBA_COLOUR colour =
-        COLOUR[static_cast<unsigned int>(ProblemType::BTSP_approx)] * ((float) i / (openEarDecomp.ears.size() - 1));
+    RGBA_COLOUR colour               = COLOUR[std::to_underlying(ProblemType::BTSP_approx)] * ((float) i / (openEarDecomp.ears.size() - 1));
     for (unsigned int j = chain.size() - 1; j > 0; --j) {
-      drawEdge(drawLine, Edge{chain[j], chain[j - 1]}, 5.0f, colour);
+      drawEdge(drawLine, graph::Edge{chain[j], chain[j - 1]}, 5.0f, colour);
     }
   }
 }
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
   clearWindow(window);
-  drawVerteces(programs.drawCircles);
+  drawVertices(programs.drawCircles);
 
-  unsigned int typeInt = static_cast<unsigned int>(ProblemType::BTSP_approx);
+  unsigned int typeInt = std::to_underlying(ProblemType::BTSP_approx);
   if (DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawGraph(programs.drawLine, BTSP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
   }
@@ -94,17 +92,17 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
-  typeInt = static_cast<unsigned int>(ProblemType::BTSP_exact);
+  typeInt = std::to_underlying(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
-  typeInt = static_cast<unsigned int>(ProblemType::BTSPP_exact);
+  typeInt = std::to_underlying(ProblemType::BTSPP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSPP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
-  typeInt = static_cast<unsigned int>(ProblemType::TSP_exact);
+  typeInt = std::to_underlying(ProblemType::TSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
   }

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 
 template <typename Type>
@@ -20,13 +21,22 @@ std::ostream& operator<<(std::ostream& os, const std::vector<Type>& vec) {
   return os << std::endl;
 }
 
-template <typename Type>
-bool removeAnyElementByValue(std::vector<Type>& vec, const Type& val) {
-  typename std::vector<Type>::iterator it = std::find(vec.begin(), vec.end(), val);
-  if (it == vec.end()) {
-    return false;
-  }
-  std::swap(*it, vec.back());
-  vec.pop_back();
-  return true;
+/*!
+ * @brief prints the word in red
+ * @param word string to be printed
+ */
+inline void printLightred(std::string word) noexcept {
+  std::cout << "\033[1;31m";
+  std::cout << word;
+  std::cout << "\033[0m";
+}
+
+/*!
+ * @brief prints the word in yellow
+ * @param word string to be printed
+ */
+inline void printYellow(std::string word) noexcept {
+  std::cout << "\033[1;33m";
+  std::cout << word;
+  std::cout << "\033[0m";
 }

@@ -6,7 +6,11 @@
 #include <stdexcept>
 #include <vector>
 
+#include "exception/exceptions.hpp"
+
 #include "graph/graph.hpp"
+
+namespace graph {
 
 /***********************************************************************************************************************
  *                                             types for graph algorithms
@@ -45,6 +49,10 @@ DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   return tree;
 }
 
+/*!
+ * \brief Creates a graph consisting of all edges which are not in the dfs tree.
+ * \return AdjacencyListGraph with same nodes as dfs tree and complement of edges
+ */
 template <typename G>
 AdjacencyListGraph findBackedges(const G& graph, const DfsTree& tree) {
   AdjacencyListGraph backedges(graph.numberOfNodes());
@@ -59,8 +67,7 @@ AdjacencyListGraph findBackedges(const G& graph, const DfsTree& tree) {
 /*!
  * \brief schmidt computes an open ear decomposition
  * \details This function requires the input graph to be biconnected (strongly biconnected in case of directed graph).
- * The algorithm is related to
- * SCHMIDT, Jens M. A simple test on 2-vertex-and 2-edge-connectivity.
+ * The algorithm is related to SCHMIDT, Jens M. A simple test on 2-vertex-and 2-edge-connectivity.
  * Information Processing Letters, 2013, 113. Jg., Nr. 7, S. 241-244.
  * \param graph Instance of a graph, which provides the required member functions.
  * \return Open Ear decomposition as std::vector of ears which are std::vector<size_t>.
@@ -132,6 +139,12 @@ bool checkBiconnectivity(const G& graph) {
   return true;
 }
 
+/*!
+ * @brief finds a node with at least one neighbour
+ * @tparam G type of graph
+ * @param graph
+ * @return index of non isolated node
+ */
 template <typename G>
 size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
   for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
@@ -139,7 +152,7 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
       return u;
     }
   }
-  throw std::runtime_error("All nodes in graph are isolated!");
+  throw InfesableRequest("All nodes in graph are isolated!");
 }
 
 /*!
@@ -190,3 +203,5 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+
+}  // namespace graph

@@ -4,6 +4,7 @@
 
 #include "graph/graph.hpp"
 
+namespace graph {
 inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
   return os << "(" << edge.u << ", " << edge.v << ") ";
 }
@@ -16,3 +17,4 @@ inline std::ostream& operator<<(std::ostream& os, const G& graph) requires(std::
   }
   return os;
 }
+}  // namespace graph

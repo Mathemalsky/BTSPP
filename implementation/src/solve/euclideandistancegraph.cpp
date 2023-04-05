@@ -1,7 +1,7 @@
 #include "solve/euclideandistancegraph.hpp"
 
-#include <array>
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <iterator>
 #include <random>
@@ -10,12 +10,17 @@
 #include "graph/geometry.hpp"
 #include "graph/graph.hpp"
 
-Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
-  std::array<uint_fast32_t, 2> random_data{2407893799, 27884848};
-  std::random_device src;
-  std::generate(random_data.begin(), random_data.end(), std::ref(src));
+#include "solve/definitions.hpp"
 
-  std::seed_seq seed(random_data.begin(), random_data.end());
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
+  std::array<uint_fast32_t, SEED_LENGTH> randomData;
+  std::random_device src;
+  std::generate(randomData.begin(), randomData.end(), std::ref(src));
+  return generateEuclideanDistanceGraph(numOfNodes, randomData);
+}
+
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes, const std::array<uint_fast32_t, SEED_LENGTH>& randomData) {
+  std::seed_seq seed(randomData.begin(), randomData.end());
   std::default_random_engine generator;
   generator.seed(seed);
 
@@ -23,11 +28,11 @@ Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
   seed.param(std::ostream_iterator<uint_fast32_t>(std::cerr, " "));
   std::cerr << "\n";
 
-  std::vector<Point2D> positions(numOfNodes);
+  std::vector<graph::Point2D> positions(numOfNodes);
   std::uniform_real_distribution<double> distribution(-0.95, 0.95);
-  for (Point2D& point : positions) {
+  for (graph::Point2D& point : positions) {
     point.x = distribution(generator);
     point.y = distribution(generator);
   }
-  return Euclidean(std::move(positions));
+  return graph::Euclidean(std::move(positions));
 }

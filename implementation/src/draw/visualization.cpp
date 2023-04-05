@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <stdexcept>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -14,7 +15,6 @@
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
-#include "solve/euclideandistancegraph.hpp"
 #include "solve/exactsolver.hpp"
 
 // error callback function which prints glfw errors in case they arise
@@ -40,14 +40,13 @@ static void initInputVariables() {
   input::mouse::NODE_IN_MOTION = input::mouse::INITIAL_NODE_IN_MOTION;
 }
 
-static const Buffers& setUpBufferMemory(const unsigned int numberOfNodes) {
-  // generate random vertices in euclidean plane
-  drawing::EUCLIDEAN = std::move(generateEuclideanDistanceGraph(numberOfNodes));
+static const Buffers& setUpBufferMemory(const graph::Euclidean& euclidean) {
+  drawing::EUCLIDEAN = euclidean;
   drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
 
   const VertexBuffer& coordinates     = *new VertexBuffer(drawing::POINTS_F, 2);  // components per vertex
   const ShaderBuffer& tourCoordinates = *new ShaderBuffer(drawing::POINTS_F);     // copy vertex coords to shader buffer
-  const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(numberOfNodes + 3));  // just allocate memory
+  const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
   return *new Buffers{coordinates, tour, tourCoordinates};
 }
@@ -62,25 +61,24 @@ static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderP
   return vao;
 }
 
-int visualize(const unsigned int numberOfNodes) {
+void visualize(const graph::Euclidean& euclidean) {
   // set error colback function
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {
-    return -1;
+    throw std::runtime_error("[GLFW] Failed to initialize glfw!");
   }
 
   // create window in specified size
-  GLFWwindow* window =
-      glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
-  if (window == nullptr)
-    return -1;
+  GLFWwindow* window = glfwCreateWindow(mainwindow::INITIAL_WIDTH, mainwindow::INITIAL_HEIGHT, mainwindow::NAME, nullptr, nullptr);
+  if (window == nullptr) {
+    throw std::runtime_error("[GLFW] Failed to create window!");
+  }
   glfwMakeContextCurrent(window);
 
   // initialize glew
   glewExperimental = GL_TRUE;
   if (glewInit()) {
-    std::cerr << "failed to initialize glew\n";
-    return -1;
+    throw std::runtime_error(" [GLEW] Failed to initialize glew!");
   }
 
   const char* glsl_version = imguiVersionHints();
@@ -91,7 +89,7 @@ int visualize(const unsigned int numberOfNodes) {
   const ShaderProgram drawLineProgram  = collection.linkLineDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawPathSegments, drawLineProgram);
 
-  const Buffers& buffers = setUpBufferMemory(numberOfNodes);
+  const Buffers& buffers = setUpBufferMemory(euclidean);
   const VertexArray& vao = bindBufferMemory(buffers, programs);
 
   // enable vsync
@@ -136,6 +134,4 @@ int visualize(const unsigned int numberOfNodes) {
   // clean up glfw window
   glfwDestroyWindow(window);
   glfwTerminate();
-
-  return 0;
 }

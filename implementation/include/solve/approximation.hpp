@@ -4,17 +4,23 @@
 
 #include "definitions.hpp"
 
-#include "graph/graph.hpp"
 #include "graph/algorithm.hpp"
+#include "graph/graph.hpp"
 
 namespace approximation {
 struct Result {
-  AdjacencyMatrixGraph biconnectedGraph;
-  EarDecomposition openEarDecomposition;
+  graph::AdjacencyMatrixGraph biconnectedGraph;
+  graph::EarDecomposition openEarDecomposition;
   std::vector<unsigned int> tour;
   double opt;
-  Edge bottleneckEdge;
+  graph::Edge bottleneckEdge;
 };
 
-Result approximate(const Euclidean& euclidean, const ProblemType problemType, const bool printInfo = true);
+/*!
+ * \brief approximates a BTSP variant
+ * \param euclidean complete graph, providing distances between nodes
+ * \param problemType dertermines the variant of BTSP to be solved
+ * \return Result
+ */
+Result approximate(const graph::Euclidean& euclidean, const ProblemType problemType, const bool printInfo = true);
 }  // namespace approximation

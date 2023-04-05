@@ -11,9 +11,9 @@ namespace exactsolver {
 struct Result {
   std::vector<unsigned int> tour;
   double opt;
-  Edge bottleneckEdge;
+  graph::Edge bottleneckEdge;
 };
 
-Result solve(const Euclidean& euclidean, const ProblemType problemType);
+Result solve(const graph::Euclidean& euclidean, const ProblemType problemType);
 
 }  // namespace exactsolver

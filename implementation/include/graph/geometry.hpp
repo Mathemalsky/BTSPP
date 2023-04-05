@@ -3,6 +3,8 @@
 #include <cmath>
 #include <fstream>
 
+namespace graph {
+
 struct LineSegment;
 struct Vector2D;
 
@@ -105,6 +107,6 @@ inline bool Point2D::liesOnLeftSide(const LineSegment& seg) const {
  * \return true if they intersect, else false
  */
 inline bool intersect(const LineSegment& seg1, const LineSegment& seg2) {
-  return (seg2.a.liesOnLeftSide(seg1) != seg2.b.liesOnLeftSide(seg1))
-         && (seg1.a.liesOnLeftSide(seg2) != seg1.b.liesOnLeftSide(seg2));
+  return (seg2.a.liesOnLeftSide(seg1) != seg2.b.liesOnLeftSide(seg1)) && (seg1.a.liesOnLeftSide(seg2) != seg1.b.liesOnLeftSide(seg2));
 }
+}  // namespace graph
