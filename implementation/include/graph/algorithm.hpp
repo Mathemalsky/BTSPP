@@ -150,7 +150,7 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
       return u;
     }
   }
-  throw std::logic_error("[GRAPH] All nodes in graph are isolated!");
+  assert("All nodes in graph are isolated!");
 }
 
 /*!

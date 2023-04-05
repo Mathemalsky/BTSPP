@@ -15,7 +15,18 @@ protected:
   std::string pMessage;
 };
 
+class InfesableRequest : public Exception {
+public:
+  InfesableRequest(const std::string& msg) : Exception(msg) {}
+};
+
 class InvalidArgument : public Exception {
 public:
   InvalidArgument(const std::string& msg) : Exception(msg) {}
 };
+
+class UnknownType : public Exception {
+public:
+  UnknownType(const std::string& msg) : Exception(msg) {}
+};
+

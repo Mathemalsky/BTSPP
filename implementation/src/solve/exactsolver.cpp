@@ -9,9 +9,12 @@
 
 #include <Highs.h>
 
+#include "exception/exceptions.hpp"
+
 #include "graph/graph.hpp"
 
 #include "solve/commonfunctions.hpp"
+
 
 namespace exactsolver {
 
@@ -291,7 +294,7 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
     };
   }
   else {
-    throw std::runtime_error("Unknown problem type.");
+    throw UnknownType("[SOLVE] Unknown problem type.");
   }
 }
 }  // namespace exactsolver

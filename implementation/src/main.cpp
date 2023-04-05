@@ -5,6 +5,8 @@
 
 #include "draw/visualization.hpp"
 
+#include "exception/exceptions.hpp"
+
 #include "graph/graph.hpp"
 
 #include "solve/definitions.hpp"
@@ -13,7 +15,6 @@
 #include "utility/utils.hpp"
 
 #include "commandinterpreter.hpp"
-#include "exceptions.hpp"
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #if (VISUALIZATION)

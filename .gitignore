@@ -29,6 +29,7 @@
 !implementation/include/utility/*.hpp
 !implementation/src/solve/*.cpp
 !implementation/include/solve/*.hpp
+!implementation/include/exception/*.hpp
 
 # libraries
 !implementation/lib/imgui/*

@@ -302,11 +302,23 @@ public:
     return vec;
   }
 
+  /*!
+   * @brief returns a neighbour of u
+   * @param u node
+   * @return first neighbour of u in the adjacency list
+   */
   size_t neighbourAny(const size_t u) {
     assert(pAdjacencyList[u].size() > 0 && "There is no neighbour!");
     return pAdjacencyList[u][0];
   }
 
+  /*!
+   * @brief returns a neighbour of u not satisfying the criteria
+   * @tparam func type of lambda function
+   * @param u node
+   * @param criteria lambda function implemnting the criteria 
+   * @return first neighbour not matching the criteria
+   */
   template <typename func>
   size_t neighbourAnyExcept(const size_t u, func&& criteria) {
     for (const size_t v : pAdjacencyList[u]) {
@@ -314,9 +326,16 @@ public:
         return v;
       }
     }
-    throw std::logic_error("[GRAPH] There is no node adjacent to " + std::to_string(u) + "not matching the criteria!");
+    assert("There is no node adjacent to " + std::to_string(u) + "not matching the criteria!");
   }
 
+  /*!
+   * @brief returns a neighbour, if possible satisfying the criteria
+   * @tparam func type of lambda function
+   * @param u node
+   * @param criteria lambda function implemnting the criteria 
+   * @return first neighbour matching the criteria, if there is no then the fist neigbour
+   */
   template <typename func>
   size_t neighbourAnyPrefer(const size_t u, func&& criteria) {
     for (const size_t v : pAdjacencyList[u]) {
@@ -327,10 +346,22 @@ public:
     return neighbourAny(u);
   }
 
+  /*!
+   * @brief returns list of neighbours
+   * @param u node
+   * @return const refference to vector in adjacency list
+   */
   const std::vector<size_t>& neighbours(const size_t u) const { return pAdjacencyList[u]; }
 
+  /*!
+   * @brief creates iteratable instance of Nodes
+   * @return instance of Nodes with the number of nodes in adjacency list
+   */
   Nodes nodes() const { return Nodes(pAdjacencyList.size()); }
 
+  /*!
+   * @brief deletes all edges in the graph
+   */
   void removeAllEdges() {
     for (std::vector<size_t>& vec : pAdjacencyList) {
       vec.resize(0);
@@ -441,12 +472,20 @@ public:
    */
   bool connected() const override;
 
+  /*!
+   * @brief counts the number of edges
+   * @return size_t
+   */
   size_t numberOfEdges() const override {
     return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0,
                            [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); })
            / 2;
   }
 
+  /*!
+   * @brief checks if the graph is biconnected
+   * @return bool 
+   */
   bool biconnected() const { return checkBiconnectivity(*this); }
 
   Edges edges() const { return Edges(pAdjacencyList); }
