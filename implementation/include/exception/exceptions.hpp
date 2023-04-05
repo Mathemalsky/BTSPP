@@ -29,4 +29,3 @@ class UnknownType : public Exception {
 public:
   UnknownType(const std::string& msg) : Exception(msg) {}
 };
-

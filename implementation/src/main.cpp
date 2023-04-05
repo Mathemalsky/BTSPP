@@ -19,7 +19,7 @@
 int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
 #if (VISUALIZATION)
   try {
-    if (argc < 2 || argc != 2 + 1 + SEED_LENGTH) {
+    if (argc != 2 && argc != 2 + 1 + SEED_LENGTH) {
       throw InvalidArgument("[MAIN] Got " + std::to_string(argc) + " arguments, but expected exactly 2 or additional seed!");
     }
     if (std::atoi(argv[1]) < 3) {

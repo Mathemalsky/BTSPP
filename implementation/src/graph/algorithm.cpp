@@ -37,7 +37,9 @@ private:
 
 AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double& maxEdgeWeight) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
+  const size_t numberOfEdges = euclidean.numberOfEdges();
 
+  // sort the edges
   const Index index(numberOfNodes);
   std::vector<unsigned int> edgeIndices(index.numberOfEdges());
   std::iota(edgeIndices.begin(), edgeIndices.end(), 0);
@@ -53,24 +55,33 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
     entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
     entries.push_back(Entry(e.v, e.u, euclidean.weight(e)));
   }
+  AdjacencyMatrixGraph graph(numberOfNodes, entries);  // create an undirected graph from that
+  AdjacencyMatrixGraph graphCopy = graph;              // and a copy
 
-  // create an undirected graph from that
-  AdjacencyMatrixGraph graph(numberOfNodes, entries);
+  // use bisection search to find bottleneck optimal biconnected subgraph
+  size_t upperbound = numberOfEdges;
+  size_t lowerbound = numberOfNodes;
+  while (upperbound != lowerbound) {
+    size_t middle = (lowerbound + upperbound) / 2;
+    for (size_t i = lowerbound; i < middle; ++i) {
+      const Edge e = index.edge(edgeIndices[i]);
+      graphCopy.addEdge(e, euclidean.weight(e));
+    }
+    graphCopy.compressMatrix();
 
-  // continue adding edges until it is biconnected
-  unsigned int edgeCounter = numberOfNodes;
-
-  while (!graph.biconnected()) {
-    assert(edgeCounter < euclidean.numberOfEdges() && "We cannot add more edges than existing.");
-
-    const Edge e = index.edge(edgeIndices[edgeCounter++]);
-    graph.addEdge(e, euclidean.weight(e));
-
-    graph.compressMatrix();  // matrix became uncommpressed when adding edges
+    if (graphCopy.biconnected()) {
+      upperbound = middle;
+      graphCopy  = graph;
+    }
+    else {
+      lowerbound   = middle + 1;
+      const Edge e = index.edge(edgeIndices[middle]);
+      graphCopy.addEdge(e, euclidean.weight(e));
+      graph = graphCopy;
+    }
   }
-
-  maxEdgeWeight = euclidean.weight(index.edge(edgeIndices[edgeCounter - 1]));  // for lower bound on opt
-
+  maxEdgeWeight = euclidean.weight(index.edge(edgeIndices[lowerbound - 1]));  // for lower bound on opt
+  graph.compressMatrix();                                                     // matrix became uncommpressed when adding edges
   return graph;
 }
 }  // namespace graph

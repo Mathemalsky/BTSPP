@@ -15,7 +15,6 @@
 
 #include "solve/commonfunctions.hpp"
 
-
 namespace exactsolver {
 
 using Entry = Eigen::Triplet<double>;

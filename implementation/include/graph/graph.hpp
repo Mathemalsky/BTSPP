@@ -10,6 +10,8 @@
 
 #include <Eigen/SparseCore>
 
+#include "exception/exceptions.hpp"
+
 #include "graph/geometry.hpp"
 #include "graph/utils.hpp"
 
@@ -316,7 +318,7 @@ public:
    * @brief returns a neighbour of u not satisfying the criteria
    * @tparam func type of lambda function
    * @param u node
-   * @param criteria lambda function implemnting the criteria 
+   * @param criteria lambda function implemnting the criteria
    * @return first neighbour not matching the criteria
    */
   template <typename func>
@@ -326,14 +328,14 @@ public:
         return v;
       }
     }
-    assert("There is no node adjacent to " + std::to_string(u) + "not matching the criteria!");
+    throw InfesableRequest("There is no node adjacent to " + std::to_string(u) + "not matching the criteria!");
   }
 
   /*!
    * @brief returns a neighbour, if possible satisfying the criteria
    * @tparam func type of lambda function
    * @param u node
-   * @param criteria lambda function implemnting the criteria 
+   * @param criteria lambda function implemnting the criteria
    * @return first neighbour matching the criteria, if there is no then the fist neigbour
    */
   template <typename func>
@@ -484,7 +486,7 @@ public:
 
   /*!
    * @brief checks if the graph is biconnected
-   * @return bool 
+   * @return bool
    */
   bool biconnected() const { return checkBiconnectivity(*this); }
 

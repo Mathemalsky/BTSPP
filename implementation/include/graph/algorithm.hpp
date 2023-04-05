@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "exception/exceptions.hpp"
+
 #include "graph/graph.hpp"
 
 namespace graph {
@@ -150,7 +152,7 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
       return u;
     }
   }
-  assert("All nodes in graph are isolated!");
+  throw InfesableRequest("All nodes in graph are isolated!");
 }
 
 /*!
