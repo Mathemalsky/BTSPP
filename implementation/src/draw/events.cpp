@@ -40,7 +40,7 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
 static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
-    drawing::BTSP_APPROX_RESULT = approximation::approximate(drawing::EUCLIDEAN, ProblemType::BTSP_approx);
+    drawing::BTSP_APPROX_RESULT                                     = approximation::approximateBTSP(drawing::EUCLIDEAN);
     drawing::updateOrder(drawing::BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {

@@ -165,38 +165,56 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
   return GraphPair{digraph, graph};
 }
 
-Result approximate(const graph::Euclidean& euclidean, const ProblemType problemType, const bool printInfo) {
-  if (problemType == ProblemType::BTSP_approx) {
-    double maxEdgeWeight;
-    std::vector<unsigned int> tour, longEulertour;
-    const graph::AdjacencyMatrixGraph biconnectedGraph = biconnectedSpanningGraph(euclidean, maxEdgeWeight);
-    const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
-    const graph::AdjacencyListGraph fromEars           = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
-    const graph::AdjacencyListGraph minimal            = fromEars.removeUncriticalEdges();
-    const graph::EarDecomposition openEars             = schmidt(minimal);  // calculate proper ear decomposition
+Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) {
+  double maxEdgeWeight;
+  std::vector<unsigned int> tour, longEulertour;
+  const graph::AdjacencyMatrixGraph biconnectedGraph = biconnectedSubgraph(euclidean, maxEdgeWeight);
+  const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
+  const graph::AdjacencyListGraph fromEars           = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+  const graph::AdjacencyListGraph minimal            = minimallyBiconnectedSubgraph(fromEars);
+  const graph::EarDecomposition openEars             = schmidt(minimal);  // calculate proper ear decomposition
 
-    if (openEars.ears.size() == 1) {
-      tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
-    }
-    else {
-      GraphPair graphpair           = constructGraphPair(openEars, euclidean.numberOfNodes());
-      const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-      tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
-    }
-    const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
-    const double objective           = euclidean.weight(bottleneckEdge);
-
-    if (printInfo) {
-      std::cout << "objective           : " << objective << std::endl;
-      std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
-      std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
-      assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
-    }
-
-    return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
+  if (openEars.ears.size() == 1) {
+    tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
   }
   else {
-    throw std::logic_error("Unknown problem type");
+    GraphPair graphpair           = constructGraphPair(openEars, euclidean.numberOfNodes());
+    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
+    tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
   }
+  const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
+  const double objective           = euclidean.weight(bottleneckEdge);
+
+  if (printInfo) {
+    std::cout << "objective           : " << objective << std::endl;
+    std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
+    std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
+    assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+  }
+
+  return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
+}
+
+Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
+  const graph::Edge st_Edge{s, t};
+
+  double maxEdgeWeight;
+
+  // find graph s.t. G = (V,E) + (s,t) is biconnected
+  const graph::AdjacencyMatrixGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, st_Edge, maxEdgeWeight);
+  const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
+  graph::AdjacencyListGraph fromEars                 = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+  if (!fromEars.adjacent(s, t)) {  // if the s-t edge is one of the removed ones,
+    fromEars.addEdge(st_Edge);     // add it again.
+  }
+  graph::AdjacencyListGraph minimal = edgeKeepingMinimallyBiconectedSubgraph(fromEars, st_Edge);
+  minimal.removeEdge(st_Edge);
+
+  // create a graph consisting of 5 times the graph + nodes x and y connected to all copies of s resp. t
+  graph::AdjacencyListGraph(5 * euclidean.numberOfNodes() + 2);
+  // put 5 cpoies of minimals adjacencylist in the vector and add x and y
+
+  // solve btsp in this graph
+  // find the s-t-path in obtained solution
 }
 }  // namespace approximation

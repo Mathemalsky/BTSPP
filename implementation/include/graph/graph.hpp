@@ -47,7 +47,14 @@ struct Edge {
    * @param other edge to compare
    * @return true if different, else otherwise
    */
-  bool operator!=(const Edge& other) { return u != other.u || v != other.v; }
+  bool operator!=(const Edge& other) const { return u != other.u || v != other.v; }
+
+  /*!
+   * @brief edges with same outgoing node and same ingoing node are identic
+   * @param other edge to compare
+   * @return bool
+   */
+  bool operator==(const Edge& other) const { return u == other.u && v == other.v; }
 
   /*!
    * \brief reverse creates a new add directed from v to u
@@ -505,8 +512,6 @@ public:
     [[maybe_unused]] const bool removed2 = removeAnyElementByValue(pAdjacencyList[v], u);
     assert(removed2 && "Edge to be removed does not exist in graph!");
   }
-
-  AdjacencyListGraph removeUncriticalEdges() const;
 };
 
 /*!
@@ -686,7 +691,7 @@ public:
 
   Neighbours neighbours(const size_t node) const { return Neighbours(pAdjacencyMatrix, node); }
 
-  void prune() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
+  void pruneMatrix() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
 
   void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
@@ -810,7 +815,6 @@ public:
     assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.v, e.u) = 0.0;
   }
-  AdjacencyMatrixGraph removeUncriticalEdges() const;
 };
 
 /*!

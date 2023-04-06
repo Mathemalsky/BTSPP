@@ -188,13 +188,25 @@ std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Graph, 
 }
 
 /*!
- * \brief biconnectedSpanningGraph computes a bottleneck optimal biconnected spanning subgraph.
- * \details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
+ * @brief biconnectedSpanningGraph computes a bottleneck optimal biconnected subgraph.
+ * @details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
  * increasing in their length and successively added until the graph is biconnected.
- * \param euclidean complete graph, providing distances between nodes.
- * \return undirected AdjacencyMatrixGraph
+ * @param euclidean complete graph, providing distances between nodes
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyMatrixGraph
  */
-AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double& maxEdgeWeight);
+AdjacencyMatrixGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
+
+/*!
+ * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
+ * @details First the augmentation edge is added then some edges definitely not increasing the bottleneck are added. Then the other edges
+ * are sortet increasing in their length and successively added until the graph is biconnected. Then the augmentation edge is removed.
+ * @param euclidean complete graph, providing distances between nodes
+ * @param augmentationEdge
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyMatrixGraph
+ */
+AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
 
 /*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
@@ -203,5 +215,9 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+
+AdjacencyListGraph minimallyBiconnectedSubgraph(const AdjacencyListGraph& graph);
+
+AdjacencyListGraph edgeKeepingMinimallyBiconectedSubgraph(const AdjacencyListGraph& graph, const Edge& keepEdge);
 
 }  // namespace graph

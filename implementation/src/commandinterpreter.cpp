@@ -99,7 +99,7 @@ static void readArguments(const int argc, char* argv[]) {
   }
 
   if (arguments.contains("-btsp")) {
-    const approximation::Result res = approximation::approximate(euclidean, ProblemType::BTSP_approx);
+    const approximation::Result res = approximation::approximateBTSP(euclidean);
     arguments.erase("-btsp");
   }
   if (arguments.contains("-btsp-e")) {

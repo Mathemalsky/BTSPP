@@ -19,8 +19,9 @@ struct Result {
 /*!
  * \brief approximates a BTSP variant
  * \param euclidean complete graph, providing distances between nodes
- * \param problemType dertermines the variant of BTSP to be solved
  * \return Result
  */
-Result approximate(const graph::Euclidean& euclidean, const ProblemType problemType, const bool printInfo = true);
+Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo = true);
+
+Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo = true);
 }  // namespace approximation
