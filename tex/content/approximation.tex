@@ -1,13 +1,13 @@
 \chapter{Approximation}
 
-In~\cite{garfinkel1978} Garfinkel and Gilbert proved, that no approximation algorithm for \gls{btsp} can exist, unless \(P = NP\), if edge weights can take arbitrary numbers. So we limit ourselves to graphs where the edge weights are non-negative and fulfil the triangle inequality. Mostly we focus on graphs with symmetric edge weights. In that case we call the \gls{btsp} metric \gls{btsp}.
-A 2-approximation algorithm for finding a hamiltonian cycle in the square of a biconnected graph was described by Parker and Rardin in~\cite{ParkerRardin1984}. \cite{alstrup2018hamiltonian} gives an improved version with a runtime linear in the number of edges in the graph.
+In~\cite{garfinkel1978} Garfinkel and Gilbert proved, that no approximation algorithm for \gls{btsp} can exist, unless \(P = NP\), if edge weights can take arbitrary numbers. So we limit ourselves to graphs where the edge weights are non-negative and fulfil the triangle inequality. Mostly we focus on graphs with symmetric edge weights. That means \(\wt(e_{uv}) = \wt(e_{vu}) \,\, \forall (e,u)\) in the graphs edge set \(E\). Then we call the \gls{btsp} a metric \gls{btsp} because the edge weights comply with all 3 properties of a metric.
+A 2-approximation algorithm for finding a hamiltonian cycle in the square of a biconnected graph was described by Parker and Rardin in 1984~\cite{ParkerRardin1984}. \cite{alstrup2018hamiltonian} gives an improved version with a runtime linear in the number of edges in the graph.
 
 \section{An approximation algorithm for BTSP}
 In this section we compare the algorithms from~\cite{ParkerRardin1984} and~\cite{alstrup2018hamiltonian} and discuss the actual implementation.
 
 On a very abstract level the algorithms contain of three steps:
-\begin{enumerate}
+\begin{enumerate}[label={Step \arabic*:}, wide = 1em, leftmargin = 3em]
   \item find a bottleneck optimal biconnected subgraph
   \item compute an open ear decomposition of that subgraph
   \item find an approximate solution using the open ear decomposition\label{enum:approximate}
@@ -140,20 +140,39 @@ So for the objective function value \(\hat{Z}\) of a solution obtained by our ap
   \hat{Z} \stackrel{\Delta-\text{ineq.}}{\leq} 2 Z^\ast \stackrel{Z^\ast \leq OPT}{\leq} 2 \, OPT
 \end{equation}
 A typical approach is to take a look at the parameterized triangle inequality, like in~\cite{bender1999generalizedTriangle}, and indeed we can even generalize these result for graphs complying with the parameterized triangle inequality, which is
-\begin{equation*}
-  \wt(e_{uw}) \leq \tau \left(\wt\left(e_{uv}\right) + \wt\left(e_{vw}\right)\right)
-\end{equation*}
-for \(e_{uv} \coloneqq (u,v) \in E\) with \(u,v,w \in V\) and pairwise distinct. For \(\tau \in [0.5,1)\) inequality is tightened whereas for \(\tau > 1\) it is a relaxation.
+\begin{equation}
+  \wt(e_{uw}) \leq \tau \left(\wt\left(e_{uv}\right) + \wt\left(e_{vw}\right)\right)\label[equation]{eq:tau_inequality}
+\end{equation}
+for \(e_{uv}, e_{vw}, e_{uw} \in E\) with \(u,v,w \in V\) and pairwise distinct. For \(\tau \in [0.5,1)\) inequality is tightened whereas for \(\tau > 1\) it is a relaxation.
 For a graph that meets the \(\tau\)-triangle inequality we get
 \begin{equation}
   \hat{Z} \stackrel{\tau-\Delta-\text{ineq.}}{\leq} 2 \tau Z^\ast \stackrel{Z^\ast \leq OPT}{\leq} 2 \tau \, OPT.
 \end{equation}
 
+\subsection{Optimality of approximation factor}
+In theorem 3 of their work~\cite{ParkerRardin1984} Parker and Rardin proved that the existence an approximation algorithm with approximation factor smaller than \(2\) would imply \(P = NP\). The proof - and thus the result - can be generalized to the parameterized triangle inequality.
+
+\begin{theorem}
+  For general graphs with non-negative symmetric weights satisfying the \(\tau\)-triangle inequality~\eqref{eq:tau_inequality}, there is no approximation algorithm \(\mathcal{A}\) with approximation guarantee \(f < 2\tau\) unless \(P = NP\).
+\end{theorem}
+
+\begin{proof}
+  Let's pretend we have an approximation algorithm \(\mathcal{A}\) with approximation guarantee \(f < 2\tau\). Then we can use \(\mathcal{A}\) to test an arbitrary graph \(G = (V,E)\) for hamiltonicity in polynomial time. To do so, we put weights on the complete graph \(K_\abs{V} = (V, V \times V)\).
+  \begin{equation*}
+    \forall e \in V \times V \quad \wt(e) \coloneqq \begin{cases}
+      1 \quad e \in E \\
+      2 \tau \quad \text{else}
+    \end{cases}
+  \end{equation*}
+  Obviously a graph with such weights obeys the \(tau\)-triangle inequality. If \(G\) is hamiltonian \(\mathcal{A}\) finds a hamilton cycle in \(K_\abs{V}\) including only edge with weight \(< 2\tau\). So all edges must be in \(E\). Hence, by checking if the value of the solution from \(\mathcal{A}\) one can decide if \(G\) is hamiltonian or not, but to decide if a general graph like \(G\) is hamiltonian is known to be (NP-complete). Therefore, either \(P = NP\) or our assumption that an algorithm \(\mathcal{A}\) can exist was wrong.
+
+  % glossary entry for np complete
+\end{proof}
 
 % crossing
 \section{An approximation algorithm for BTSPP}
-For paths is \gls{btsp} is a bit more complicated since compared to normal \gls{btsp} we have less symmetry in the problem. Here there are dedicates vertices \(s\) and \(t\) while for \gls{btsp} it does not matter where to start.
+For paths \gls{btsp} is a bit more complicated since compared to normal \gls{btsp} we have less symmetry in the problem. Here there are dedicated vertices \(s\) and \(t\) while for \gls{btsp} it does not matter where to start.
 
 
-% more difficutl
+% more difficult
 % crossing can be necessary

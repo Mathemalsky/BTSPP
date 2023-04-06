@@ -22,29 +22,40 @@
 \usepackage{amsmath}
 
 % defintions, examples, theorems, ...
-\usepackage{amsthm}
+\usepackage[thmmarks, amsmath, thref]{ntheorem}
+
+\theoremstyle{break}
+\theoremheaderfont{\upshape\bfseries}
+\theorembodyfont{\upshape}
+\theoremseparator{}
 
 % definiton
-\theoremstyle{definition}
 \newtheorem{definition}{Definition}[chapter]
 
-% conclusion
-\newtheorem{conclusion}[definition]{conclusion}
-
-% lemma
-\newtheorem{lemma}[definition]{lemma}
-
 % assumption
-\newtheorem{assumption}[definition]{assumption}
+\newtheorem{assumption}[definition]{Assumption}
 
-% theorem
-\newtheorem{theorem}[definition]{theorem}
+% conclusion
+\newtheorem{conclusion}[definition]{Conclusion}
 
 % example
-\newtheorem{example}[definition]{example}
+\newtheorem{example}[definition]{Example}
+
+% lemma
+\newtheorem{lemma}[definition]{Lemma}
+
+% notattion
+\newtheorem{notation}[definition]{Notation}
+
+% theorem
+\newtheorem{theorem}[definition]{Theorem}
 
 % surpress indent at begin of paragraph
 \setlength{\parindent}{0pt}
+
+% enumeration
+\usepackage{enumerate}
+\usepackage[shortlabels]{enumitem}
 
 % references in the document
 \usepackage{hyperref}
@@ -57,8 +68,11 @@
 
 \newcommand{\st}{\textrm{s.t.}}
 \newcommand{\wt}{\textrm{wt}}
-\newcommand{\abs}[1]{\vert #1 \vert}
+\newcommand{\abs}[1]{{\vert #1 \vert}}
 \renewcommand{\O}[1]{\mathcal{O}(#1)}
+
+\newenvironment{proof}[1][\negthickspace]{\textbf{Proof\thickspace#1:} }{\hfill\textbf{q.e.d.}\newline}
+
 
 \usepackage[
   nomain,  % suppresses the creation of the main glossary and associated .glo
@@ -80,9 +94,8 @@
                % for more
 ]{glossaries}
 
-
-\usepackage{appendix/acronyms} 
 \makeglossaries
+\usepackage{appendix/acronyms} 
 
 \begin{document}
 \input{content/titlepage}
@@ -98,6 +111,7 @@
 %\input{appendix/acronyms}
 
 \printacronyms[title={List of Acronyms}]
+\printglossary[type=\acronymtype]
 
 \printbibliography[
   heading=bibintoc,

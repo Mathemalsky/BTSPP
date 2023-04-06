@@ -4,25 +4,25 @@ Before we can move on to the main results, we need to set up a few definitions e
 \section{Graphs}
 As long as not stated otherwise a graph is undirected and has neither loops nor parallel edges. The terms \enquote{vertex} and \enquote{node} are used as synonyms.
 
-\begin{definition} [\(k\)-connected]\label{def:k_connected}\ \\
+\begin{definition} [\(k\)-connected]\label{def:k_connected}
   A graph G is \(k\)-connected if it remains connected after removal of any \(k-1\) nodes and all their adjacent edges.
 \end{definition}
 
 So the terms \(1\)-connected and connected coincide while the word \enquote{biconnected} is an alias to \(2\)-connected.
 
-\begin{definition} [\(k\)-essential]\label{def:k_essential}\ \\
+\begin{definition} [\(k\)-essential]\label{def:k_essential}
   An edge \(e\) in a \(k\)-connected graph \(G = (V, E)\) is \(k\)-essential if \(G \backslash e \coloneqq (V, E \backslash e)\) is not \(k\)-connected.
 \end{definition}
 
-\begin{definition}[minimally \(k\)-connected]\label{def:min_k_connected}\ \\
+\begin{definition}[minimally \(k\)-connected]\label{def:min_k_connected}
   A \(k\)-connected graph \(G\) is minimally \(k\)-connected if every edge in \(G\) is \(k\)-essnetial.
 \end{definition}
 
-\begin{definition}[articulation point]\label{def:articulation_point}\ \\
+\begin{definition}[articulation point]\label{def:articulation_point}
   When removal of a node \(v\) and all its adjacent edges from a graph \(G\) disconnects \(G\) then \(v\) is an articulation point.
 \end{definition}
 
-\begin{definition}[power of a graph]\label{def:power_of_graph}\ \\
+\begin{definition}[power of a graph]\label{def:power_of_graph}
   For a natural number \(k\) and a graph \(G = (V, E)\) the term \(G^{k}\) denotes the graph obtained by adding the edge \((u,v)\) to \(H \coloneqq (V, \emptyset)\) if and only if there exists a path from \(u\) to \(v\) in \(G\) containing no more than \(k\) edges.
 \end{definition}
 
@@ -34,7 +34,7 @@ We will primarily use the term \enquote{square} of a graph for the case \(k\) eq
 \section{Bottleneck travelling salesman problem}
 The variants of the \gls{btsp} studied in this thesis differ from the classical \gls{tsp}, also known as min-sum-TSP, in their objective. Because \gls{btsp} minimizes the maximum weight of all edges in the hamilton cycle instead of the sum, it sometimes appears in literature under the term min-max-TSP.
 
-\begin{definition}[Bottleneck travelling salesman problem]\label{def:btsp}\ \\
+\begin{definition}[Bottleneck travelling salesman problem]\label{def:btsp}
   In a hamiltonian graph \(G\) the \gls{btsp} is the problem of finding
   \begin{equation*}
     \min\limits_{C} \max\limits_{e \in C} \wt(e),
@@ -46,7 +46,7 @@ For the sake of imagination the edge weight is sometimes also called \enquote{le
 
 If we are not searching for a hamilton cycle but a hamilton path we obtain the \gls{btspp}.
 
-\begin{definition}[Bottleneck travelling salesman path problem]\label{def:btspp}\ \\
+\begin{definition}[Bottleneck travelling salesman path problem]\label{def:btspp}
   In a graph \(G\) with a hamilton path from a given node \(s\) to given node \(t\) the \gls{btspp} is the problem of finding
   \begin{equation*}
     \min\limits_{P} \max\limits_{e \in P} \wt(e),
