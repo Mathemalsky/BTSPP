@@ -294,6 +294,11 @@ public:
 
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
+  /*!
+   * @brief gives complete adjacency list
+   * @details The i^th entry of the outer vectors contains the indices of all nodes reached with edges outgoing from node i.
+   * @return vector of vector of size_t (indices)
+   */
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
 
   /*!

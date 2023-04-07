@@ -14,6 +14,7 @@
 
 #include "graph/algorithm.hpp"
 #include "graph/graph.hpp"
+#include "graph/utils.hpp"
 
 #include "solve/commonfunctions.hpp"
 
@@ -195,6 +196,10 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
 }
 
+static bool isCopyOf(const size_t node, const size_t compare, const size_t numberOfNodes) {
+  return (node % numberOfNodes == compare && node < 5 * numberOfNodes);
+}
+
 Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
   const graph::Edge st_Edge{s, t};
 
@@ -211,10 +216,63 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   minimal.removeEdge(st_Edge);
 
   // create a graph consisting of 5 times the graph + nodes x and y connected to all copies of s resp. t
-  graph::AdjacencyListGraph(5 * euclidean.numberOfNodes() + 2);
-  // put 5 cpoies of minimals adjacencylist in the vector and add x and y
+  const size_t numberOfNodes = euclidean.numberOfNodes();
+  std::vector<std::vector<size_t>> adjacencyList;
+  adjacencyList.reserve(numberOfNodes);
 
-  // solve btsp in this graph
-  // find the s-t-path in obtained solution
+  for (size_t i = 0; i < 5; ++i) {
+    adjacencyList.insert(adjacencyList.end(), minimal.adjacencyList().begin(), minimal.adjacencyList().end());
+  }
+
+  const size_t x = 5 * numberOfNodes;
+  const size_t y = 5 * numberOfNodes + 1;
+  adjacencyList.emplace_back(std::vector<size_t>{});  // add empty adjacency vector for x
+  adjacencyList.emplace_back(std::vector<size_t>{});  // add empty adjacency vector for y
+  graph::AdjacencyListGraph fiveFoldGraph(adjacencyList);
+
+  // connect all copies of s to x and all copies of t to y
+  for (size_t i = 0; i < 5; i++) {
+    fiveFoldGraph.addEdge(i * numberOfNodes + s, x);
+    fiveFoldGraph.addEdge(i * numberOfNodes + t, y);
+  }
+
+  const graph::EarDecomposition openEars = schmidt(minimal);  // calculate proper ear decomposition
+  std::vector<unsigned int> tour, longEulertour;
+
+  if (openEars.ears.size() == 1) {
+    tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
+  }
+  else {
+    GraphPair graphpair           = constructGraphPair(openEars, euclidean.numberOfNodes());
+    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
+    tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
+  }
+
+  // extract s-t-path from solution
+  const size_t pos_x = std::distance(tour.begin(), std::find(tour.begin(), tour.end(), x));
+  const size_t pos_y = std::distance(tour.begin(), std::find(tour.begin(), tour.end(), y));
+
+  // std::array<bool, 5> graphCopyIsSolution{true, true, true, true, true};
+  // graphCopyIsSolution[]
+
+  for (size_t i = 0; i < tour.size(); ++i) {
+    if (isCopyOf(tour[i], s, numberOfNodes)) {
+      if (graph::previousInCycle(tour, i) != x && graph::successiveInCycle(tour, i) != x) {
+        // i is potential start node
+      }
+    }
+  }
+
+  const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, false);
+  const double objective           = euclidean.weight(bottleneckEdge);
+
+  if (printInfo) {
+    std::cout << "objective           : " << objective << std::endl;
+    std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
+    std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
+    assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+  }
+
+  return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
 }
 }  // namespace approximation
