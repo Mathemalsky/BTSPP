@@ -23,5 +23,5 @@ struct Result {
  */
 Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo = true);
 
-Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo = true);
+Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s = 0, const size_t t = 1, const bool printInfo = true);
 }  // namespace approximation

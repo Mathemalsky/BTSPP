@@ -32,6 +32,7 @@ RGBA_COLOUR CLEAR_COLOUR;
 RGBA_COLOUR VERTEX_COLOUR;
 
 approximation::Result BTSP_APPROX_RESULT;
+approximation::Result BTSPP_APPROX_RESULT;
 exactsolver::Result BTSP_EXACT_RESULT;
 exactsolver::Result BTSPP_EXACT_RESULT;
 

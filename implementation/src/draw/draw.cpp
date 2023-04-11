@@ -92,6 +92,10 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
+  typeInt = std::to_underlying(ProblemType::BTSPP_approx);
+  if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
+    // draw
+  }
   typeInt = std::to_underlying(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);

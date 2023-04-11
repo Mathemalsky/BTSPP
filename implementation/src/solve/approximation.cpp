@@ -18,6 +18,9 @@
 
 #include "solve/commonfunctions.hpp"
 
+// DBEUG
+#include "utility/utils.hpp"
+
 namespace approximation {
 
 struct GraphPair {
@@ -247,6 +250,9 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
     const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
     tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
   }
+
+  // DEBUG
+  std::cerr << "5 tours: " << tour << std::endl;
 
   // extract s-t-path from solution
   const size_t pos_x = std::distance(tour.begin(), std::find(tour.begin(), tour.end(), x));

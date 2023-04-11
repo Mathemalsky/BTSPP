@@ -43,6 +43,11 @@ static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
     drawing::BTSP_APPROX_RESULT                                     = approximation::approximateBTSP(drawing::EUCLIDEAN);
     drawing::updateOrder(drawing::BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
+  if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
+    slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
+    drawing::BTSPP_APPROX_RESULT                                     = approximation::approximateBTSPP(drawing::EUCLIDEAN);
+    drawing::updateOrder(drawing::BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
+  }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
     drawing::BTSP_EXACT_RESULT                                     = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
