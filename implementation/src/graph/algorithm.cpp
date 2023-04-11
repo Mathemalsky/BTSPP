@@ -133,7 +133,7 @@ AdjacencyListGraph edgeKeepingMinimallyBiconectedSubgraph(const AdjacencyListGra
   AdjacencyListGraph experimentalCopy = graph;
 
   for (const Edge& e : graph.edges()) {
-    if (experimentalCopy.degree(e.u) > 2 && experimentalCopy.degree(e.v) > 2 && e != keepEdge) {
+    if (experimentalCopy.degree(e.u) > 2 && experimentalCopy.degree(e.v) > 2 && e != keepEdge && e.reverse() != keepEdge) {
       experimentalCopy.removeEdge(e);
       if (experimentalCopy.biconnected()) {
         saveCopy = experimentalCopy;

@@ -44,6 +44,7 @@ void drawImgui() {
 
   if (drawing::SHOW_DEBUG_WINDOW) {
     ImGui::Begin("Debug", &drawing::SHOW_DEBUG_WINDOW);
+    ImGui::Text("Node in motion: %d", input::mouse::NODE_IN_MOTION);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
   }

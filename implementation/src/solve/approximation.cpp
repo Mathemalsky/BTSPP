@@ -19,6 +19,7 @@
 #include "solve/commonfunctions.hpp"
 
 // DBEUG
+#include "graph/ostream.hpp"
 #include "utility/utils.hpp"
 
 namespace approximation {
@@ -215,7 +216,15 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   if (!fromEars.adjacent(s, t)) {  // if the s-t edge is one of the removed ones,
     fromEars.addEdge(st_Edge);     // add it again.
   }
+
+  // DEBUG
+  std::cerr << "fromEars:\n" << fromEars << std::endl;
+
   graph::AdjacencyListGraph minimal = edgeKeepingMinimallyBiconectedSubgraph(fromEars, st_Edge);
+
+  // DEBUG
+  std::cerr << "minimal:\n" << minimal << std::endl;
+
   minimal.removeEdge(st_Edge);
 
   // create a graph consisting of 5 times the graph + nodes x and y connected to all copies of s resp. t
@@ -239,7 +248,10 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
     fiveFoldGraph.addEdge(i * numberOfNodes + t, y);
   }
 
-  const graph::EarDecomposition openEars = schmidt(minimal);  // calculate proper ear decomposition
+  // DEBUG
+  std::cerr << "minimal 5 fold:\n" << fiveFoldGraph << std::endl;
+
+  const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
   std::vector<unsigned int> tour, longEulertour;
 
   if (openEars.ears.size() == 1) {
