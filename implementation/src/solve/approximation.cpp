@@ -204,6 +204,14 @@ static bool isCopyOf(const size_t node, const size_t compare, const size_t numbe
   return (node % numberOfNodes == compare && node < 5 * numberOfNodes);
 }
 
+static void increaseModulo(size_t& number, const size_t modulus) {
+  number == modulus - 1 ? number = 0 : ++number;
+}
+
+static void decreaseModulo(size_t& number, const size_t modulus) {
+  number == 0 ? number = modulus - 1 : --number;
+}
+
 Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
   const graph::Edge st_Edge{s, t};
 
@@ -279,6 +287,50 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const size_t pos_x = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), x));
   const size_t pos_y = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), y));
 
+  const size_t posDistance = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
+  assert((posDistance - 1) % numberOfNodes == 0 && "Distance between index positions does not fit!");
+
+  std::vector<unsigned int> tour;
+  tour.reserve(numberOfNodes);
+
+  if (posDistance >= 3 * numberOfNodes + 1) {
+    const size_t startPosition = std::min(pos_x, pos_y) + numberOfNodes + 1;
+    const size_t endPosition   = startPosition + numberOfNodes;
+    tour.resize(numberOfNodes);
+
+    assert(wholeTour[startPosition] % numberOfNodes == s || wholeTour[startPosition] % numberOfNodes == t);
+    if (wholeTour[startPosition] % numberOfNodes == s) {
+      for (size_t i = startPosition; i < endPosition; ++i) {
+        tour[i - startPosition] = wholeTour[i];
+      }
+    }
+    else {
+      for (size_t i = startPosition; i < endPosition; ++i) {
+        tour[startPosition + numberOfNodes - i - 1] = wholeTour[i];
+      }
+    }
+  }
+  else {
+    size_t startPosition = (std::max(pos_x, pos_y) + numberOfNodes + 1) % numberOfNodes5FoldGraph;
+    size_t endPosition   = (startPosition + numberOfNodes) % numberOfNodes5FoldGraph;
+
+    assert(wholeTour[startPosition] % numberOfNodes == s || wholeTour[startPosition] % numberOfNodes == t);
+    if (wholeTour[startPosition] % numberOfNodes == s) {
+      for (size_t i = startPosition; i != endPosition; increaseModulo(i, numberOfNodes5FoldGraph)) {
+        tour.push_back(wholeTour[i]);
+      }
+    }
+    else {
+      decreaseModulo(startPosition, numberOfNodes5FoldGraph);
+      decreaseModulo(endPosition, numberOfNodes5FoldGraph);
+      std::swap(startPosition, endPosition);
+      for (size_t i = startPosition; i != endPosition; decreaseModulo(i, numberOfNodes5FoldGraph)) {
+        tour.push_back(wholeTour[i]);
+      }
+    }
+  }
+
+  /*
   if (pos_x < pos_y) {
     assert((pos_y - pos_x == 2 * numberOfNodes + 1 || pos_y - pos_x == 3 * numberOfNodes + 1) && "Auxillary nodes position do not fit.");
     if (pos_y - pos_x == 2 * numberOfNodes + 1) {
@@ -303,6 +355,7 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   else {
     assert((pos_x - pos_y == 2 * numberOfNodes + 1 || pos_x - pos_y == 3 * numberOfNodes + 1) && "Auxillary nodes position do not fit.");
   }
+  */
 
   // std::array<bool, 5> graphCopyIsSolution{true, true, true, true, true};
   // graphCopyIsSolution[]
@@ -317,7 +370,8 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   }
   */
 
-  std::vector<unsigned int> tour;
+  // DEBUG
+  std::cerr << tour;
 
   const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, false);
   const double objective           = euclidean.weight(bottleneckEdge);
