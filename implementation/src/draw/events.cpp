@@ -127,6 +127,9 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
   if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]);
   }
+  if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
+  }
   if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
   }

@@ -228,12 +228,21 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   minimal.removeEdge(st_Edge);
 
   // create a graph consisting of 5 times the graph + nodes x and y connected to all copies of s resp. t
-  const size_t numberOfNodes = euclidean.numberOfNodes();
+  const size_t numberOfNodes           = euclidean.numberOfNodes();
+  const size_t numberOfNodes5FoldGraph = 5 * numberOfNodes + 2;
   std::vector<std::vector<size_t>> adjacencyList;
-  adjacencyList.reserve(numberOfNodes);
+  adjacencyList.reserve(numberOfNodes5FoldGraph);
 
   for (size_t i = 0; i < 5; ++i) {
     adjacencyList.insert(adjacencyList.end(), minimal.adjacencyList().begin(), minimal.adjacencyList().end());
+  }
+
+  for (size_t i = 1; i < 5; ++i) {
+    for (size_t j = 0; j < numberOfNodes; ++j) {
+      for (size_t& k : adjacencyList[i * numberOfNodes + j]) {
+        k += i * numberOfNodes;
+      }
+    }
   }
 
   const size_t x = 5 * numberOfNodes;
@@ -252,34 +261,63 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   std::cerr << "minimal 5 fold:\n" << fiveFoldGraph << std::endl;
 
   const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
-  std::vector<unsigned int> tour, longEulertour;
+  std::vector<unsigned int> wholeTour, longEulertour;
 
   if (openEars.ears.size() == 1) {
-    tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
+    wholeTour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
   }
   else {
-    GraphPair graphpair           = constructGraphPair(openEars, euclidean.numberOfNodes());
+    GraphPair graphpair           = constructGraphPair(openEars, numberOfNodes5FoldGraph);
     const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-    tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
+    wholeTour                     = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
   }
 
   // DEBUG
-  std::cerr << "5 tours: " << tour << std::endl;
+  std::cerr << "5 wholeTours: " << wholeTour << std::endl;
 
   // extract s-t-path from solution
-  const size_t pos_x = std::distance(tour.begin(), std::find(tour.begin(), tour.end(), x));
-  const size_t pos_y = std::distance(tour.begin(), std::find(tour.begin(), tour.end(), y));
+  const size_t pos_x = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), x));
+  const size_t pos_y = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), y));
+
+  if (pos_x < pos_y) {
+    assert((pos_y - pos_x == 2 * numberOfNodes + 1 || pos_y - pos_x == 3 * numberOfNodes + 1) && "Auxillary nodes position do not fit.");
+    if (pos_y - pos_x == 2 * numberOfNodes + 1) {
+      const size_t endPosition = (numberOfNodes5FoldGraph + pos_x - 1 - numberOfNodes) % numberOfNodes5FoldGraph;
+      size_t position          = (pos_y + 1 + numberOfNodes) % numberOfNodes5FoldGraph;
+      while (position != endPosition) {
+        std::cerr << wholeTour[position] << " ";
+        position = successiveModulo(position, numberOfNodes5FoldGraph);
+      }
+      std::cerr << wholeTour[position] << std::endl;
+    }
+    else {
+      const size_t endPosition = pos_x + 1 + numberOfNodes;
+      size_t position          = pos_x - 1 - numberOfNodes;
+      while (position != endPosition) {
+        std::cerr << wholeTour[position] << " ";
+        position = previousModulo(position, numberOfNodes5FoldGraph);
+      }
+      std::cerr << wholeTour[position] << std::endl;
+    }
+  }
+  else {
+    assert((pos_x - pos_y == 2 * numberOfNodes + 1 || pos_x - pos_y == 3 * numberOfNodes + 1) && "Auxillary nodes position do not fit.");
+  }
 
   // std::array<bool, 5> graphCopyIsSolution{true, true, true, true, true};
   // graphCopyIsSolution[]
 
-  for (size_t i = 0; i < tour.size(); ++i) {
-    if (isCopyOf(tour[i], s, numberOfNodes)) {
-      if (graph::previousInCycle(tour, i) != x && graph::successiveInCycle(tour, i) != x) {
+  /*
+  for (size_t i = 0; i < wholeTour.size(); ++i) {
+    if (isCopyOf(wholeTour[i], s, numberOfNodes)) {
+      if (graph::previousInCycle(wholeTour, i) != x && graph::successiveInCycle(wholeTour, i) != x) {
         // i is potential start node
       }
     }
   }
+  */
+
+  std::vector<unsigned int> tour;
 
   const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, false);
   const double objective           = euclidean.weight(bottleneckEdge);

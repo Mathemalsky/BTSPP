@@ -102,6 +102,10 @@ static void readArguments(const int argc, char* argv[]) {
     const approximation::Result res = approximation::approximateBTSP(euclidean);
     arguments.erase("-btsp");
   }
+  if (arguments.contains("-btspp")) {
+    const approximation::Result res = approximation::approximateBTSPP(euclidean);
+    arguments.erase("-btspp");
+  }
   if (arguments.contains("-btsp-e")) {
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact);
     arguments.erase("-btsp-e");
@@ -124,6 +128,7 @@ static void readArguments(const int argc, char* argv[]) {
 static void printArgumentList() {
   std::cout << "Valid command line arguments are: \n";
   std::cout << "<-btsp> to approximate BTSP\n";
+  std::cout << "<-btspp> to approximate BTSP\n";
   std::cout << "<-btsp-e> to solve exact BTSP\n";
   std::cout << "<-btspp-e> to solve exact BTSPP\n";
   std::cout << "<-tsp-e> to solve exact TSP\n";
