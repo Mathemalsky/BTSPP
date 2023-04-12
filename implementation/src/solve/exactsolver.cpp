@@ -256,6 +256,7 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
   model.lp_.a_matrix_.value_.assign(A.valuePtr(), A.valuePtr() + A.nonZeros());            // copy values
 
   Highs highs;
+  highs.setOptionValue("output_flag", false);
   HighsStatus return_status = highs.passModel(model);
   assert(return_status == HighsStatus::kOk);
 
