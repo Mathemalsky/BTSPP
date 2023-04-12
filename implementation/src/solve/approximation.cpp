@@ -18,10 +18,6 @@
 
 #include "solve/commonfunctions.hpp"
 
-// DBEUG
-#include "graph/ostream.hpp"
-#include "utility/utils.hpp"
-
 namespace approximation {
 
 struct GraphPair {
@@ -29,6 +25,32 @@ struct GraphPair {
   graph::AdjacencyListGraph graph;
 };
 
+/***********************************************************************************************************************
+ *                                            algorithms for BTSP
+ **********************************************************************************************************************/
+
+/*!
+ * @brief remove all edges whcih are not 2-essential
+ * @details The ear decomposition is computed to cheaply get rid of many edges at once. The removal has roughly the same computaional costs
+ * as every check (using schmidt algorithm) for biconnectivity after removal of a single edge.
+ * @param biconnectedGraph a biconnected graph as input
+ * @return AdjacencyListGraph: minimally biconnected graph
+ */
+static graph::AdjacencyListGraph makeMinimallyBiconnected(const graph::AdjacencyMatrixGraph& biconnectedGraph) {
+  const graph::EarDecomposition ears       = schmidt(biconnectedGraph);
+  const graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+  return minimallyBiconnectedSubgraph(fromEars);
+}
+
+/*!
+ * @brief computes G^{-}
+ * @details Skipps certain nodes and contracts 2 adjacend edges into one. See: Alstrup, S., Georgakopoulos, A., Rotenberg, E., & Thomassen,
+ * C. (2018). A Hamiltonian Cycle in the Square of a 2-connected Graph in Linear Time. In Proceedings of the Twenty-Ninth Annual ACM-SIAM
+ * Symposium on Discrete Algorithms (pp. 1645-1649). Society for Industrial and Applied Mathematics.
+ * @param digraph holds information for cutting
+ * @param graph to be modified
+ * @return std::unordered_set<size_t> of cutted nodes
+ */
 static std::unordered_set<size_t> reduceToGminus(const graph::AdjacencyListDigraph& digraph, graph::AdjacencyListGraph& graph) {
   graph::AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
   for (const graph::Edge& e : digraph.edges()) {
@@ -49,6 +71,13 @@ static std::unordered_set<size_t> reduceToGminus(const graph::AdjacencyListDigra
   return cuttedNodes;
 }
 
+/*!
+ * @brief inserts cutted nodes in euler tour
+ * @details inserts the nodes in the euler tour where the contracted edge occurs
+ * @param eulertourInGMinus is the euler tour in contracted graph
+ * @param cuttedNodes are the nodes to be inserted
+ * @param digraph holds information needed to find places for insertion
+ */
 static void insertNodecuts(std::vector<size_t>& eulertourInGMinus, std::unordered_set<size_t>& cuttedNodes,
                            const graph::AdjacencyListDigraph& digraph) {
   eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
@@ -65,6 +94,12 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus, std::unordere
   }
 }
 
+/*!
+ * @brief finds an euler tour in graph
+ * @param graph
+ * @param digraph holds information needed to contruct an euler tour that can be shortcutted to hamiltonian cycle
+ * @return std::vector<size_t> of node indices, first is not repeated as last
+ */
 static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const graph::AdjacencyListDigraph& digraph) {
   std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
   std::vector<size_t> eulertourInGMinus  = eulertour(graph);
@@ -72,6 +107,12 @@ static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const
   return eulertourInGMinus;
 }
 
+/*!
+ * @brief shortcuts eulertour to hamiltonian cycle
+ * @param longEulertour eulertour in full graph
+ * @param digraph holds information for shortcutting
+ * @return std::vector<unsigned int> of node indices, first is not repeated as last
+ */
 static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsigned int>& longEulertour,
                                                          graph::AdjacencyListDigraph& digraph) {
   std::vector<unsigned int> hamiltoncycle;
@@ -95,6 +136,11 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsig
   return hamiltoncycle;
 }
 
+/*!
+ * @brief doubles and deletes edges to make open ear decomposition eularian
+ * @param ears open ear decomposition
+ * @param numberofNodes tells the function the ranges of indices ocurring in ears
+ */
 static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const size_t numberOfNodes) {
   graph::AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
   graph::AdjacencyListDigraph digraph(numberOfNodes);
@@ -170,6 +216,20 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
   return GraphPair{digraph, graph};
 }
 
+static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars,
+                                                                         const size_t numberOfNodes) {
+  std::vector<unsigned int> tour;
+  if (openEars.ears.size() == 1) {
+    tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
+  }
+  else {
+    GraphPair graphpair           = constructGraphPair(openEars, numberOfNodes);
+    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
+    tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
+  }
+  return tour;
+}
+
 static void printInfos(const double objective, const double maxEdgeWeight) {
   std::cout << "objective           : " << objective << std::endl;
   std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
@@ -179,23 +239,12 @@ static void printInfos(const double objective, const double maxEdgeWeight) {
 
 Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) {
   double maxEdgeWeight;
-  std::vector<unsigned int> tour, longEulertour;
   const graph::AdjacencyMatrixGraph biconnectedGraph = biconnectedSubgraph(euclidean, maxEdgeWeight);
-  const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
-  const graph::AdjacencyListGraph fromEars           = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
-  const graph::AdjacencyListGraph minimal            = minimallyBiconnectedSubgraph(fromEars);
+  const graph::AdjacencyListGraph minimal            = makeMinimallyBiconnected(biconnectedGraph);
   const graph::EarDecomposition openEars             = schmidt(minimal);  // calculate proper ear decomposition
-
-  if (openEars.ears.size() == 1) {
-    tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
-  }
-  else {
-    GraphPair graphpair           = constructGraphPair(openEars, euclidean.numberOfNodes());
-    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-    tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
-  }
-  const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, true);
-  const double objective           = euclidean.weight(bottleneckEdge);
+  const std::vector<unsigned int> tour               = findHamiltonCycleInOpenEarDecomposition(openEars, euclidean.numberOfNodes());
+  const graph::Edge bottleneckEdge                   = findBottleneck(euclidean, tour, true);
+  const double objective                             = euclidean.weight(bottleneckEdge);
 
   if (printInfo) {
     printInfos(objective, maxEdgeWeight);
@@ -203,6 +252,10 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
 }
+
+/***********************************************************************************************************************
+ *                                            algorithms for BTSPP
+ **********************************************************************************************************************/
 
 static size_t increaseModulo(const size_t number, const size_t modulus) {
   return number == modulus - 1 ? 0 : +1;
@@ -220,8 +273,12 @@ static void reverse(std::vector<Type>& vec) {
   }
 }
 
-graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euclidean, const graph::AdjacencyListGraph& minimalBiconnected,
-                                              const size_t s, const size_t t) {
+/*!
+ * @brief creates graph consisting of 5 copies of the original graph
+ * @details Copies original graph, adds 2 nodes x and y and connects x to all copies of s and y to all copies of t
+ */
+static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euclidean, const graph::AdjacencyListGraph& minimalBiconnected,
+                                                     const size_t s, const size_t t) {
   const size_t numberOfNodes           = euclidean.numberOfNodes();
   const size_t numberOfNodes5FoldGraph = 5 * numberOfNodes + 2;
   std::vector<std::vector<size_t>> adjacencyList;
@@ -245,19 +302,26 @@ graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euclidean,
   adjacencyList.emplace_back(std::vector<size_t>{});  // add empty adjacency vector for y
   graph::AdjacencyListGraph fiveFoldGraph(adjacencyList);
 
-  // connect all copies of s to x and all copies of t to y
   for (size_t i = 0; i < 5; i++) {
-    fiveFoldGraph.addEdge(i * numberOfNodes + s, x);
-    fiveFoldGraph.addEdge(i * numberOfNodes + t, y);
+    fiveFoldGraph.addEdge(i * numberOfNodes + s, x);  // connect all copies of s to x
+    fiveFoldGraph.addEdge(i * numberOfNodes + t, y);  // connect all copies of t to y
   }
 
   return fiveFoldGraph;
 }
 
-std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned int>& wholeTour, const size_t s, const size_t t, const size_t x,
-                                              const size_t y) {
+/*!
+ * @brief extracts hamiton path from hamilton cycle in fivefold graph
+ * @param wholeTour hamilton cycle in fivefold graph
+ * @param s start node
+ * @param t end node
+ * @return std::vector<unsigned int> hamiltonian s-t path in original graph
+ */
+static std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned int>& wholeTour, const size_t s, const size_t t) {
   const size_t numberOfNodes5FoldGraph = wholeTour.size();
   const size_t numberOfNodes           = (numberOfNodes5FoldGraph - 2) / 5;
+  const size_t x                       = numberOfNodes5FoldGraph - 2;
+  const size_t y                       = numberOfNodes5FoldGraph - 1;
   const size_t pos_x                   = graph::findPosition(wholeTour, static_cast<unsigned int>(x));
   const size_t pos_y                   = graph::findPosition(wholeTour, static_cast<unsigned int>(y));
   const size_t posDistance             = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
@@ -302,46 +366,42 @@ std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned int>& w
   return tour;
 }
 
-Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
-  const size_t numberOfNodes = euclidean.numberOfNodes();
+/*!
+ * @brief removes all edges, not 2-essential when adding (s,t)
+ * @details The graph is minimally biconnected when adding the edge (s,t).
+ * @param biconnectedGraph
+ * @param s start node
+ * @param t end node
+ * @return AdjacencyListGraph minimal with desired property
+ */
+static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyMatrixGraph& biconnectedGraph, const size_t s,
+                                                                       const size_t t) {
   const graph::Edge st_Edge{s, t};
-  double maxEdgeWeight;
-
-  // find graph s.t. G = (V,E) + (s,t) is biconnected
-  const graph::AdjacencyMatrixGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, st_Edge, maxEdgeWeight);
-  const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
-  graph::AdjacencyListGraph fromEars                 = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+  const graph::EarDecomposition ears = schmidt(biconnectedGraph);
+  graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
   if (!fromEars.adjacent(s, t)) {  // if the s-t edge is one of the removed ones,
     fromEars.addEdge(st_Edge);     // add it again.
   }
-
   graph::AdjacencyListGraph minimal = edgeKeepingMinimallyBiconectedSubgraph(fromEars, st_Edge);
   minimal.removeEdge(st_Edge);
 
-  // create a graph consisting of 5 times the graph + nodes x and y connected to all copies of s resp. t
-  graph::AdjacencyListGraph fiveFoldGraph = createFiveFoldGraph(euclidean, minimal, s, t);
-  const size_t numberOfNodes5FoldGraph    = fiveFoldGraph.numberOfNodes();
-  const size_t x                          = 5 * numberOfNodes;
-  const size_t y                          = 5 * numberOfNodes + 1;
+  return minimal;
+}
 
-  const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
-  std::vector<size_t> longEulertour;
-  std::vector<unsigned int> wholeTour;
+Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
+  const size_t numberOfNodes = euclidean.numberOfNodes();
+  double maxEdgeWeight;
 
-  if (openEars.ears.size() == 1) {
-    wholeTour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
-  }
-  else {
-    GraphPair graphpair           = constructGraphPair(openEars, numberOfNodes5FoldGraph);
-    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-    wholeTour                     = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
-  }
-
-  // extract s-t-path from solution
-  const std::vector<unsigned int> tour = extractHamiltonPath(wholeTour, s, t, x, y);
-
-  const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, false);
-  const double objective           = euclidean.weight(bottleneckEdge);
+  // find graph s.t. G = (V,E) + (s,t) is biconnected
+  const graph::AdjacencyMatrixGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, graph::Edge{s, t}, maxEdgeWeight);
+  const graph::AdjacencyListGraph minimal            = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
+  graph::AdjacencyListGraph fiveFoldGraph            = createFiveFoldGraph(euclidean, minimal, s, t);
+  const size_t numberOfNodes5FoldGraph               = fiveFoldGraph.numberOfNodes();
+  const graph::EarDecomposition openEars             = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
+  std::vector<unsigned int> wholeTour                = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
+  const std::vector<unsigned int> tour               = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
+  const graph::Edge bottleneckEdge                   = findBottleneck(euclidean, tour, false);
+  const double objective                             = euclidean.weight(bottleneckEdge);
 
   if (printInfo) {
     printInfos(objective, maxEdgeWeight);
