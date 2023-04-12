@@ -6,7 +6,6 @@
 \usepackage{csquotes}
 
 % general packages
-\usepackage[printonlyused]{acronym}
 \usepackage[
   backend=biber,
   maxbibnames=42,
@@ -94,6 +93,14 @@
                % for more
 ]{glossaries}
 
+
+\usepackage{longtable}
+% change the default glossary environment (longtable in case of style=long)
+\renewenvironment{theglossary}%
+{\renewcommand*{\arraystretch}{1.4}%
+  \begin{longtable}[l]{p{.31\textwidth}p{\glsdescwidth}}}%
+    {\end{longtable}}
+
 \makeglossaries
 \usepackage{appendix/acronyms} 
 
@@ -111,7 +118,6 @@
 %\input{appendix/acronyms}
 
 \printacronyms[title={List of Acronyms}]
-\printglossary[type=\acronymtype]
 
 \printbibliography[
   heading=bibintoc,
