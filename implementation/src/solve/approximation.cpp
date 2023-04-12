@@ -170,6 +170,13 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
   return GraphPair{digraph, graph};
 }
 
+static void printInfos(const double objective, const double maxEdgeWeight) {
+  std::cout << "objective           : " << objective << std::endl;
+  std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
+  std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
+  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+}
+
 Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) {
   double maxEdgeWeight;
   std::vector<unsigned int> tour, longEulertour;
@@ -191,17 +198,10 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
   const double objective           = euclidean.weight(bottleneckEdge);
 
   if (printInfo) {
-    std::cout << "objective           : " << objective << std::endl;
-    std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
-    std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
-    assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+    printInfos(objective, maxEdgeWeight);
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
-}
-
-static bool isCopyOf(const size_t node, const size_t compare, const size_t numberOfNodes) {
-  return (node % numberOfNodes == compare && node < 5 * numberOfNodes);
 }
 
 static size_t increaseModulo(const size_t number, const size_t modulus) {
@@ -220,39 +220,15 @@ static void reverse(std::vector<Type>& vec) {
   }
 }
 
-// findPosition
-
-Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
-  const graph::Edge st_Edge{s, t};
-
-  double maxEdgeWeight;
-
-  // find graph s.t. G = (V,E) + (s,t) is biconnected
-  const graph::AdjacencyMatrixGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, st_Edge, maxEdgeWeight);
-  const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
-  graph::AdjacencyListGraph fromEars                 = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
-  if (!fromEars.adjacent(s, t)) {  // if the s-t edge is one of the removed ones,
-    fromEars.addEdge(st_Edge);     // add it again.
-  }
-
-  // DEBUG
-  std::cerr << "fromEars:\n" << fromEars << std::endl;
-
-  graph::AdjacencyListGraph minimal = edgeKeepingMinimallyBiconectedSubgraph(fromEars, st_Edge);
-
-  // DEBUG
-  std::cerr << "minimal:\n" << minimal << std::endl;
-
-  minimal.removeEdge(st_Edge);
-
-  // create a graph consisting of 5 times the graph + nodes x and y connected to all copies of s resp. t
+graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euclidean, const graph::AdjacencyListGraph& minimalBiconnected,
+                                              const size_t s, const size_t t) {
   const size_t numberOfNodes           = euclidean.numberOfNodes();
   const size_t numberOfNodes5FoldGraph = 5 * numberOfNodes + 2;
   std::vector<std::vector<size_t>> adjacencyList;
   adjacencyList.reserve(numberOfNodes5FoldGraph);
 
   for (size_t i = 0; i < 5; ++i) {
-    adjacencyList.insert(adjacencyList.end(), minimal.adjacencyList().begin(), minimal.adjacencyList().end());
+    adjacencyList.insert(adjacencyList.end(), minimalBiconnected.adjacencyList().begin(), minimalBiconnected.adjacencyList().end());
   }
 
   for (size_t i = 1; i < 5; ++i) {
@@ -275,29 +251,16 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
     fiveFoldGraph.addEdge(i * numberOfNodes + t, y);
   }
 
-  // DEBUG
-  std::cerr << "minimal 5 fold:\n" << fiveFoldGraph << std::endl;
+  return fiveFoldGraph;
+}
 
-  const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
-  std::vector<unsigned int> wholeTour, longEulertour;
-
-  if (openEars.ears.size() == 1) {
-    wholeTour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
-  }
-  else {
-    GraphPair graphpair           = constructGraphPair(openEars, numberOfNodes5FoldGraph);
-    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-    wholeTour                     = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
-  }
-
-  // DEBUG
-  std::cerr << "5 wholeTours: " << wholeTour << std::endl;
-
-  // extract s-t-path from solution
-  const size_t pos_x = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), x));
-  const size_t pos_y = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), y));
-
-  const size_t posDistance = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
+std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned int>& wholeTour, const size_t s, const size_t t, const size_t x,
+                                              const size_t y) {
+  const size_t numberOfNodes5FoldGraph = wholeTour.size();
+  const size_t numberOfNodes           = (numberOfNodes5FoldGraph - 2) / 5;
+  const size_t pos_x                   = graph::findPosition(wholeTour, static_cast<unsigned int>(x));
+  const size_t pos_y                   = graph::findPosition(wholeTour, static_cast<unsigned int>(y));
+  const size_t posDistance             = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
   assert((posDistance - 1) % numberOfNodes == 0 && "Distance between index positions does not fit!");
 
   std::vector<unsigned int> tour;
@@ -309,14 +272,11 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   graphCopyIsSolution[wholeTour[increaseModulo(pos_y, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
   graphCopyIsSolution[wholeTour[decreaseModulo(pos_y, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
 
-  const size_t solutionIndex =
-      std::distance(graphCopyIsSolution.begin(), std::find(graphCopyIsSolution.begin(), graphCopyIsSolution.end(), true));
-
-  const size_t pos_s = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), solutionIndex * numberOfNodes + s));
-  const size_t pos_t = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), solutionIndex * numberOfNodes + t));
-
-  const size_t maxPos = std::max(pos_s, pos_t);
-  const size_t minPos = std::min(pos_s, pos_t);
+  const size_t solutionIndex = graph::findPosition(graphCopyIsSolution, true);
+  const size_t pos_s         = graph::findPosition(wholeTour, static_cast<unsigned int>(solutionIndex * numberOfNodes + s));
+  const size_t pos_t         = graph::findPosition(wholeTour, static_cast<unsigned int>(solutionIndex * numberOfNodes + t));
+  const size_t maxPos        = std::max(pos_s, pos_t);
+  const size_t minPos        = std::min(pos_s, pos_t);
   if (maxPos - minPos == numberOfNodes - 1) {
     for (size_t i = minPos; i <= maxPos; ++i) {
       tour.push_back(wholeTour[i]);
@@ -338,95 +298,56 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   for (unsigned int& node : tour) {
     node -= solutionIndex * numberOfNodes;
   }
-  /*
 
-  if (posDistance >= 3 * numberOfNodes + 1) {
-    const size_t startPosition = std::min(pos_x, pos_y) + numberOfNodes + 1;
-    const size_t endPosition   = startPosition + numberOfNodes;
-    tour.resize(numberOfNodes);
+  return tour;
+}
 
-    assert(wholeTour[startPosition] % numberOfNodes == s || wholeTour[startPosition] % numberOfNodes == t);
-    if (wholeTour[startPosition] % numberOfNodes == s) {
-      for (size_t i = startPosition; i < endPosition; ++i) {
-        tour[i - startPosition] = wholeTour[i];
-      }
-    }
-    else {
-      for (size_t i = startPosition; i < endPosition; ++i) {
-        tour[startPosition + numberOfNodes - i - 1] = wholeTour[i];
-      }
-    }
+Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
+  const size_t numberOfNodes = euclidean.numberOfNodes();
+  const graph::Edge st_Edge{s, t};
+  double maxEdgeWeight;
+
+  // find graph s.t. G = (V,E) + (s,t) is biconnected
+  const graph::AdjacencyMatrixGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, st_Edge, maxEdgeWeight);
+  const graph::EarDecomposition ears                 = schmidt(biconnectedGraph);
+  graph::AdjacencyListGraph fromEars                 = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+  if (!fromEars.adjacent(s, t)) {  // if the s-t edge is one of the removed ones,
+    fromEars.addEdge(st_Edge);     // add it again.
+  }
+
+  graph::AdjacencyListGraph minimal = edgeKeepingMinimallyBiconectedSubgraph(fromEars, st_Edge);
+  minimal.removeEdge(st_Edge);
+
+  // create a graph consisting of 5 times the graph + nodes x and y connected to all copies of s resp. t
+  graph::AdjacencyListGraph fiveFoldGraph = createFiveFoldGraph(euclidean, minimal, s, t);
+  const size_t numberOfNodes5FoldGraph    = fiveFoldGraph.numberOfNodes();
+  const size_t x                          = 5 * numberOfNodes;
+  const size_t y                          = 5 * numberOfNodes + 1;
+
+  // DBEUG
+  std::cerr << "5fold graph: \n" << fiveFoldGraph;
+
+  const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
+  std::vector<size_t> longEulertour;
+  std::vector<unsigned int> wholeTour;
+
+  if (openEars.ears.size() == 1) {
+    wholeTour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
   }
   else {
-    size_t startPosition = (std::max(pos_x, pos_y) + numberOfNodes + 1) % numberOfNodes5FoldGraph;
-    size_t endPosition   = (startPosition + numberOfNodes) % numberOfNodes5FoldGraph;
-
-    assert(wholeTour[startPosition] % numberOfNodes == s || wholeTour[startPosition] % numberOfNodes == t);
-    if (wholeTour[startPosition] % numberOfNodes == s) {
-      for (size_t i = startPosition; i != endPosition; increaseModulo(i, numberOfNodes5FoldGraph)) {
-        tour.push_back(wholeTour[i]);
-      }
-    }
-    else {
-      decreaseModulo(startPosition, numberOfNodes5FoldGraph);
-      decreaseModulo(endPosition, numberOfNodes5FoldGraph);
-      std::swap(startPosition, endPosition);
-      for (size_t i = startPosition; i != endPosition; decreaseModulo(i, numberOfNodes5FoldGraph)) {
-        tour.push_back(wholeTour[i]);
-      }
-    }
+    GraphPair graphpair           = constructGraphPair(openEars, numberOfNodes5FoldGraph);
+    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
+    wholeTour                     = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
   }
 
-  if (pos_x < pos_y) {
-    assert((pos_y - pos_x == 2 * numberOfNodes + 1 || pos_y - pos_x == 3 * numberOfNodes + 1) && "Auxillary nodes position do not fit.");
-    if (pos_y - pos_x == 2 * numberOfNodes + 1) {
-      const size_t endPosition = (numberOfNodes5FoldGraph + pos_x - 1 - numberOfNodes) % numberOfNodes5FoldGraph;
-      size_t position          = (pos_y + 1 + numberOfNodes) % numberOfNodes5FoldGraph;
-      while (position != endPosition) {
-        std::cerr << wholeTour[position] << " ";
-        position = successiveModulo(position, numberOfNodes5FoldGraph);
-      }
-      std::cerr << wholeTour[position] << std::endl;
-    }
-    else {
-      const size_t endPosition = pos_x + 1 + numberOfNodes;
-      size_t position          = pos_x - 1 - numberOfNodes;
-      while (position != endPosition) {
-        std::cerr << wholeTour[position] << " ";
-        position = previousModulo(position, numberOfNodes5FoldGraph);
-      }
-      std::cerr << wholeTour[position] << std::endl;
-    }
-  }
-  else {
-    assert((pos_x - pos_y == 2 * numberOfNodes + 1 || pos_x - pos_y == 3 * numberOfNodes + 1) && "Auxillary nodes position do not fit.");
-  }
-  */
-
-  /*
-  for (size_t i = 0; i < wholeTour.size(); ++i) {
-    if (isCopyOf(wholeTour[i], s, numberOfNodes)) {
-      if (graph::previousInCycle(wholeTour, i) != x && graph::successiveInCycle(wholeTour, i) != x) {
-        // i is potential start node
-      }
-    }
-  }
-  */
-
-  // DEBUG
-  std::cerr << tour;
+  // extract s-t-path from solution
+  const std::vector<unsigned int> tour = extractHamiltonPath(wholeTour, s, t, x, y);
 
   const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, false);
   const double objective           = euclidean.weight(bottleneckEdge);
 
-  // DBEUG
-  std::cerr << "bottleneckEdge: " << bottleneckEdge << std::endl;
-
   if (printInfo) {
-    std::cout << "objective           : " << objective << std::endl;
-    std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
-    std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
-    // assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+    printInfos(objective, maxEdgeWeight);
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};

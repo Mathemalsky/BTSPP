@@ -5,10 +5,6 @@
 
 #include <Eigen/SparseCore>
 
-// DEBUG
-#include <iostream>
-#include "graph/ostream.hpp"
-
 namespace graph {
 using Entry = Eigen::Triplet<EdgeWeight>;
 
@@ -83,10 +79,6 @@ static AdjacencyMatrixGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
       graph = graphCopy;
     }
   }
-
-  // DEBUG
-  std::cerr << "edge for lower bound: " << index.edge(edgeIndices[lowerbound - 1]) << std::endl;
-
   maxEdgeWeight = euclidean.weight(index.edge(edgeIndices[lowerbound - 1]));  // for lower bound on opt
   return graph;
 }
@@ -114,15 +106,7 @@ AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean
     return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
   });
 
-  // DEBUG
-  std::cerr << "edgPos of augmentation edge: "
-            << std::distance(edgeIndices.begin(),
-                             std::find(edgeIndices.begin(), edgeIndices.end(), index.edgeIndex(augmentationEdge.u, augmentationEdge.v)))
-            << std::endl;
-
   AdjacencyMatrixGraph graph = addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
-  // graph.removeEdge(augmentationEdge);
-  // graph.pruneMatrix();
   graph.compressMatrix();  // matrix became uncommpressed when adding edges
   return graph;
 }
