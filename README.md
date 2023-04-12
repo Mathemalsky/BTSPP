@@ -85,3 +85,4 @@ argument  | effect
 `-btsp-e` | solves exact BTSP
 `-btspp-e`| solves exact BTSPP
 `-tsp-e`  | solves exact TSP
+
