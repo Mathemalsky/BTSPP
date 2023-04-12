@@ -116,17 +116,19 @@ bool checkBiconnectivity(const G& graph) {
   }
 
   std::vector<bool> visited(numberOfNodes, false);
+  size_t numberOfEars = 0;
   for (size_t u : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
     for (size_t v : backedges.neighbours(u)) {  // for every backedge starting at v
-      if (!visited[v]) {
+      if (!visited[v]) {                        // skip trivial backedges
         visited[u] = true;
         while (!visited[v]) {
           visited[v] = true;
           v          = tree.parent(v);
         }
-        if (v == u && u != tree.root()) {
+        if (v == u && numberOfEars != 0) {
           return false;  // v is an articulation point
         }
+        ++numberOfEars;
       }
     }
   }
@@ -146,7 +148,9 @@ bool checkBiconnectivity(const G& graph) {
  * @return index of non isolated node
  */
 template <typename G>
-size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+size_t findNonIsolatedNode(const G& graph)
+  requires(std::is_base_of_v<Graph, G>)
+{
   for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
     if (graph.degree(u) > 0) {
       return u;
@@ -164,7 +168,9 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
  * again.
  */
 template <typename G>
-std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+std::vector<size_t> eulertour(const G& graph)
+  requires(std::is_base_of_v<Graph, G>)
+{
   G workingCopy = graph;
   std::vector<size_t> tour;
   tour.reserve(graph.numberOfEdges() + 1);

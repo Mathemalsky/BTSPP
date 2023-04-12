@@ -324,9 +324,6 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const size_t x                          = 5 * numberOfNodes;
   const size_t y                          = 5 * numberOfNodes + 1;
 
-  // DBEUG
-  std::cerr << "5fold graph: \n" << fiveFoldGraph;
-
   const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
   std::vector<size_t> longEulertour;
   std::vector<unsigned int> wholeTour;

@@ -103,6 +103,20 @@ static void cycleBTSPApproxDisplay() {
   }
 }
 
+static void cycleBTSPPApproxDisplay() {
+  if (drawing::BTSPP_DRAW_BICONNECTED_GRAPH) {
+    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = false;
+    drawing::BTSPP_DRAW_HAMILTON_PATH     = true;
+  }
+  else if (drawing::BTSPP_DRAW_HAMILTON_PATH) {
+    drawing::BTSPP_DRAW_HAMILTON_PATH     = false;
+    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = true;
+  }
+  else {
+    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = true;
+  }
+}
+
 /***********************************************************************************************************************
  *                                                      callbacks
  **********************************************************************************************************************/
@@ -139,8 +153,13 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
   if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
   }
-  if (key == GLFW_KEY_T && action == GLFW_PRESS && drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]) {
-    cycleBTSPApproxDisplay();
+  if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+    if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]) {
+      cycleBTSPApproxDisplay();
+    }
+    if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
+      cycleBTSPPApproxDisplay();
+    }
   }
 }
 
