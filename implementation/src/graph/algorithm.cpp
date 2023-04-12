@@ -5,6 +5,10 @@
 
 #include <Eigen/SparseCore>
 
+// DEBUG
+#include <iostream>
+#include "graph/ostream.hpp"
+
 namespace graph {
 using Entry = Eigen::Triplet<EdgeWeight>;
 
@@ -24,6 +28,7 @@ public:
   Index(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
   size_t edgeIndex(const size_t i, const size_t j) const { return i > j ? 0.5 * (i * i - i) + j : 0.5 * (j * j - j) + i; }
+  size_t edgeIndex(const Edge& edge) const { return edgeIndex(edge.u, edge.v); }
 
   Edge edge(const size_t k) const {
     const size_t i = std::floor(std::sqrt(0.25 + 2 * k) + 0.5);
@@ -78,6 +83,10 @@ static AdjacencyMatrixGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
       graph = graphCopy;
     }
   }
+
+  // DEBUG
+  std::cerr << "edge for lower bound: " << index.edge(edgeIndices[lowerbound - 1]) << std::endl;
+
   maxEdgeWeight = euclidean.weight(index.edge(edgeIndices[lowerbound - 1]));  // for lower bound on opt
   return graph;
 }
@@ -98,10 +107,18 @@ AdjacencyMatrixGraph biconnectedSubgraph(const Euclidean& euclidean, double& max
 AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight) {
   // sort the edges, put the augmentation edge in first position
   const Index index(euclidean.numberOfNodes());
-  std::vector<size_t> edgeIndices = createEdgeIndeces(euclidean);
-  std::sort(edgeIndices.begin(), edgeIndices.end(), [euclidean, index, augmentationEdge](const size_t a, const size_t b) {
-    return (index.edge(a) == augmentationEdge || euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b)));
+  std::vector<size_t> edgeIndices    = createEdgeIndeces(euclidean);
+  const size_t augmentationEdgeIndex = findPosition(edgeIndices, index.edgeIndex(augmentationEdge));
+  std::swap(edgeIndices.front(), edgeIndices[augmentationEdgeIndex]);
+  std::sort(edgeIndices.begin() + 1, edgeIndices.end(), [euclidean, index, augmentationEdge](const size_t a, const size_t b) {
+    return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
   });
+
+  // DEBUG
+  std::cerr << "edgPos of augmentation edge: "
+            << std::distance(edgeIndices.begin(),
+                             std::find(edgeIndices.begin(), edgeIndices.end(), index.edgeIndex(augmentationEdge.u, augmentationEdge.v)))
+            << std::endl;
 
   AdjacencyMatrixGraph graph = addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
   // graph.removeEdge(augmentationEdge);

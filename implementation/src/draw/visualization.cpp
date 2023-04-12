@@ -23,17 +23,19 @@ static void glfw_error_callback(int error, const char* description) {
 }
 
 static void initDrawingVariables() {
-  drawing::SHOW_DEBUG_WINDOW           = drawing::INITIAL_SHOW_DEBUG_WINDOW;
-  drawing::SHOW_SETTINGS_WINDOW        = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
-  drawing::ACTIVE                      = drawing::INITIAL_ACTIVENESS;
-  drawing::COLOUR                      = drawing::INITIAL_COLOUR;
-  drawing::DRAW_BICONNECTED_GRAPH      = drawing::INITIAL_DRAW_BICONNECTED_GRAPH;
-  drawing::DRAW_OPEN_EAR_DECOMPOSITION = drawing::INITIAL_DRAW_OPEN_EAR_DECOMPOSITION;
-  drawing::DRAW_HAMILTON_CYCLE         = drawing::INITIAL_DRAW_HAMILTON_CYCLE;
-  drawing::INITIALIZED                 = drawing::INITIAL_ACTIVENESS;
-  drawing::THICKNESS                   = drawing::INITIAL_THICKNESS;
-  drawing::CLEAR_COLOUR                = drawing::INITIAL_CLEAR_COLOUR;
-  drawing::VERTEX_COLOUR               = drawing::INITIAL_VERTEX_COLOUR;
+  drawing::SHOW_DEBUG_WINDOW                = drawing::INITIAL_SHOW_DEBUG_WINDOW;
+  drawing::SHOW_SETTINGS_WINDOW             = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
+  drawing::ACTIVE                           = drawing::INITIAL_ACTIVENESS;
+  drawing::COLOUR                           = drawing::INITIAL_COLOUR;
+  drawing::BTSP_DRAW_BICONNECTED_GRAPH      = drawing::INITIAL_BTSP_DRAW_BICONNECTED_GRAPH;
+  drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = drawing::INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
+  drawing::BTSP_DRAW_HAMILTON_CYCLE         = drawing::INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
+  drawing::BTSPP_DRAW_BICONNECTED_GRAPH     = drawing::INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
+  drawing::BTSPP_DRAW_HAMILTON_PATH         = drawing::INITIAL_BTSPP_DRAW_HAMILTON_PATH;
+  drawing::INITIALIZED                      = drawing::INITIAL_ACTIVENESS;
+  drawing::THICKNESS                        = drawing::INITIAL_THICKNESS;
+  drawing::CLEAR_COLOUR                     = drawing::INITIAL_CLEAR_COLOUR;
+  drawing::VERTEX_COLOUR                    = drawing::INITIAL_VERTEX_COLOUR;
 }
 
 static void initInputVariables() {

@@ -22,9 +22,11 @@ bool SHOW_SETTINGS_WINDOW;
 
 std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
 std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
-bool DRAW_OPEN_EAR_DECOMPOSITION;
-bool DRAW_BICONNECTED_GRAPH;
-bool DRAW_HAMILTON_CYCLE;
+bool BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
+bool BTSP_DRAW_BICONNECTED_GRAPH;
+bool BTSP_DRAW_HAMILTON_CYCLE;
+bool BTSPP_DRAW_BICONNECTED_GRAPH;
+bool BTSPP_DRAW_HAMILTON_PATH;
 std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
 std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
 std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
@@ -47,15 +49,15 @@ void updatePointsfFromEuclidean() {
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
   if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
-    ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD);
-    std::memcpy(ORDER[(unsigned int) type].data(), order.data(), bytes_of(order));
-    std::memcpy(ORDER[(unsigned int) type].data() + order.size(), order.data(), PATH_OVERHEAD * sizeof(unsigned int));
+    ORDER[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD);
+    std::memcpy(ORDER[std::to_underlying(type)].data(), order.data(), bytes_of(order));
+    std::memcpy(ORDER[std::to_underlying(type)].data() + order.size(), order.data(), PATH_OVERHEAD * sizeof(unsigned int));
   }
-  else if (type == ProblemType::BTSPP_exact) {
-    ORDER[(unsigned int) type].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
-    ORDER[(unsigned int) type][0] = order[1];
-    std::memcpy(ORDER[(unsigned int) type].data() + 1, order.data(), bytes_of(order));
-    ORDER[(unsigned int) type].back() = order[order.size() - 2];
+  else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
+    ORDER[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
+    ORDER[std::to_underlying(type)][0] = order[1];
+    std::memcpy(ORDER[std::to_underlying(type)].data() + 1, order.data(), bytes_of(order));
+    ORDER[std::to_underlying(type)].back() = order[order.size() - 2];
   }
   INITIALIZED[std::to_underlying(type)] = true;
 }

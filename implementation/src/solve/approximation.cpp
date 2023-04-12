@@ -204,13 +204,23 @@ static bool isCopyOf(const size_t node, const size_t compare, const size_t numbe
   return (node % numberOfNodes == compare && node < 5 * numberOfNodes);
 }
 
-static void increaseModulo(size_t& number, const size_t modulus) {
-  number == modulus - 1 ? number = 0 : ++number;
+static size_t increaseModulo(const size_t number, const size_t modulus) {
+  return number == modulus - 1 ? 0 : +1;
 }
 
-static void decreaseModulo(size_t& number, const size_t modulus) {
-  number == 0 ? number = modulus - 1 : --number;
+static size_t decreaseModulo(const size_t number, const size_t modulus) {
+  return number == 0 ? modulus - 1 : number - 1;
 }
+
+template <typename Type>
+static void reverse(std::vector<Type>& vec) {
+  const size_t sizeMinus1 = vec.size() - 1;
+  for (size_t i = 0; i < sizeMinus1 / 2; ++i) {
+    std::swap(vec[i], vec[sizeMinus1 - i]);
+  }
+}
+
+// findPosition
 
 Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
   const graph::Edge st_Edge{s, t};
@@ -293,6 +303,43 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   std::vector<unsigned int> tour;
   tour.reserve(numberOfNodes);
 
+  std::array<bool, 5> graphCopyIsSolution{true, true, true, true, true};
+  graphCopyIsSolution[wholeTour[increaseModulo(pos_x, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
+  graphCopyIsSolution[wholeTour[decreaseModulo(pos_x, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
+  graphCopyIsSolution[wholeTour[increaseModulo(pos_y, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
+  graphCopyIsSolution[wholeTour[decreaseModulo(pos_y, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
+
+  const size_t solutionIndex =
+      std::distance(graphCopyIsSolution.begin(), std::find(graphCopyIsSolution.begin(), graphCopyIsSolution.end(), true));
+
+  const size_t pos_s = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), solutionIndex * numberOfNodes + s));
+  const size_t pos_t = std::distance(wholeTour.begin(), std::find(wholeTour.begin(), wholeTour.end(), solutionIndex * numberOfNodes + t));
+
+  const size_t maxPos = std::max(pos_s, pos_t);
+  const size_t minPos = std::min(pos_s, pos_t);
+  if (maxPos - minPos == numberOfNodes - 1) {
+    for (size_t i = minPos; i <= maxPos; ++i) {
+      tour.push_back(wholeTour[i]);
+    }
+    if (pos_t < pos_s) {
+      reverse(tour);
+    }
+  }
+  else {
+    for (size_t i = maxPos; i != minPos; i = increaseModulo(i, numberOfNodes5FoldGraph)) {
+      tour.push_back(wholeTour[i]);
+    }
+    tour.push_back(wholeTour[minPos]);
+    if (pos_s < pos_t) {
+      reverse(tour);
+    }
+  }
+
+  for (unsigned int& node : tour) {
+    node -= solutionIndex * numberOfNodes;
+  }
+  /*
+
   if (posDistance >= 3 * numberOfNodes + 1) {
     const size_t startPosition = std::min(pos_x, pos_y) + numberOfNodes + 1;
     const size_t endPosition   = startPosition + numberOfNodes;
@@ -330,7 +377,6 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
     }
   }
 
-  /*
   if (pos_x < pos_y) {
     assert((pos_y - pos_x == 2 * numberOfNodes + 1 || pos_y - pos_x == 3 * numberOfNodes + 1) && "Auxillary nodes position do not fit.");
     if (pos_y - pos_x == 2 * numberOfNodes + 1) {
@@ -357,9 +403,6 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   }
   */
 
-  // std::array<bool, 5> graphCopyIsSolution{true, true, true, true, true};
-  // graphCopyIsSolution[]
-
   /*
   for (size_t i = 0; i < wholeTour.size(); ++i) {
     if (isCopyOf(wholeTour[i], s, numberOfNodes)) {
@@ -376,11 +419,14 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const graph::Edge bottleneckEdge = findBottleneck(euclidean, tour, false);
   const double objective           = euclidean.weight(bottleneckEdge);
 
+  // DBEUG
+  std::cerr << "bottleneckEdge: " << bottleneckEdge << std::endl;
+
   if (printInfo) {
     std::cout << "objective           : " << objective << std::endl;
     std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
     std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
-    assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+    // assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};

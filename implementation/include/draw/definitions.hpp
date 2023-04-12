@@ -44,9 +44,11 @@ constexpr std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_
     RGBA_COLOUR{1.0f, 0.0f, 0.0f, 1.0f}  // TSP_exact
 };
 
-constexpr bool INITIAL_DRAW_BICONNECTED_GRAPH      = false;
-constexpr bool INITIAL_DRAW_OPEN_EAR_DECOMPOSITION = false;
-constexpr bool INITIAL_DRAW_HAMILTON_CYCLE         = false;
+constexpr bool INITIAL_BTSP_DRAW_BICONNECTED_GRAPH      = false;
+constexpr bool INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION = false;
+constexpr bool INITIAL_BTSP_DRAW_HAMILTON_CYCLE         = false;
+constexpr bool INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH     = false;
+constexpr bool INITIAL_BTSPP_DRAW_HAMILTON_PATH         = false;
 
 constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_THICKNESS{
     6.0f,  // BTSP_approx

@@ -86,20 +86,20 @@ static void selectNodeToMove(GLFWwindow* window) {
 }
 
 static void cycleBTSPApproxDisplay() {
-  if (drawing::DRAW_BICONNECTED_GRAPH) {
-    drawing::DRAW_BICONNECTED_GRAPH      = false;
-    drawing::DRAW_OPEN_EAR_DECOMPOSITION = true;
+  if (drawing::BTSP_DRAW_BICONNECTED_GRAPH) {
+    drawing::BTSP_DRAW_BICONNECTED_GRAPH      = false;
+    drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = true;
   }
-  else if (drawing::DRAW_OPEN_EAR_DECOMPOSITION) {
-    drawing::DRAW_OPEN_EAR_DECOMPOSITION = false;
-    drawing::DRAW_HAMILTON_CYCLE         = true;
+  else if (drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION) {
+    drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = false;
+    drawing::BTSP_DRAW_HAMILTON_CYCLE         = true;
   }
-  else if (drawing::DRAW_HAMILTON_CYCLE) {
-    drawing::DRAW_HAMILTON_CYCLE    = false;
-    drawing::DRAW_BICONNECTED_GRAPH = true;
+  else if (drawing::BTSP_DRAW_HAMILTON_CYCLE) {
+    drawing::BTSP_DRAW_HAMILTON_CYCLE    = false;
+    drawing::BTSP_DRAW_BICONNECTED_GRAPH = true;
   }
   else {
-    drawing::DRAW_BICONNECTED_GRAPH = true;
+    drawing::BTSP_DRAW_BICONNECTED_GRAPH = true;
   }
 }
 

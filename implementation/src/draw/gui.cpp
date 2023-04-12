@@ -56,14 +56,18 @@ void drawImgui() {
     ImGui::ColorEdit3("##BTSP approx", (float*) &drawing::COLOUR[std::to_underlying(ProblemType::BTSP_approx)]);
     ImGui::SliderFloat("thickness##BTSP approx", &drawing::THICKNESS[std::to_underlying(ProblemType::BTSP_approx)], 0.0f, 30.0f, "%.1f");
 
-    ImGui::Checkbox("biconnectd graph", &drawing::DRAW_BICONNECTED_GRAPH);
+    ImGui::Checkbox("biconnectd graph##BTSP approx", &drawing::BTSP_DRAW_BICONNECTED_GRAPH);
     ImGui::SameLine();
-    ImGui::Checkbox("open ear decomp.", &drawing::DRAW_OPEN_EAR_DECOMPOSITION);
-    ImGui::Checkbox("hamilton cycle", &drawing::DRAW_HAMILTON_CYCLE);
+    ImGui::Checkbox("open ear decomp.", &drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION);
+    ImGui::Checkbox("hamilton cycle", &drawing::BTSP_DRAW_HAMILTON_CYCLE);
 
     ImGui::Checkbox("BTSPP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
     ImGui::ColorEdit3("##BTSPP approx", (float*) &drawing::COLOUR[std::to_underlying(ProblemType::BTSPP_approx)]);
     ImGui::SliderFloat("thickness##BTSPP approx", &drawing::THICKNESS[std::to_underlying(ProblemType::BTSPP_approx)], 0.0f, 30.0f, "%.1f");
+
+    ImGui::Checkbox("biconnectd graph##BTSPP approx", &drawing::BTSPP_DRAW_BICONNECTED_GRAPH);
+    ImGui::SameLine();
+    ImGui::Checkbox("hamilton path", &drawing::BTSPP_DRAW_HAMILTON_PATH);
 
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
     ImGui::SliderFloat("thickness##BTSP exact", &drawing::THICKNESS[std::to_underlying(ProblemType::BTSP_exact)], 0.0f, 20.0f, "%.1f");
