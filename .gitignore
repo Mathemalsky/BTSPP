@@ -10,26 +10,23 @@
 # allow readme file
 !README.md
 
-# allow tex files in tex directory
-!tex/*.tex
-
 # allow basic scripts
-!implementation/.clang-format
-!implementation/Doxyfile
-!implementation/format.sh
+!.clang-format
+!Doxyfile
+!format.sh
 
 # allow implementation
-!implementation/CMakeLists.txt
-!implementation/src/*.cpp
-!implementation/include/*.hpp
-!implementation/src/draw/*.cpp
-!implementation/include/draw/*.hpp
-!implementation/src/graph/*.cpp
-!implementation/include/graph/*.hpp
-!implementation/include/utility/*.hpp
-!implementation/src/solve/*.cpp
-!implementation/include/solve/*.hpp
-!implementation/include/exception/*.hpp
+!CMakeLists.txt
+!src/*.cpp
+!include/*.hpp
+!src/draw/*.cpp
+!include/draw/*.hpp
+!src/graph/*.cpp
+!include/graph/*.hpp
+!include/utility/*.hpp
+!src/solve/*.cpp
+!include/solve/*.hpp
+!include/exception/*.hpp
 
 # libraries
-!implementation/lib/imgui/*
+!lib/imgui/*
