@@ -19,7 +19,7 @@ constexpr int INVALID = -1;
 
 namespace problemType {
 constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> PROBLEM_TYPES = {
-    ProblemType::BTSP_approx, ProblemType::BTSP_exact, ProblemType::BTSPP_exact, ProblemType::TSP_exact};
+    ProblemType::BTSP_approx, ProblemType::BTSPP_approx, ProblemType::BTSP_exact, ProblemType::BTSPP_exact, ProblemType::TSP_exact};
 }  // namespace problemType
 
 namespace drawing {
@@ -30,6 +30,7 @@ constexpr unsigned int PATH_OVERHEAD        = 3;
 
 constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_ACTIVENESS{
     false,  // BTSP_approx
+    false,  // BTSPP_approx
     false,  // BTSP_exact
     false,  // BTSPP_axact
     false   // TSP_exact
@@ -37,17 +38,21 @@ constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTI
 
 constexpr std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_COLOUR{
     RGBA_COLOUR{0.0f, 1.0f, 0.0f, 1.0f}, // BTSP_approx
+    RGBA_COLOUR{1.0f, 0.0f, 1.0f, 1.0f}, // BTSPP_approx
     RGBA_COLOUR{1.0f, 1.0f, 0.0f, 1.0f}, // BTSP_exact
     RGBA_COLOUR{0.3f, 0.7f, 0.2f, 1.0f}, // BTSPP_exact
     RGBA_COLOUR{1.0f, 0.0f, 0.0f, 1.0f}  // TSP_exact
 };
 
-constexpr bool INITIAL_DRAW_BICONNECTED_GRAPH      = false;
-constexpr bool INITIAL_DRAW_OPEN_EAR_DECOMPOSITION = false;
-constexpr bool INITIAL_DRAW_HAMILTON_CYCLE         = false;
+constexpr bool INITIAL_BTSP_DRAW_BICONNECTED_GRAPH      = false;
+constexpr bool INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION = false;
+constexpr bool INITIAL_BTSP_DRAW_HAMILTON_CYCLE         = false;
+constexpr bool INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH     = false;
+constexpr bool INITIAL_BTSPP_DRAW_HAMILTON_PATH         = false;
 
 constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_THICKNESS{
     6.0f,  // BTSP_approx
+    6.0f,  // BTSPP_approx
     5.0f,  // BTSP_exact
     5.0f,  // BTSPP_exact
     3.0f   // TSP_exact

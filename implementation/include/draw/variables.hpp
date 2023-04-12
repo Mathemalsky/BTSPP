@@ -21,9 +21,11 @@ extern bool SHOW_DEBUG_WINDOW;
 
 extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
 extern std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
-extern bool DRAW_OPEN_EAR_DECOMPOSITION;
-extern bool DRAW_BICONNECTED_GRAPH;
-extern bool DRAW_HAMILTON_CYCLE;
+extern bool BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
+extern bool BTSP_DRAW_BICONNECTED_GRAPH;
+extern bool BTSP_DRAW_HAMILTON_CYCLE;
+extern bool BTSPP_DRAW_BICONNECTED_GRAPH;
+extern bool BTSPP_DRAW_HAMILTON_PATH;
 extern std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
 extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
 extern std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
@@ -31,6 +33,7 @@ extern RGBA_COLOUR CLEAR_COLOUR;
 extern RGBA_COLOUR VERTEX_COLOUR;
 
 extern approximation::Result BTSP_APPROX_RESULT;
+extern approximation::Result BTSPP_APPROX_RESULT;
 extern exactsolver::Result BTSP_EXACT_RESULT;
 extern exactsolver::Result BTSPP_EXACT_RESULT;
 

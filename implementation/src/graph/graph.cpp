@@ -39,24 +39,6 @@ bool AdjacencyListGraph::connected() const {
   return true;
 }
 
-AdjacencyListGraph AdjacencyListGraph::removeUncriticalEdges() const {
-  AdjacencyListGraph saveCopy         = *this;
-  AdjacencyListGraph experimentalCopy = *this;
-
-  for (const Edge& e : this->edges()) {
-    if (experimentalCopy.degree(e.u) > 2 && experimentalCopy.degree(e.v) > 2) {
-      experimentalCopy.removeEdge(e);
-      if (experimentalCopy.biconnected()) {
-        saveCopy = experimentalCopy;
-      }
-      else {
-        experimentalCopy = saveCopy;
-      }
-    }
-  }
-  return saveCopy;
-}
-
 /***********************************************************************************************************************
  *                                               adjacency list digraph
  **********************************************************************************************************************/

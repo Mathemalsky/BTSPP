@@ -116,17 +116,19 @@ bool checkBiconnectivity(const G& graph) {
   }
 
   std::vector<bool> visited(numberOfNodes, false);
+  size_t numberOfEars = 0;
   for (size_t u : tree.explorationOrder()) {    // iterate over all nodes in the order they appeared in dfs
     for (size_t v : backedges.neighbours(u)) {  // for every backedge starting at v
-      if (!visited[v]) {
+      if (!visited[v]) {                        // skip trivial backedges
         visited[u] = true;
         while (!visited[v]) {
           visited[v] = true;
           v          = tree.parent(v);
         }
-        if (v == u && u != tree.root()) {
+        if (v == u && numberOfEars != 0) {
           return false;  // v is an articulation point
         }
+        ++numberOfEars;
       }
     }
   }
@@ -146,7 +148,9 @@ bool checkBiconnectivity(const G& graph) {
  * @return index of non isolated node
  */
 template <typename G>
-size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+size_t findNonIsolatedNode(const G& graph)
+  requires(std::is_base_of_v<Graph, G>)
+{
   for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
     if (graph.degree(u) > 0) {
       return u;
@@ -164,7 +168,9 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
  * again.
  */
 template <typename G>
-std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+std::vector<size_t> eulertour(const G& graph)
+  requires(std::is_base_of_v<Graph, G>)
+{
   G workingCopy = graph;
   std::vector<size_t> tour;
   tour.reserve(graph.numberOfEdges() + 1);
@@ -188,13 +194,25 @@ std::vector<size_t> eulertour(const G& graph) requires(std::is_base_of_v<Graph, 
 }
 
 /*!
- * \brief biconnectedSpanningGraph computes a bottleneck optimal biconnected spanning subgraph.
- * \details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
+ * @brief biconnectedSpanningGraph computes a bottleneck optimal biconnected subgraph.
+ * @details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
  * increasing in their length and successively added until the graph is biconnected.
- * \param euclidean complete graph, providing distances between nodes.
- * \return undirected AdjacencyMatrixGraph
+ * @param euclidean complete graph, providing distances between nodes
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyMatrixGraph
  */
-AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double& maxEdgeWeight);
+AdjacencyMatrixGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
+
+/*!
+ * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
+ * @details First the augmentation edge is added then some edges definitely not increasing the bottleneck are added. Then the other edges
+ * are sortet increasing in their length and successively added until the graph is biconnected. Then the augmentation edge is removed.
+ * @param euclidean complete graph, providing distances between nodes
+ * @param augmentationEdge
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyMatrixGraph
+ */
+AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
 
 /*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
@@ -203,5 +221,9 @@ AdjacencyMatrixGraph biconnectedSpanningGraph(const Euclidean& euclidean, double
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+
+AdjacencyListGraph minimallyBiconnectedSubgraph(const AdjacencyListGraph& graph);
+
+AdjacencyListGraph edgeKeepingMinimallyBiconectedSubgraph(const AdjacencyListGraph& graph, const Edge& keepEdge);
 
 }  // namespace graph

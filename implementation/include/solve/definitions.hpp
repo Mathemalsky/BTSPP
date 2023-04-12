@@ -2,6 +2,7 @@
 
 enum class ProblemType : unsigned int {
   BTSP_approx,
+  BTSPP_approx,
   BTSP_exact,
   BTSPP_exact,
   TSP_exact,

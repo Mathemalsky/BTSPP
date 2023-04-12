@@ -40,8 +40,13 @@ static void handleFastEvents(GLFWwindow* window, const Buffers& buffers) {
 static void handleSlowEvents([[maybe_unused]] const Buffers& buffers) {
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
-    drawing::BTSP_APPROX_RESULT = approximation::approximate(drawing::EUCLIDEAN, ProblemType::BTSP_approx);
+    drawing::BTSP_APPROX_RESULT                                     = approximation::approximateBTSP(drawing::EUCLIDEAN);
     drawing::updateOrder(drawing::BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
+  }
+  if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
+    slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
+    drawing::BTSPP_APPROX_RESULT                                     = approximation::approximateBTSPP(drawing::EUCLIDEAN);
+    drawing::updateOrder(drawing::BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
@@ -81,20 +86,34 @@ static void selectNodeToMove(GLFWwindow* window) {
 }
 
 static void cycleBTSPApproxDisplay() {
-  if (drawing::DRAW_BICONNECTED_GRAPH) {
-    drawing::DRAW_BICONNECTED_GRAPH      = false;
-    drawing::DRAW_OPEN_EAR_DECOMPOSITION = true;
+  if (drawing::BTSP_DRAW_BICONNECTED_GRAPH) {
+    drawing::BTSP_DRAW_BICONNECTED_GRAPH      = false;
+    drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = true;
   }
-  else if (drawing::DRAW_OPEN_EAR_DECOMPOSITION) {
-    drawing::DRAW_OPEN_EAR_DECOMPOSITION = false;
-    drawing::DRAW_HAMILTON_CYCLE         = true;
+  else if (drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION) {
+    drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = false;
+    drawing::BTSP_DRAW_HAMILTON_CYCLE         = true;
   }
-  else if (drawing::DRAW_HAMILTON_CYCLE) {
-    drawing::DRAW_HAMILTON_CYCLE    = false;
-    drawing::DRAW_BICONNECTED_GRAPH = true;
+  else if (drawing::BTSP_DRAW_HAMILTON_CYCLE) {
+    drawing::BTSP_DRAW_HAMILTON_CYCLE    = false;
+    drawing::BTSP_DRAW_BICONNECTED_GRAPH = true;
   }
   else {
-    drawing::DRAW_BICONNECTED_GRAPH = true;
+    drawing::BTSP_DRAW_BICONNECTED_GRAPH = true;
+  }
+}
+
+static void cycleBTSPPApproxDisplay() {
+  if (drawing::BTSPP_DRAW_BICONNECTED_GRAPH) {
+    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = false;
+    drawing::BTSPP_DRAW_HAMILTON_PATH     = true;
+  }
+  else if (drawing::BTSPP_DRAW_HAMILTON_PATH) {
+    drawing::BTSPP_DRAW_HAMILTON_PATH     = false;
+    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = true;
+  }
+  else {
+    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = true;
   }
 }
 
@@ -122,6 +141,9 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
   if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]);
   }
+  if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
+  }
   if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
   }
@@ -131,8 +153,13 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
   if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
   }
-  if (key == GLFW_KEY_T && action == GLFW_PRESS && drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]) {
-    cycleBTSPApproxDisplay();
+  if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+    if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]) {
+      cycleBTSPApproxDisplay();
+    }
+    if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
+      cycleBTSPPApproxDisplay();
+    }
   }
 }
 

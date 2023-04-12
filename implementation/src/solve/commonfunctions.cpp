@@ -4,7 +4,7 @@
 
 #include "graph/graph.hpp"
 
-graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<unsigned int>& tour, const bool cycle) {
+graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<unsigned int>& tour, const bool isCycle) {
   unsigned int bottleneckEdgeEnd = 0;
   double bottleneckWeight        = euclidean.weight(tour[0], tour[1]);
   for (unsigned int i = 1; i < euclidean.numberOfNodes() - 1; ++i) {
@@ -13,7 +13,7 @@ graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<
       bottleneckWeight  = euclidean.weight(tour[i], tour[i + 1]);
     }
   }
-  if (cycle && euclidean.weight(tour.back(), tour[0]) > bottleneckWeight) {
+  if (isCycle && euclidean.weight(tour.back(), tour[0]) > bottleneckWeight) {
     return graph::Edge{tour.back(), 0};
   }
   else {
