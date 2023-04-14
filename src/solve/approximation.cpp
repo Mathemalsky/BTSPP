@@ -389,7 +389,6 @@ static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const gra
 }
 
 Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
-  const size_t numberOfNodes = euclidean.numberOfNodes();
   double maxEdgeWeight;
 
   // find graph s.t. G = (V,E) + (s,t) is biconnected
