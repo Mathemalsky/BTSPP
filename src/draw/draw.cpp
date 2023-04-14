@@ -8,6 +8,7 @@
 
 #include "draw/buffers.hpp"
 #include "draw/definitions.hpp"
+#include "draw/drawdata.hpp"
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
@@ -28,13 +29,13 @@ static void clearWindow(GLFWwindow* window) {
 }
 
 // the vertex buffer object needs to be bound and the attribute vertex_position needs to be enabled
-static void drawVertices(const ShaderProgram& drawCircles) {
+static void drawVertices(const ShaderProgram& drawCircles, const size_t numberOfVertices) {
   drawCircles.use();  // need to call glUseProgram before setting uniforms
   drawCircles.setUniform("u_steps", 8);
   drawCircles.setUniform("u_radius", VETREX_RADIUS);
   drawCircles.setUniform("u_colour", VERTEX_COLOUR);
 
-  glDrawArrays(GL_POINTS, 0, EUCLIDEAN.numberOfNodes());  // start at index 0
+  glDrawArrays(GL_POINTS, 0, numberOfVertices);  // start at index 0
 }
 
 static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
@@ -77,9 +78,9 @@ static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const graph:
   }
 }
 
-void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buffers& buffers) {
+void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const DrawData& drawData) {
   clearWindow(window);
-  drawVertices(programs.drawCircles);
+  drawVertices(programs.drawCircles, drawData.drawgraph.euclidean().numberOfNodes());
 
   unsigned int typeInt = std::to_underlying(ProblemType::BTSP_approx);
   if (BTSP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
@@ -89,7 +90,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
     drawOpenEarDecomposition(programs.drawLine, BTSP_APPROX_RESULT.openEarDecomposition);
   }
   if (BTSP_DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_approx);
@@ -97,21 +98,21 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Buf
     drawGraph(programs.drawLine, BTSPP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
   }
   if (BTSPP_DRAW_HAMILTON_PATH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSPP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
     drawEdge(programs.drawLine, BTSPP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::TSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
   }
 }

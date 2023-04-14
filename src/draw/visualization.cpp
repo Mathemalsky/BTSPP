@@ -10,6 +10,7 @@
 #include "draw/buffers.hpp"
 #include "draw/definitions.hpp"
 #include "draw/draw.hpp"
+#include "draw/drawdata.hpp"
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
 #include "draw/shader.hpp"
@@ -42,7 +43,8 @@ static void initInputVariables() {
   input::mouse::NODE_IN_MOTION = input::mouse::INITIAL_NODE_IN_MOTION;
 }
 
-static const Buffers& setUpBufferMemory(const graph::Euclidean& euclidean) {
+static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
+  const DrawGraph drawGraph(euclidean);
   drawing::EUCLIDEAN = euclidean;
   drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
 
@@ -50,7 +52,10 @@ static const Buffers& setUpBufferMemory(const graph::Euclidean& euclidean) {
   const ShaderBuffer& tourCoordinates = *new ShaderBuffer(drawing::POINTS_F);     // copy vertex coords to shader buffer
   const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
-  return *new Buffers{coordinates, tour, tourCoordinates};
+  return DrawData{
+      *new Buffers{coordinates, tour, tourCoordinates},
+       drawGraph
+  };
 }
 
 static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {
@@ -91,15 +96,15 @@ void visualize(const graph::Euclidean& euclidean) {
   const ShaderProgram drawLineProgram  = collection.linkLineDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawPathSegments, drawLineProgram);
 
-  const Buffers& buffers = setUpBufferMemory(euclidean);
-  const VertexArray& vao = bindBufferMemory(buffers, programs);
+  DrawData drawData      = setUpBufferMemory(euclidean);
+  const VertexArray& vao = bindBufferMemory(drawData.buffers, programs);
 
   // enable vsync
   glfwSwapInterval(1);
 
   // set callbacks for keyboard and mouse, must be called before Imgui
-  glfwSetKeyCallback(window, keyCallback);
-  glfwSetMouseButtonCallback(window, mouseButtonCallback);
+  glfwSetKeyCallback(window, drawData.keyCallback);
+  glfwSetMouseButtonCallback(window, drawData.mouseButtonCallback);
 
   // setup Dear ImGui
   setUpImgui(window, glsl_version);
@@ -114,10 +119,10 @@ void visualize(const graph::Euclidean& euclidean) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    handleEvents(window, buffers);
+    handleEvents(window, drawData);
 
     // draw the content
-    draw(window, programs, buffers);
+    draw(window, programs, drawData);
 
     // draw the gui
     drawImgui();
@@ -128,7 +133,7 @@ void visualize(const graph::Euclidean& euclidean) {
 
   // clean up memory
   delete &vao;
-  delete &buffers;
+  delete &drawData.buffers;
 
   // clean up Dear ImGui
   cleanUpImgui();
