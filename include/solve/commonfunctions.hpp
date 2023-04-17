@@ -1,8 +1,11 @@
 #pragma once
 
+#include <fstream>
 #include <vector>
 
 #include "graph/graph.hpp"
+
+#include "solve/definitions.hpp"
 
 graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<unsigned int>& tour, const bool cycle);
 
@@ -22,4 +25,17 @@ inline size_t previousModulo(const size_t number, const size_t modulus) {
 
 inline size_t successiveModulo(const size_t number, const size_t modulus) {
   return (number == modulus - 1 ? 0 : number + 1);
+}
+
+inline std::ostream& operator<<(std::ostream& os, const ProblemType type) {
+  if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact) {
+    os << "BTSP";
+  }
+  else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
+    os << "BTSPP";
+  }
+  else if (type == ProblemType::TSP_exact) {
+    os << "TSP";
+  }
+  return os;
 }

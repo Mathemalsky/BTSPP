@@ -18,8 +18,11 @@ constexpr int INVALID = -1;
 }  // namespace namedInts
 
 namespace problemType {
-constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> PROBLEM_TYPES = {
-    ProblemType::BTSP_approx, ProblemType::BTSPP_approx, ProblemType::BTSP_exact, ProblemType::BTSPP_exact, ProblemType::TSP_exact};
+constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> PROBLEM_TYPES = {ProblemType::BTSP_approx,
+                                                                                                              ProblemType::BTSPP_approx,
+                                                                                                              ProblemType::BTSP_exact,
+                                                                                                              ProblemType::BTSPP_exact,
+                                                                                                              ProblemType::TSP_exact};
 }  // namespace problemType
 
 namespace drawing {
