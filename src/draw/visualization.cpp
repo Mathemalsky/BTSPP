@@ -52,10 +52,7 @@ static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
   const ShaderBuffer& tourCoordinates = *new ShaderBuffer(floatVertices.read());     // copy vertex coords to shader buffer
   const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
-  return DrawData{
-      *new Buffers{coordinates, tour, tourCoordinates},
-       floatVertices
-  };
+  return DrawData(*new Buffers{coordinates, tour, tourCoordinates}, floatVertices);
 }
 
 static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {

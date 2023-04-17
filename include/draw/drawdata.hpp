@@ -1,15 +1,20 @@
 #pragma once
 
+#include <array>
 #include <vector>
 
 #include "draw/buffers.hpp"
 
 #include "graph/graph.hpp"
 
+#include "solve/definitions.hpp"
+
 class FloatVertices {
 public:
   FloatVertices()  = default;
   ~FloatVertices() = default;
+
+  FloatVertices(const std::vector<float>& vertices) : pFloatVertices(vertices) {}
 
   /*!
    * @brief casts the doubles in coordinates of euclidean into floatVertices
@@ -41,7 +46,29 @@ struct Results {
   exactsolver::Result BTSPP_EXACT_RESULT;
 };
 
+struct Appearance {
+  std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+  std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
+  RGBA_COLOUR CLEAR_COLOUR;
+  RGBA_COLOUR VERTEX_COLOUR;
+};
+
+class VertexOrder {
+public:
+  VertexOrder()  = default;
+  ~VertexOrder() = default;
+
+  void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
+
+private:
+  std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> pVertexOrder;
+  std::array<std::vector<bool>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> pInitialized;
+}
+
 struct DrawData {
+  DrawData(const Buffers& buffers, const FloatVertices& floatVertices) : buffers(buffers), floatVertices(floatVertices) {}
   const Buffers& buffers;
   FloatVertices floatVertices;
+  Results results;
+  VertexOrder vertexOrder;
 };

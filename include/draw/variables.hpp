@@ -31,11 +31,6 @@ extern std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THI
 extern RGBA_COLOUR CLEAR_COLOUR;
 extern RGBA_COLOUR VERTEX_COLOUR;
 
-extern approximation::Result BTSP_APPROX_RESULT;
-extern approximation::Result BTSPP_APPROX_RESULT;
-extern exactsolver::Result BTSP_EXACT_RESULT;
-extern exactsolver::Result BTSPP_EXACT_RESULT;
-
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
 }  // namespace drawing
 

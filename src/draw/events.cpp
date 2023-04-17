@@ -41,22 +41,22 @@ static void handleFastEvents(GLFWwindow* window, DrawData& drawData) {
 static void handleSlowEvents(DrawData& drawData) {
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
-    drawing::BTSP_APPROX_RESULT                                     = approximation::approximateBTSP(drawing::EUCLIDEAN);
+    drawData.results.BTSP_APPROX_RESULT                             = approximation::approximateBTSP(drawing::EUCLIDEAN);
     drawing::updateOrder(drawing::BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
-    drawing::BTSPP_APPROX_RESULT                                     = approximation::approximateBTSPP(drawing::EUCLIDEAN);
+    drawData.results.BTSPP_APPROX_RESULT                             = approximation::approximateBTSPP(drawing::EUCLIDEAN);
     drawing::updateOrder(drawing::BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
-    drawing::BTSP_EXACT_RESULT                                     = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
+    drawData.results.BTSP_EXACT_RESULT                             = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
     drawing::updateOrder(drawing::BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)] = false;
-    drawing::BTSPP_EXACT_RESULT                                     = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact);
+    drawData.results.BTSPP_EXACT_RESULT                             = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact);
     drawing::updateOrder(drawing::BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::TSP_exact)]) {

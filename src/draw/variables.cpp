@@ -32,11 +32,6 @@ std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 RGBA_COLOUR CLEAR_COLOUR;
 RGBA_COLOUR VERTEX_COLOUR;
 
-approximation::Result BTSP_APPROX_RESULT;
-approximation::Result BTSPP_APPROX_RESULT;
-exactsolver::Result BTSP_EXACT_RESULT;
-exactsolver::Result BTSPP_EXACT_RESULT;
-
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
   if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
     ORDER[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD);
