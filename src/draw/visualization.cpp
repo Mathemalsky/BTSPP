@@ -44,17 +44,17 @@ static void initInputVariables() {
 }
 
 static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
-  const DrawGraph drawGraph(euclidean);
   drawing::EUCLIDEAN = euclidean;
-  drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+  FloatVertices floatVertices;
+  floatVertices.updatePointsfFromEuclidean(drawing::EUCLIDEAN);
 
-  const VertexBuffer& coordinates     = *new VertexBuffer(drawing::POINTS_F, 2);  // components per vertex
-  const ShaderBuffer& tourCoordinates = *new ShaderBuffer(drawing::POINTS_F);     // copy vertex coords to shader buffer
+  const VertexBuffer& coordinates     = *new VertexBuffer(floatVertices.read(), 2);  // components per vertex
+  const ShaderBuffer& tourCoordinates = *new ShaderBuffer(floatVertices.read());     // copy vertex coords to shader buffer
   const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
   return DrawData{
       *new Buffers{coordinates, tour, tourCoordinates},
-       drawGraph
+       floatVertices
   };
 }
 
@@ -103,8 +103,8 @@ void visualize(const graph::Euclidean& euclidean) {
   glfwSwapInterval(1);
 
   // set callbacks for keyboard and mouse, must be called before Imgui
-  glfwSetKeyCallback(window, drawData.keyCallback);
-  glfwSetMouseButtonCallback(window, drawData.mouseButtonCallback);
+  glfwSetKeyCallback(window, keyCallback);
+  glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
   // setup Dear ImGui
   setUpImgui(window, glsl_version);

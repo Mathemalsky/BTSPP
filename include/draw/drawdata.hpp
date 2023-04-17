@@ -6,26 +6,32 @@
 
 #include "graph/graph.hpp"
 
-class DrawGraph {
+class FloatVertices {
 public:
-  DrawGraph(const graph::Euclidean& euclidean) : pEuclidean(euclidean) {}
-  ~DrawGraph() = default;
+  FloatVertices()  = default;
+  ~FloatVertices() = default;
 
-  const graph::Euclidean& euclidean() const { return pEuclidean; }
-  graph::Euclidean& euclidean() { return pEuclidean; }
-
-  void updatePointsfFromEuclidean() {
-    pPoints_f.resize(2 * pEuclidean.numberOfNodes());
-    const std::vector<graph::Point2D> points = pEuclidean.vertices();
+  /*!
+   * @brief casts the doubles in coordinates of euclidean into floatVertices
+   * @param euclidean
+   */
+  void updatePointsfFromEuclidean(graph::Euclidean& euclidean) {
+    pFloatVertices.resize(2 * euclidean.numberOfNodes());
+    const std::vector<graph::Point2D> points = euclidean.vertices();
     for (size_t i = 0; i < points.size(); ++i) {
-      pPoints_f[2 * i]     = (float) points[i].x;
-      pPoints_f[2 * i + 1] = (float) points[i].y;
+      pFloatVertices[2 * i]     = static_cast<float>(points[i].x);
+      pFloatVertices[2 * i + 1] = static_cast<float>(points[i].y);
     }
   }
 
+  std::vector<float>& modify() { return pFloatVertices; }
+  const std::vector<float>& read() const { return pFloatVertices; }
+
+  const float& xCoord(const size_t u) const { return pFloatVertices[2 * u]; }
+  const float& yCoord(const size_t u) const { return pFloatVertices[2 * u + 1]; }
+
 private:
-  graph::Euclidean pEuclidean;
-  std::vector<float> pPoints_f;
+  std::vector<float> pFloatVertices;
 };
 
 struct Results {
@@ -37,9 +43,5 @@ struct Results {
 
 struct DrawData {
   const Buffers& buffers;
-  DrawGraph drawgraph;
-
-  // calback functions as memberfunctions
-  void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods);
-  void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods);
+  FloatVertices floatVertices;
 };

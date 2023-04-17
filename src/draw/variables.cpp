@@ -15,7 +15,6 @@
 
 namespace drawing {
 graph::Euclidean EUCLIDEAN;
-std::vector<float> POINTS_F;
 
 bool SHOW_DEBUG_WINDOW;
 bool SHOW_SETTINGS_WINDOW;
@@ -37,15 +36,6 @@ approximation::Result BTSP_APPROX_RESULT;
 approximation::Result BTSPP_APPROX_RESULT;
 exactsolver::Result BTSP_EXACT_RESULT;
 exactsolver::Result BTSPP_EXACT_RESULT;
-
-void updatePointsfFromEuclidean() {
-  POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
-  const std::vector<graph::Point2D> points = EUCLIDEAN.vertices();
-  for (size_t i = 0; i < points.size(); ++i) {
-    POINTS_F[2 * i]     = (float) points[i].x;
-    POINTS_F[2 * i + 1] = (float) points[i].y;
-  }
-}
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
   if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {

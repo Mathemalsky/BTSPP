@@ -50,9 +50,10 @@ static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& 
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - PATH_OVERHEAD));
 }
 
-static void drawEdge(const ShaderProgram& drawLine, const graph::Edge& e, const float thickness, const RGBA_COLOUR& colour) {
+static void drawEdge(const ShaderProgram& drawLine, const FloatVertices& floatVertices, const graph::Edge& e, const float thickness,
+                     const RGBA_COLOUR& colour) {
   drawLine.use();
-  drawLine.setUniform("u_ends", POINTS_F[2 * e.u], POINTS_F[2 * e.u + 1], POINTS_F[2 * e.v], POINTS_F[2 * e.v + 1]);
+  drawLine.setUniform("u_ends", floatVertices.xCoord(e.u), floatVertices.yCoord(e.u), floatVertices.xCoord(e.v), floatVertices.yCoord(e.v));
   drawLine.setUniform("u_thickness", thickness);
   drawLine.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
   drawLine.setUniform("u_colour", colour);
@@ -62,54 +63,55 @@ static void drawEdge(const ShaderProgram& drawLine, const graph::Edge& e, const 
 }
 
 template <typename G>
-static void drawGraph(const ShaderProgram& drawLine, const G& graph, const RGBA_COLOUR& colour) {
+static void drawGraph(const ShaderProgram& drawLine, const FloatVertices& floatVertices, const G& graph, const RGBA_COLOUR& colour) {
   for (const graph::Edge& e : graph.edges()) {
-    drawEdge(drawLine, e, 5.0f, colour);
+    drawEdge(drawLine, floatVertices, e, 5.0f, colour);
   }
 }
 
-static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const graph::EarDecomposition& openEarDecomp) {
+static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const DrawData& drawData,
+                                     const graph::EarDecomposition& openEarDecomp) {
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
     RGBA_COLOUR colour               = COLOUR[std::to_underlying(ProblemType::BTSP_approx)] * ((float) i / (openEarDecomp.ears.size() - 1));
     for (unsigned int j = chain.size() - 1; j > 0; --j) {
-      drawEdge(drawLine, graph::Edge{chain[j], chain[j - 1]}, 5.0f, colour);
+      drawEdge(drawLine, drawData.floatVertices, graph::Edge{chain[j], chain[j - 1]}, 5.0f, colour);
     }
   }
 }
 
 void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const DrawData& drawData) {
   clearWindow(window);
-  drawVertices(programs.drawCircles, drawData.drawgraph.euclidean().numberOfNodes());
+  drawVertices(programs.drawCircles, EUCLIDEAN.numberOfNodes());
 
   unsigned int typeInt = std::to_underlying(ProblemType::BTSP_approx);
   if (BTSP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawGraph(programs.drawLine, BTSP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
+    drawGraph(programs.drawLine, drawData.floatVertices, BTSP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
   }
   if (BTSP_DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawOpenEarDecomposition(programs.drawLine, BTSP_APPROX_RESULT.openEarDecomposition);
+    drawOpenEarDecomposition(programs.drawLine, drawData, BTSP_APPROX_RESULT.openEarDecomposition);
   }
   if (BTSP_DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
-    drawEdge(programs.drawLine, BTSP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
+    drawEdge(programs.drawLine, drawData.floatVertices, BTSP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_approx);
   if (BTSPP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawGraph(programs.drawLine, BTSPP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
+    drawGraph(programs.drawLine, drawData.floatVertices, BTSPP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
   }
   if (BTSPP_DRAW_HAMILTON_PATH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
-    drawEdge(programs.drawLine, BTSPP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
+    drawEdge(programs.drawLine, drawData.floatVertices, BTSPP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
-    drawEdge(programs.drawLine, BTSP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
+    drawEdge(programs.drawLine, drawData.floatVertices, BTSP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
     drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
-    drawEdge(programs.drawLine, BTSPP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
+    drawEdge(programs.drawLine, drawData.floatVertices, BTSPP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f, COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::TSP_exact);
   if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {

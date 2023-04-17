@@ -14,7 +14,6 @@
 
 namespace drawing {
 extern graph::Euclidean EUCLIDEAN;
-extern std::vector<float> POINTS_F;
 
 extern bool SHOW_SETTINGS_WINDOW;
 extern bool SHOW_DEBUG_WINDOW;
@@ -36,8 +35,6 @@ extern approximation::Result BTSP_APPROX_RESULT;
 extern approximation::Result BTSPP_APPROX_RESULT;
 extern exactsolver::Result BTSP_EXACT_RESULT;
 extern exactsolver::Result BTSPP_EXACT_RESULT;
-
-void updatePointsfFromEuclidean();
 
 void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
 }  // namespace drawing
