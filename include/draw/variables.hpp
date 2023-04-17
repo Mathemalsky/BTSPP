@@ -42,6 +42,7 @@ extern int HEIGHT;
 extern int WIDTH;
 }  // namespace mainwindow
 
-namespace slowEvents {
+namespace solve {
+extern bool BTSP_FORBID_CROSSING;
 extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
-}  // namespace slowEvents
+}  // namespace solve

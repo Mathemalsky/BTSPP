@@ -211,7 +211,7 @@ static void forbidCrossing(HighsModel& model, std::vector<Entry>& entries, const
   model.lp_.num_row_ += numOfAntiCrossingConstraints;
 }
 
-Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
+Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, const bool noCrossing) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   const Index index(numberOfNodes, problemType);
 
@@ -228,7 +228,9 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType) {
     setMillerTuckerZemlinMatrix(entries, index, numberOfNodes);
     setCBounds(model, index);
     setCConstraints(entries, index, euclidean);
-    forbidCrossing(model, entries, euclidean, index);
+    if (noCrossing) {
+      forbidCrossing(model, entries, euclidean, index);
+    }
   }
   else if (problemType == ProblemType::BTSPP_exact) {
     setBTSPcost(model, index);

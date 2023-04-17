@@ -80,6 +80,8 @@ void drawImgui(Appearance& appearance) {
     ImGui::SliderFloat("thickness##BTSP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSP_exact)], 0.0f, 20.0f, "%.1f");
     ImGui::ColorEdit3("##BTSP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSP_exact)]);
 
+    ImGui::Checkbox("fobid crossing##BTSP exact", &solve::BTSP_FORBID_CROSSING);
+
     ImGui::Checkbox("BTSPP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
     ImGui::SliderFloat("thickness##BTSPP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSPP_exact)], 0.0f, 20.0f, "%.1f");
     ImGui::ColorEdit3("##BTSPP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_exact)]);

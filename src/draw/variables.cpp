@@ -41,6 +41,7 @@ int HEIGHT;
 int WIDTH;
 }  // namespace mainwindow
 
-namespace slowEvents {
+namespace solve {
+bool BTSP_FORBID_CROSSING;
 std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
-}  // namespace slowEvents
+}  // namespace solve

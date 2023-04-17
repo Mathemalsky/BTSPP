@@ -31,6 +31,10 @@ static void printSeedAdvice() {
   std::cout << "<-seed> <int1> ... <int" << SEED_LENGTH << "> to pass a seed for generating the graph\n";
 }
 
+static void printNoCrossingAdvice() {
+  std::cout << "<-no-crossing> if <-btsp-e> is set, to find a solution without crossing\n";
+}
+
 static void printSyntax() {
   std::cout << "Syntax\n";
   std::cout << "./<NameOfExecutable> <NumberOfNodesInGraph> <arg1> <arg2> ...\n";
@@ -47,6 +51,7 @@ void interpretCommandLine(const int argc, char* argv[]) {
   if (argc == 2 && std::string(argv[1]) == "help") {
     printSyntax();
     printSeedAdvice();
+    printNoCrossingAdvice();
     return;
   }
   if (argc != 2 && argc != 2 + 1 + SEED_LENGTH) {
@@ -107,7 +112,7 @@ static void readArguments(const int argc, char* argv[]) {
     arguments.erase("-btspp");
   }
   if (arguments.contains("-btsp-e")) {
-    const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact);
+    const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains("-no-crossing"));
     arguments.erase("-btsp-e");
   }
   if (arguments.contains("-btspp-e")) {
@@ -139,6 +144,7 @@ void interpretCommandLine(const int argc, char* argv[]) {
     printSyntax();
     printArgumentList();
     printSeedAdvice();
+    printNoCrossingAdvice();
     return;
   }
   if (argc < 3) {

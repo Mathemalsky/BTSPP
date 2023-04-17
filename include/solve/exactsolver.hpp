@@ -14,6 +14,6 @@ struct Result {
   graph::Edge bottleneckEdge;
 };
 
-Result solve(const graph::Euclidean& euclidean, const ProblemType problemType);
+Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, const bool noCrossing = false);
 
 }  // namespace exactsolver
