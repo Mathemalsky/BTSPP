@@ -5,8 +5,11 @@
 #include <utility>
 #include <vector>
 
+#include "draw/definitions.hpp"
+
 #include "solve/definitions.hpp"
 
+namespace drawing {
 void VertexOrder::updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
   if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
     pVertexOrder[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD);
@@ -21,3 +24,4 @@ void VertexOrder::updateOrder(const std::vector<unsigned int>& order, const Prob
   }
   pInitialized[std::to_underlying(type)] = true;
 }
+}  // namespace drawing

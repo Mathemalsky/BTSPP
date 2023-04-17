@@ -10,6 +10,8 @@
 
 #include "solve/exactsolver.hpp"
 
+using namespace drawing;
+
 /***********************************************************************************************************************
  *                                               fast events
  **********************************************************************************************************************/
@@ -42,27 +44,27 @@ static void handleSlowEvents(DrawData& drawData) {
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
     drawData.results.BTSP_APPROX_RESULT                             = approximation::approximateBTSP(drawing::EUCLIDEAN);
-    drawing::updateOrder(drawing::BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
+    drawData.vertexOrder.updateOrder(drawData.results.BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
     drawData.results.BTSPP_APPROX_RESULT                             = approximation::approximateBTSPP(drawing::EUCLIDEAN);
-    drawing::updateOrder(drawing::BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
+    drawData.vertexOrder.updateOrder(drawData.results.BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
     drawData.results.BTSP_EXACT_RESULT                             = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact);
-    drawing::updateOrder(drawing::BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
+    drawData.vertexOrder.updateOrder(drawData.results.BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)] = false;
     drawData.results.BTSPP_EXACT_RESULT                             = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact);
-    drawing::updateOrder(drawing::BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
+    drawData.vertexOrder.updateOrder(drawData.results.BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
   }
   if (slowEvents::SOLVE[std::to_underlying(ProblemType::TSP_exact)]) {
     slowEvents::SOLVE[std::to_underlying(ProblemType::TSP_exact)] = false;
     exactsolver::Result res                                       = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
-    drawing::updateOrder(res.tour, ProblemType::TSP_exact);
+    drawData.vertexOrder.updateOrder(res.tour, ProblemType::TSP_exact);
   }
 }
 

@@ -18,6 +18,8 @@
 
 #include "solve/exactsolver.hpp"
 
+using namespace drawing;
+
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -33,7 +35,6 @@ static void initDrawingVariables() {
   drawing::BTSP_DRAW_HAMILTON_CYCLE         = drawing::INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
   drawing::BTSPP_DRAW_BICONNECTED_GRAPH     = drawing::INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
   drawing::BTSPP_DRAW_HAMILTON_PATH         = drawing::INITIAL_BTSPP_DRAW_HAMILTON_PATH;
-  drawing::INITIALIZED                      = drawing::INITIAL_ACTIVENESS;
   drawing::THICKNESS                        = drawing::INITIAL_THICKNESS;
   drawing::CLEAR_COLOUR                     = drawing::INITIAL_CLEAR_COLOUR;
   drawing::VERTEX_COLOUR                    = drawing::INITIAL_VERTEX_COLOUR;

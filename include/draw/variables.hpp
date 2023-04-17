@@ -25,8 +25,6 @@ extern bool BTSP_DRAW_BICONNECTED_GRAPH;
 extern bool BTSP_DRAW_HAMILTON_CYCLE;
 extern bool BTSPP_DRAW_BICONNECTED_GRAPH;
 extern bool BTSPP_DRAW_HAMILTON_PATH;
-extern std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
-extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
 extern std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
 extern RGBA_COLOUR CLEAR_COLOUR;
 extern RGBA_COLOUR VERTEX_COLOUR;

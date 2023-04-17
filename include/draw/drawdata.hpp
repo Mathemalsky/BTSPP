@@ -9,6 +9,7 @@
 
 #include "solve/definitions.hpp"
 
+namespace drawing {
 class FloatVertices {
 public:
   FloatVertices()  = default;
@@ -55,15 +56,21 @@ struct Appearance {
 
 class VertexOrder {
 public:
-  VertexOrder()  = default;
+  VertexOrder() {
+    for (bool& init_val : pInitialized) {
+      init_val = false;
+    }
+  }
   ~VertexOrder() = default;
 
   void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
+  const std::vector<unsigned int>& operator[](const ProblemType type) const { return pVertexOrder[std::to_underlying(type)]; }
+  bool initialized(const ProblemType& type) const { return pInitialized[std::to_underlying(type)]; }
 
 private:
   std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> pVertexOrder;
-  std::array<std::vector<bool>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> pInitialized;
-}
+  std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> pInitialized;
+};
 
 struct DrawData {
   DrawData(const Buffers& buffers, const FloatVertices& floatVertices) : buffers(buffers), floatVertices(floatVertices) {}
@@ -72,3 +79,4 @@ struct DrawData {
   Results results;
   VertexOrder vertexOrder;
 };
+}  // namespace drawing

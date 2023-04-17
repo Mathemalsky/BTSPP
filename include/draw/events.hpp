@@ -13,4 +13,4 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
 
 void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods);
 
-void handleEvents(GLFWwindow* window, DrawData& drawData);
+void handleEvents(GLFWwindow* window, drawing::DrawData& drawData);

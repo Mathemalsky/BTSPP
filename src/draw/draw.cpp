@@ -14,8 +14,7 @@
 
 #include "graph/graph.hpp"
 
-using namespace drawing;
-
+namespace drawing {
 static RGBA_COLOUR operator*(const RGBA_COLOUR& colour, const float fade) {
   return RGBA_COLOUR{colour[0] * fade, colour[1] * fade, colour[2] * fade, colour[3]};
 }
@@ -85,40 +84,46 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Dra
   drawVertices(programs.drawCircles, EUCLIDEAN.numberOfNodes());
 
   unsigned int typeInt = std::to_underlying(ProblemType::BTSP_approx);
-  if (BTSP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
+  if (BTSP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_approx)) {
     drawGraph(programs.drawLine, drawData.floatVertices, drawData.results.BTSP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
   }
-  if (BTSP_DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
+  if (BTSP_DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_approx)) {
     drawOpenEarDecomposition(programs.drawLine, drawData, drawData.results.BTSP_APPROX_RESULT.openEarDecomposition);
   }
-  if (BTSP_DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+  if (BTSP_DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_approx)) {
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSP_approx], THICKNESS[typeInt],
+             COLOUR[typeInt]);
     drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f,
              COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_approx);
-  if (BTSPP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
+  if (BTSPP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSPP_approx)) {
     drawGraph(programs.drawLine, drawData.floatVertices, drawData.results.BTSPP_APPROX_RESULT.biconnectedGraph, COLOUR[typeInt]);
   }
-  if (BTSPP_DRAW_HAMILTON_PATH && ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+  if (BTSPP_DRAW_HAMILTON_PATH && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSPP_approx)) {
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSPP_approx], THICKNESS[typeInt],
+             COLOUR[typeInt]);
     drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSPP_APPROX_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f,
              COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSP_exact);
-  if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+  if (ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_exact)) {
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSP_exact], THICKNESS[typeInt],
+             COLOUR[typeInt]);
     drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f,
              COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_exact);
-  if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+  if (ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSPP_exact)) {
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSP_exact], THICKNESS[typeInt],
+             COLOUR[typeInt]);
     drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSPP_EXACT_RESULT.bottleneckEdge, THICKNESS[typeInt] * 1.75f,
              COLOUR[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::TSP_exact);
-  if (ACTIVE[typeInt] && INITIALIZED[typeInt]) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, ORDER[typeInt], THICKNESS[typeInt], COLOUR[typeInt]);
+  if (ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::TSP_exact)) {
+    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::TSP_exact], THICKNESS[typeInt],
+             COLOUR[typeInt]);
   }
 }
+}  // namespace drawing
