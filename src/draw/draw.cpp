@@ -37,8 +37,11 @@ static void drawVertices(const ShaderProgram& drawCircles, const size_t numberOf
   glDrawArrays(GL_POINTS, 0, numberOfVertices);  // start at index 0
 }
 
-static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& shaderBuffer, const std::vector<unsigned int>& order,
-                     const float thickness, const RGBA_COLOUR& colour) {
+static void drawPath(const ShaderProgram& drawPathSegments,
+                     const ShaderBuffer& shaderBuffer,
+                     const std::vector<unsigned int>& order,
+                     const float thickness,
+                     const RGBA_COLOUR& colour) {
   shaderBuffer.bufferSubData(order);
   drawPathSegments.use();
   drawPathSegments.setUniform("u_thickness", thickness);
@@ -49,7 +52,10 @@ static void drawPath(const ShaderProgram& drawPathSegments, const ShaderBuffer& 
   glDrawArrays(GL_TRIANGLES, 0, 6 * (order.size() - PATH_OVERHEAD));
 }
 
-static void drawEdge(const ShaderProgram& drawLine, const FloatVertices& floatVertices, const graph::Edge& e, const float thickness,
+static void drawEdge(const ShaderProgram& drawLine,
+                     const FloatVertices& floatVertices,
+                     const graph::Edge& e,
+                     const float thickness,
                      const RGBA_COLOUR& colour) {
   drawLine.use();
   drawLine.setUniform("u_ends", floatVertices.xCoord(e.u), floatVertices.yCoord(e.u), floatVertices.xCoord(e.v), floatVertices.yCoord(e.v));
@@ -68,7 +74,8 @@ static void drawGraph(const ShaderProgram& drawLine, const FloatVertices& floatV
   }
 }
 
-static void drawOpenEarDecomposition(const ShaderProgram& drawLine, const DrawData& drawData,
+static void drawOpenEarDecomposition(const ShaderProgram& drawLine,
+                                     const DrawData& drawData,
                                      const graph::EarDecomposition& openEarDecomp) {
   for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
@@ -86,47 +93,78 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Dra
 
   unsigned int typeInt = std::to_underlying(ProblemType::BTSP_approx);
   if (BTSP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_approx)) {
-    drawGraph(programs.drawLine, drawData.floatVertices, drawData.results.BTSP_APPROX_RESULT.biconnectedGraph,
+    drawGraph(programs.drawLine,
+              drawData.floatVertices,
+              drawData.results.BTSP_APPROX_RESULT.biconnectedGraph,
               drawData.appearance.colour[typeInt]);
   }
   if (BTSP_DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_approx)) {
     drawOpenEarDecomposition(programs.drawLine, drawData, drawData.results.BTSP_APPROX_RESULT.openEarDecomposition);
   }
   if (BTSP_DRAW_HAMILTON_CYCLE && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_approx)) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSP_approx],
-             drawData.appearance.thickness[typeInt], drawData.appearance.colour[typeInt]);
-    drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSP_APPROX_RESULT.bottleneckEdge,
-             drawData.appearance.thickness[typeInt] * 1.75f, drawData.appearance.colour[typeInt]);
+    drawPath(programs.drawPathSegments,
+             drawData.buffers.tour,
+             drawData.vertexOrder[ProblemType::BTSP_approx],
+             drawData.appearance.thickness[typeInt],
+             drawData.appearance.colour[typeInt]);
+    drawEdge(programs.drawLine,
+             drawData.floatVertices,
+             drawData.results.BTSP_APPROX_RESULT.bottleneckEdge,
+             drawData.appearance.thickness[typeInt] * 1.75f,
+             drawData.appearance.colour[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_approx);
   if (BTSPP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSPP_approx)) {
-    drawGraph(programs.drawLine, drawData.floatVertices, drawData.results.BTSPP_APPROX_RESULT.biconnectedGraph,
+    drawGraph(programs.drawLine,
+              drawData.floatVertices,
+              drawData.results.BTSPP_APPROX_RESULT.biconnectedGraph,
               drawData.appearance.colour[typeInt]);
   }
   if (BTSPP_DRAW_HAMILTON_PATH && ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSPP_approx)) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSPP_approx],
-             drawData.appearance.thickness[typeInt], drawData.appearance.colour[typeInt]);
-    drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSPP_APPROX_RESULT.bottleneckEdge,
-             drawData.appearance.thickness[typeInt] * 1.75f, drawData.appearance.colour[typeInt]);
+    drawPath(programs.drawPathSegments,
+             drawData.buffers.tour,
+             drawData.vertexOrder[ProblemType::BTSPP_approx],
+             drawData.appearance.thickness[typeInt],
+             drawData.appearance.colour[typeInt]);
+    drawEdge(programs.drawLine,
+             drawData.floatVertices,
+             drawData.results.BTSPP_APPROX_RESULT.bottleneckEdge,
+             drawData.appearance.thickness[typeInt] * 1.75f,
+             drawData.appearance.colour[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSP_exact)) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSP_exact],
-             drawData.appearance.thickness[typeInt], drawData.appearance.colour[typeInt]);
-    drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSP_EXACT_RESULT.bottleneckEdge,
-             drawData.appearance.thickness[typeInt] * 1.75f, drawData.appearance.colour[typeInt]);
+    drawPath(programs.drawPathSegments,
+             drawData.buffers.tour,
+             drawData.vertexOrder[ProblemType::BTSP_exact],
+             drawData.appearance.thickness[typeInt],
+             drawData.appearance.colour[typeInt]);
+    drawEdge(programs.drawLine,
+             drawData.floatVertices,
+             drawData.results.BTSP_EXACT_RESULT.bottleneckEdge,
+             drawData.appearance.thickness[typeInt] * 1.75f,
+             drawData.appearance.colour[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::BTSPP_exact);
   if (ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSPP_exact)) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::BTSP_exact],
-             drawData.appearance.thickness[typeInt], drawData.appearance.colour[typeInt]);
-    drawEdge(programs.drawLine, drawData.floatVertices, drawData.results.BTSPP_EXACT_RESULT.bottleneckEdge,
-             drawData.appearance.thickness[typeInt] * 1.75f, drawData.appearance.colour[typeInt]);
+    drawPath(programs.drawPathSegments,
+             drawData.buffers.tour,
+             drawData.vertexOrder[ProblemType::BTSP_exact],
+             drawData.appearance.thickness[typeInt],
+             drawData.appearance.colour[typeInt]);
+    drawEdge(programs.drawLine,
+             drawData.floatVertices,
+             drawData.results.BTSPP_EXACT_RESULT.bottleneckEdge,
+             drawData.appearance.thickness[typeInt] * 1.75f,
+             drawData.appearance.colour[typeInt]);
   }
   typeInt = std::to_underlying(ProblemType::TSP_exact);
   if (ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::TSP_exact)) {
-    drawPath(programs.drawPathSegments, drawData.buffers.tour, drawData.vertexOrder[ProblemType::TSP_exact],
-             drawData.appearance.thickness[typeInt], drawData.appearance.colour[typeInt]);
+    drawPath(programs.drawPathSegments,
+             drawData.buffers.tour,
+             drawData.vertexOrder[ProblemType::TSP_exact],
+             drawData.appearance.thickness[typeInt],
+             drawData.appearance.colour[typeInt]);
   }
 }
 }  // namespace drawing

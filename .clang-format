@@ -50,7 +50,15 @@ AlignOperands: true
 # int b = 2;  // comment  b
 AlignTrailingComments: true
 
-AllowAllArgumentsOnNextLine: true
+# true:
+# callFunction(
+#     a, b, c, d);
+# false:
+# callFunction(a,
+#              b,
+#              c,
+#              d);
+AllowAllArgumentsOnNextLine: false
 
 # void myFunction(int a,
 #                 int b,
@@ -102,16 +110,27 @@ AlwaysBreakBeforeMultilineStrings: true
 # };
 AlwaysBreakTemplateDeclarations: true
 
-# void f()
-# {
-#     f(aaaaaaaaaaaaaaaaaaaa, aaaaaaaaaaaaaaaaaaaa,
-#       aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa);
+# true:
+# void f() {
+#   f(aaaaaaaaaaaaaaaaaaaa, aaaaaaaaaaaaaaaaaaaa,
+#     aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa);
 # }
-BinPackArguments: true
+# false:
+# void f() {
+#   f(aaaaaaaaaaaaaaaaaaaa,
+#     aaaaaaaaaaaaaaaaaaaa,
+#     aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa);
+# }
+BinPackArguments: false
 
+# true:
 # void f(int aaaaaaaaaaaaaaaaaaaa, int aaaaaaaaaaaaaaaaaaaa,
 #        int aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) {}
-BinPackParameters: true
+# false:
+# void f(int aaaaaaaaaaaaaaaaaaaa,
+#        int aaaaaaaaaaaaaaaaaaaa,
+#        int aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa) {}
+BinPackParameters: false
 
 # Customize brace breaking/wrapping
 BreakBeforeBraces: Custom
@@ -311,12 +330,32 @@ IndentExternBlock: Indent
 # #endif
 IndentPPDirectives: BeforeHash
 
+# true:
+# template <typename It>
+#   requires Iterator<It>
+# void sort(It begin, It end) {
+#   //....
+# }
+# false:
+# template <typename It>
+# requires Iterator<It>
+# void sort(It begin, It end) {
+#   //....
+# }
+# IndentRequiresClause: false
+
 # set the standard indent to 2
 IndentWidth: 2
 
 # LoooooooooooooooooooooooooooooooooooooooongReturnType
 #     LoooooooooooooooooooooooooooooooongFunctionDeclaration();
 IndentWrappedFunctionNames: true
+
+# Would insert braces after control statements, but can be harmful, when linting is incorrect
+# InsertBraces: false
+
+# Insert a new line at end of file if missing.
+# InsertNewlineAtEOF: true
 
 # NOT!
 # if (foo)
@@ -345,6 +384,19 @@ PointerAlignment: Left
 
 # Let clang-format break long comments
 ReflowComments: true
+
+# template <typename T>
+# requires C<T>
+# struct Foo {...
+
+# template <typename T>
+# requires C<T>
+# void bar(T t) {...
+# RequiresClausePosition: RCPS_OwnLine
+
+# Would remove semicolon after closing bracket of non empty function,
+# but can be harmful with incorect linting
+# RemoveSemicolon: false
 
 # Short namespaces are like normal namespaces
 ShortNamespaceLines: 0

@@ -491,7 +491,9 @@ public:
    * @return size_t
    */
   size_t numberOfEdges() const override {
-    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+    return std::accumulate(pAdjacencyList.begin(),
+                           pAdjacencyList.end(),
+                           0,
                            [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); })
            / 2;
   }
@@ -596,8 +598,9 @@ public:
   bool connected() const override { return undirected().connected(); }
 
   size_t numberOfEdges() const override {
-    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0,
-                           [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
+    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0, [](const unsigned int sum, const std::vector<size_t>& vec) {
+      return sum + vec.size();
+    });
   }
 
   bool biconnected() const { return checkBiconnectivity(this->undirected()); }

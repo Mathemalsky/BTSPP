@@ -66,7 +66,10 @@ void drawImgui(Appearance& appearance) {
 
     ImGui::Checkbox("BTSPP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
     ImGui::ColorEdit3("##BTSPP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_approx)]);
-    ImGui::SliderFloat("thickness##BTSPP approx", &appearance.thickness[std::to_underlying(ProblemType::BTSPP_approx)], 0.0f, 30.0f,
+    ImGui::SliderFloat("thickness##BTSPP approx",
+                       &appearance.thickness[std::to_underlying(ProblemType::BTSPP_approx)],
+                       0.0f,
+                       30.0f,
                        "%.1f");
 
     ImGui::Checkbox("biconnectd graph##BTSPP approx", &drawing::BTSPP_DRAW_BICONNECTED_GRAPH);

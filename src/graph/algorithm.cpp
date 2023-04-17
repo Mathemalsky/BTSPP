@@ -41,7 +41,9 @@ static std::vector<size_t> createEdgeIndeces(const Euclidean& euclidean) {
   return edgeIndices;
 }
 
-static AdjacencyMatrixGraph addEdgesUntilBiconnected(const Euclidean& euclidean, const Index index, const std::vector<size_t>& edgeIndices,
+static AdjacencyMatrixGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
+                                                     const Index index,
+                                                     const std::vector<size_t>& edgeIndices,
                                                      double& maxEdgeWeight) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   const size_t numberOfEdges = euclidean.numberOfEdges();
