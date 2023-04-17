@@ -48,19 +48,22 @@ struct Results {
 };
 
 struct Appearance {
-  std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
-  std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
-  RGBA_COLOUR CLEAR_COLOUR;
-  RGBA_COLOUR VERTEX_COLOUR;
+  std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> colour;
+  std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> thickness;
+  RGBA_COLOUR clearColour;
+  RGBA_COLOUR vertexColour;
+
+  void init() {
+    colour       = INITIAL_COLOUR;
+    thickness    = INITIAL_THICKNESS;
+    clearColour  = INITIAL_CLEAR_COLOUR;
+    vertexColour = INITIAL_VERTEX_COLOUR;
+  }
 };
 
 class VertexOrder {
 public:
-  VertexOrder() {
-    for (bool& init_val : pInitialized) {
-      init_val = false;
-    }
-  }
+  VertexOrder() : pInitialized(INITIAL_ACTIVENESS) {}
   ~VertexOrder() = default;
 
   void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
@@ -73,10 +76,13 @@ private:
 };
 
 struct DrawData {
-  DrawData(const Buffers& buffers, const FloatVertices& floatVertices) : buffers(buffers), floatVertices(floatVertices) {}
+  DrawData(const Buffers& buffers, const FloatVertices& floatVertices) : buffers(buffers), floatVertices(floatVertices) {
+    appearance.init();
+  }
   const Buffers& buffers;
   FloatVertices floatVertices;
   Results results;
   VertexOrder vertexOrder;
+  Appearance appearance;
 };
 }  // namespace drawing

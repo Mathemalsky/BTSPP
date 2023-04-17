@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <unordered_map>
 #include <vector>
@@ -19,17 +20,12 @@ extern bool SHOW_SETTINGS_WINDOW;
 extern bool SHOW_DEBUG_WINDOW;
 
 extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
-extern std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
+
 extern bool BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
 extern bool BTSP_DRAW_BICONNECTED_GRAPH;
 extern bool BTSP_DRAW_HAMILTON_CYCLE;
 extern bool BTSPP_DRAW_BICONNECTED_GRAPH;
 extern bool BTSPP_DRAW_HAMILTON_PATH;
-extern std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
-extern RGBA_COLOUR CLEAR_COLOUR;
-extern RGBA_COLOUR VERTEX_COLOUR;
-
-void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
 }  // namespace drawing
 
 namespace input {

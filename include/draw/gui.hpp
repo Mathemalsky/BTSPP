@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "draw/drawdata.hpp"
+
 /*!
  * \brief imguiVersionHints sets version of opengl
  * \details specify opengl version and glsl version
@@ -20,7 +22,7 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version);
 /*!
  * \brief drawImgui draws the updated gui for every frame
  */
-void drawImgui();
+void drawImgui(drawing::Appearance& appearance);
 
 /*!
  * \brief cleanUpImgui frees memory for gui and performs proper shutdown of windows

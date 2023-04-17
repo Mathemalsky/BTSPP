@@ -9,7 +9,10 @@
 #include "imgui_impl_opengl3.h"
 
 #include "draw/definitions.hpp"
+#include "draw/drawdata.hpp"
 #include "draw/variables.hpp"
+
+using namespace drawing;
 
 const char* imguiVersionHints() {
   // GL 4.4 + GLSL 440
@@ -37,7 +40,7 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-void drawImgui() {
+void drawImgui(Appearance& appearance) {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
@@ -53,8 +56,8 @@ void drawImgui() {
     ImGui::Begin("Settings", &drawing::SHOW_SETTINGS_WINDOW);
 
     ImGui::Checkbox("BTSP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]);
-    ImGui::ColorEdit3("##BTSP approx", (float*) &drawing::COLOUR[std::to_underlying(ProblemType::BTSP_approx)]);
-    ImGui::SliderFloat("thickness##BTSP approx", &drawing::THICKNESS[std::to_underlying(ProblemType::BTSP_approx)], 0.0f, 30.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSP_approx)]);
+    ImGui::SliderFloat("thickness##BTSP approx", &appearance.thickness[std::to_underlying(ProblemType::BTSP_approx)], 0.0f, 30.0f, "%.1f");
 
     ImGui::Checkbox("biconnectd graph##BTSP approx", &drawing::BTSP_DRAW_BICONNECTED_GRAPH);
     ImGui::SameLine();
@@ -62,27 +65,28 @@ void drawImgui() {
     ImGui::Checkbox("hamilton cycle", &drawing::BTSP_DRAW_HAMILTON_CYCLE);
 
     ImGui::Checkbox("BTSPP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
-    ImGui::ColorEdit3("##BTSPP approx", (float*) &drawing::COLOUR[std::to_underlying(ProblemType::BTSPP_approx)]);
-    ImGui::SliderFloat("thickness##BTSPP approx", &drawing::THICKNESS[std::to_underlying(ProblemType::BTSPP_approx)], 0.0f, 30.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSPP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_approx)]);
+    ImGui::SliderFloat("thickness##BTSPP approx", &appearance.thickness[std::to_underlying(ProblemType::BTSPP_approx)], 0.0f, 30.0f,
+                       "%.1f");
 
     ImGui::Checkbox("biconnectd graph##BTSPP approx", &drawing::BTSPP_DRAW_BICONNECTED_GRAPH);
     ImGui::SameLine();
     ImGui::Checkbox("hamilton path", &drawing::BTSPP_DRAW_HAMILTON_PATH);
 
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
-    ImGui::SliderFloat("thickness##BTSP exact", &drawing::THICKNESS[std::to_underlying(ProblemType::BTSP_exact)], 0.0f, 20.0f, "%.1f");
-    ImGui::ColorEdit3("##BTSP exact", (float*) &drawing::COLOUR[std::to_underlying(ProblemType::BTSP_exact)]);
+    ImGui::SliderFloat("thickness##BTSP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSP_exact)], 0.0f, 20.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSP_exact)]);
 
     ImGui::Checkbox("BTSPP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
-    ImGui::SliderFloat("thickness##BTSPP exact", &drawing::THICKNESS[std::to_underlying(ProblemType::BTSPP_exact)], 0.0f, 20.0f, "%.1f");
-    ImGui::ColorEdit3("##BTSPP exact", (float*) &drawing::COLOUR[std::to_underlying(ProblemType::BTSPP_exact)]);
+    ImGui::SliderFloat("thickness##BTSPP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSPP_exact)], 0.0f, 20.0f, "%.1f");
+    ImGui::ColorEdit3("##BTSPP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_exact)]);
 
     ImGui::Checkbox("TSP  exact", &drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
-    ImGui::ColorEdit3("##TSP exact", (float*) &drawing::COLOUR[std::to_underlying(ProblemType::TSP_exact)]);
-    ImGui::SliderFloat("thickness##TSP exact", &drawing::THICKNESS[std::to_underlying(ProblemType::TSP_exact)], 0.0f, 30.0f, "%.1f");
+    ImGui::ColorEdit3("##TSP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::TSP_exact)]);
+    ImGui::SliderFloat("thickness##TSP exact", &appearance.thickness[std::to_underlying(ProblemType::TSP_exact)], 0.0f, 30.0f, "%.1f");
 
-    ImGui::ColorEdit4("clear colour", (float*) &drawing::CLEAR_COLOUR);
-    ImGui::ColorEdit3("vertex colour", (float*) &drawing::VERTEX_COLOUR);
+    ImGui::ColorEdit4("clear colour", (float*) &appearance.clearColour);
+    ImGui::ColorEdit3("vertex colour", (float*) &appearance.vertexColour);
     ImGui::End();
   }
 

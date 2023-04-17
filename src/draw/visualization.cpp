@@ -26,18 +26,14 @@ static void glfw_error_callback(int error, const char* description) {
 }
 
 static void initDrawingVariables() {
-  drawing::SHOW_DEBUG_WINDOW                = drawing::INITIAL_SHOW_DEBUG_WINDOW;
-  drawing::SHOW_SETTINGS_WINDOW             = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
-  drawing::ACTIVE                           = drawing::INITIAL_ACTIVENESS;
-  drawing::COLOUR                           = drawing::INITIAL_COLOUR;
-  drawing::BTSP_DRAW_BICONNECTED_GRAPH      = drawing::INITIAL_BTSP_DRAW_BICONNECTED_GRAPH;
-  drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = drawing::INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
-  drawing::BTSP_DRAW_HAMILTON_CYCLE         = drawing::INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
-  drawing::BTSPP_DRAW_BICONNECTED_GRAPH     = drawing::INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
-  drawing::BTSPP_DRAW_HAMILTON_PATH         = drawing::INITIAL_BTSPP_DRAW_HAMILTON_PATH;
-  drawing::THICKNESS                        = drawing::INITIAL_THICKNESS;
-  drawing::CLEAR_COLOUR                     = drawing::INITIAL_CLEAR_COLOUR;
-  drawing::VERTEX_COLOUR                    = drawing::INITIAL_VERTEX_COLOUR;
+  SHOW_DEBUG_WINDOW                = INITIAL_SHOW_DEBUG_WINDOW;
+  SHOW_SETTINGS_WINDOW             = INITIAL_SHOW_SETTINGS_WINDOW;
+  ACTIVE                           = INITIAL_ACTIVENESS;
+  BTSP_DRAW_BICONNECTED_GRAPH      = INITIAL_BTSP_DRAW_BICONNECTED_GRAPH;
+  BTSP_DRAW_OPEN_EAR_DECOMPOSITION = INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
+  BTSP_DRAW_HAMILTON_CYCLE         = INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
+  BTSPP_DRAW_BICONNECTED_GRAPH     = INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
+  BTSPP_DRAW_HAMILTON_PATH         = INITIAL_BTSPP_DRAW_HAMILTON_PATH;
 }
 
 static void initInputVariables() {
@@ -123,7 +119,7 @@ void visualize(const graph::Euclidean& euclidean) {
     draw(window, programs, drawData);
 
     // draw the gui
-    drawImgui();
+    drawImgui(drawData.appearance);
 
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
