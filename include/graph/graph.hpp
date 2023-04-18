@@ -70,7 +70,6 @@ struct Edge {
 
 /*!
  * \brief The Directionality enum can be Directed or Undirected
- * \details This enum can be passed as template argument to some graph classes.
  */
 enum class Directionality {
   Undirected,
@@ -82,27 +81,63 @@ public:
   EdgeWeight()  = default;
   ~EdgeWeight() = default;
 
-  EdgeWeight(const double cost) : pCost(cost) {}
+  EdgeWeight(const double cost) : pWeight(cost) {}
 
-  double cost() const { return pCost; }
+  /*!
+   * @brief returns the weight as double
+   */
+  double weight() const { return pWeight; }
 
-  double operator()() const { return pCost; }
-  void operator=(const double cost) { pCost = cost; }
-  bool operator==(const double compare) { return pCost == compare; }
-  bool operator!=(const double compare) { return pCost != compare; }
+  /*!
+   * @brief assignment operator from double
+   */
+  void operator=(const double weight) { pWeight = weight; }
 
-  bool operator<=(const EdgeWeight other) { return pCost <= other.pCost; }
-  EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
-  EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
+  /*!
+   * @brief compares for inquality with double
+   */
+  bool operator==(const double compare) { return pWeight == compare; }
+
+  /*!
+   * @brief compares for inequality with double
+   */
+  bool operator!=(const double compare) { return pWeight != compare; }
+
+  /*!
+   * @brief compares for \leq with double
+   * @details This function is needed in Eigen.
+   */
+  bool operator<=(const EdgeWeight other) { return pWeight <= other.pWeight; }
+
+  /*!
+   * @brief operator+ implements the minimum of the edgeweights
+   * @details This function is needed in Eigen.
+   */
+  EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pWeight, other.pWeight)); }
+
+  /*!
+   * @brief operator* implements the sum of the edgeweights
+   * @details This function is needed in Eigen.
+   */
+  EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pWeight + other.pWeight); }
+
+  /*!
+   * @brief operator+= setsto  the minimum of the edgeweights
+   * @details This function is needed in Eigen.
+   */
   EdgeWeight& operator+=(const EdgeWeight other) {
-    pCost = std::min(pCost, other.pCost);
+    pWeight = std::min(pWeight, other.pWeight);
     return *this;
   }
 
-  friend EdgeWeight abs(const EdgeWeight weight) { return EdgeWeight(std::abs(weight.pCost)); }
+  /*!
+   * @brief returns absolut value
+   * @details This function is needed in Eigen.
+   */
+  friend EdgeWeight abs(const EdgeWeight weight) { return EdgeWeight(std::abs(weight.pWeight)); }
 
 private:
-  double pCost;
+  double pWeight; /*!< stores the weight of the edge*/
 };
 }  // namespace graph
 
@@ -140,11 +175,33 @@ namespace graph {
  */
 class Graph {
 public:
+  /*!
+   * @brief checks if there is an edge (u,v) in the graph
+   * @param u outgoing vertex
+   * @param v incomming vertex
+   */
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
-  virtual bool adjacent(const Edge& e) const                  = 0;
-  virtual bool connected() const                              = 0;
-  virtual size_t numberOfEdges() const                        = 0;
-  virtual size_t numberOfNodes() const                        = 0;
+
+  /*!
+   * @brief checks if there is an edge e in the graph
+   * @param e edge to check
+   */
+  virtual bool adjacent(const Edge& e) const = 0;
+
+  /*!
+   * @brief checks if the graph is connected
+   */
+  virtual bool connected() const = 0;
+
+  /*!
+   * @brief returns the number of edges in the graph
+   */
+  virtual size_t numberOfEdges() const = 0;
+
+  /*!
+   * @brief returns the number of nodes in the graph
+   */
+  virtual size_t numberOfNodes() const = 0;
 };
 
 /*!
@@ -152,8 +209,18 @@ public:
  */
 class WeightedGraph : public virtual Graph {
 public:
+  /*!
+   * @brief returns the edge's weight
+   * @param u outgoing vertex
+   * @param v incomming vertex
+   */
   virtual double weight(const size_t u, const size_t v) const = 0;
-  virtual double weight(const Edge& e) const                  = 0;
+
+  /*!
+   * @brief returns the edge's weight
+   * @param e edge
+   */
+  virtual double weight(const Edge& e) const = 0;
 };
 
 /*!
@@ -169,8 +236,14 @@ public:
   size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
+/*!
+ * @brief class DirectedGraph is a virtual base class for all directed graphs
+ */
 class DirectedGraph : public virtual Graph {};
 
+/*!
+ * @brief class UndirectedGraph is a virtual base class for all directed graphs
+ */
 class UndirectedGraph : public virtual Graph {};
 
 /*!
@@ -683,11 +756,11 @@ public:
 
   double weight(const Edge& e) const override {
     assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
-    return pAdjacencyMatrix.coeff(e.u, e.v).cost();
+    return pAdjacencyMatrix.coeff(e.u, e.v).weight();
   }
   double weight(const size_t u, const size_t v) const override {
     assert(pAdjacencyMatrix.coeff(u, v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
-    return pAdjacencyMatrix.coeff(u, v).cost();
+    return pAdjacencyMatrix.coeff(u, v).weight();
   }
 
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }

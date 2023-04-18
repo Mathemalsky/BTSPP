@@ -114,6 +114,7 @@ static void readArguments(const int argc, char* argv[]) {
   if (arguments.contains("-btsp-e")) {
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains("-no-crossing"));
     arguments.erase("-btsp-e");
+    arguments.erase("-no-crossing");
   }
   if (arguments.contains("-btspp-e")) {
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSPP_exact);

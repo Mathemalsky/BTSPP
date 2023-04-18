@@ -30,13 +30,25 @@ public:
     }
   }
 
-  std::vector<float>& modify() { return pFloatVertices; }
+  /*!
+   * @brief read only reference to the underlying float vector
+   */
   const std::vector<float>& read() const { return pFloatVertices; }
 
+  /*!
+   * @brief access to x coordinate of vertex u
+   * @param u vertex
+   */
   const float& xCoord(const size_t u) const { return pFloatVertices[2 * u]; }
+
+  /*!
+   * @brief access to y coordinate of vertex u
+   * @param u vertex
+   */
   const float& yCoord(const size_t u) const { return pFloatVertices[2 * u + 1]; }
 
 private:
+  /*! vector of the vertices coordinates, order: x_0, y_0, x_1, y_1, ... */
   std::vector<float> pFloatVertices;
 };
 
