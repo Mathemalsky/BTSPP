@@ -81,7 +81,10 @@ public:
   EdgeWeight()  = default;
   ~EdgeWeight() = default;
 
-  EdgeWeight(const double cost) : pWeight(cost) {}
+  /*!
+   * @brief constructs EdgeWeight with value weight
+   */
+  EdgeWeight(const double weight) : pWeight(weight) {}
 
   /*!
    * @brief returns the weight as double
@@ -230,9 +233,24 @@ public:
  */
 class CompleteGraph : public virtual Graph {
 public:
+  /*!
+   * @brief returns true because it's a complete graph and every node is connected to every node
+   */
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
+
+  /*!
+   * @brief returns true because it's a complete graph and every node is connected to every node
+   */
   bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
+
+  /*!
+   * @brief returns true because it's a complete graph and every node is connected to every node
+   */
   bool connected() const override { return true; }
+
+  /*!
+   * @brief returns true because it's a complete graph and every node is connected to every node
+   */
   size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
@@ -253,58 +271,127 @@ class UndirectedGraph : public virtual Graph {};
  */
 class Euclidean : public CompleteGraph, public WeightedGraph, public UndirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges in euclidean graph.
+   */
   class Edges {
   private:
+    /*!
+     * @brief Iterator on edges of an euclidean graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief wraps position variables
+       */
       struct Position {
-        size_t index;
-        const size_t numberOfNodes;
+        size_t index;               /**< index of edge, edge is (index / numberOfNodes, index % numberOfNodes)*/
+        const size_t numberOfNodes; /**< number of nodes in euclidean graph*/
       };
+
+      /*!
+       * @brief constructs iterator at position pos
+       */
       Iterator(const Position& pos) : pPosition(pos) {}
 
+      /*!
+       * @brief constructs edge from current position as explicit object
+       * @return edge from current position as explicit object
+       */
       Edge operator*() const { return Edge{pPosition.index / pPosition.numberOfNodes, pPosition.index % pPosition.numberOfNodes}; }
 
+      /*!
+       * @brief increases index by one
+       * @return reference to this iterator after increasing index
+       */
       Iterator& operator++() {
         ++pPosition.index;
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       */
       bool operator!=(const Iterator& other) const { return pPosition.index != other.pPosition.index; }
 
     private:
-      Position pPosition;
-    };  // end Iterator class
+      Position pPosition; /**< position of index in graph*/
+    };                    // end Iterator class
 
   public:
+    /*!
+     * @brief creates edges instance of edges
+     * @param numberOfNodes needed to compute the index correct
+     */
     Edges(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
+    /*!
+     * @brief creates an iterator pointing in front of the first edge
+     * @return begin iterator
+     */
     Iterator begin() const { return Iterator(Iterator::Position{0, pNumberOfNodes}); }
+
+    /*!
+     * @brief creates an iterator pointing in behind the last edge
+     * @return end iterator
+     */
     Iterator end() const { return Iterator(Iterator::Position{pNumberOfNodes * pNumberOfNodes, pNumberOfNodes}); }
 
   private:
-    const size_t pNumberOfNodes;
-  };  // end Edges class
+    const size_t pNumberOfNodes; /**< number of nodes in euclidean graph */
+  };                             // end Edges class
 
 public:
   Euclidean()          = default;
   virtual ~Euclidean() = default;
 
+  /*!
+   * @brief constructor from vector of Point2D
+   */
   Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) {}
+
+  /*!
+   * @brief move constructor from vector of Point2D
+   */
   Euclidean(std::vector<Point2D>&& positions) : pPositions(positions) {}
 
+  /*!
+   * @brief returns number of points in internal vector as number of nodes
+   */
   size_t numberOfNodes() const override { return pPositions.size(); }
 
+  /*!
+   * @brief returns euclidean distance between nodes
+   * @param u start node
+   * @param v end node
+   */
   double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
+
+  /*!
+   * @brief returns euclidean distance between nodes
+   * @param e edge for which weight is requested
+   */
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
 
+  /*!
+   * @brief creates edges object to iterate of the edges
+   */
   Edges edges() const { return Edges(numberOfNodes()); }
 
+  /*!
+   * @brief position of node in plane
+   * @param v node
+   * @return position of node v
+   */
   Point2D position(const size_t v) const { return pPositions[v]; }
+
+  /*!
+   * @brief returns reference to internal Point2D vector
+   */
   std::vector<Point2D>& vertices() { return pPositions; }
 
 private:
-  std::vector<Point2D> pPositions;
+  std::vector<Point2D> pPositions; /**< vector of Point2D holding the nodes position in plane*/
 };
 
 /*!
@@ -312,8 +399,20 @@ private:
  */
 class Modifyable : public virtual Graph {
 protected:
+  /*!
+   * @brief adds an edge from out to in with weight edgeWeight
+   * @param out start vertex of edge
+   * @param end vertex of edge
+   * @param edgeWeight of new edge
+   */
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) = 0;
-  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
+
+  /*!
+   * @brief adds an edge from out to in with weight edgeWeight
+   * @param e edge to be added
+   * @param edgeWeight of new edge
+   */
+  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) = 0;
 };
 
 /*!
@@ -321,19 +420,38 @@ protected:
  */
 class AdjListGraph : public Modifyable {
 private:
+  /*!
+   * @brief Nodes is a facade class to iterate over all nodes in AdjListGraph.
+   */
   class Nodes {
   private:
+    /*!
+     * @brief Iterator on nodes of an AdjListGraph graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief creates Iterator at position pos.
+       */
       Iterator(const size_t pos) : pPosition(pos) {}
 
+      /*!
+       * @brief returns node at current position
+       */
       size_t operator*() const { return pPosition; }
 
+      /*!
+       * @brief moves iterator one node forward
+       * @return reference to this iterator after incrementation
+       */
       Iterator& operator++() {
         ++pPosition;
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       */
       bool operator!=(const Iterator& other) const { return pPosition != other.pPosition; }
 
     private:
@@ -347,8 +465,8 @@ private:
     Iterator end() const { return Iterator(pNumberOfNodes); }
 
   private:
-    const size_t pNumberOfNodes;
-  };  // end Nodes class
+    const size_t pNumberOfNodes; /**< number of nodes in adjacency list graph */
+  };                             // end Nodes class
 public:
   AdjListGraph()  = default;
   ~AdjListGraph() = default;
@@ -456,7 +574,7 @@ public:
   }
 
 protected:
-  std::vector<std::vector<size_t>> pAdjacencyList;
+  std::vector<std::vector<size_t>> pAdjacencyList; /**< i-th vector contains neighbours of i */
 };
 
 /*!
@@ -475,12 +593,27 @@ private:
         size_t innerIndex;
       };
 
+      /*!
+       * @brief creates an iterator pointing at pos
+       * @param adjacencyList reference to graphs adjacency list
+       * @param pos contains position as pair (outer, inner)
+       */
       Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
         pAdjacencyList(adjacencyList),
         pPosition(pos) {}
 
+      /*!
+       * @brief constructs edge from current position as explicit object
+       * @return edge from current position as explicit object
+       */
       Edge operator*() const { return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]}; }
 
+      /*!
+       * @brief moves the operator one position forward
+       * @details Increases inner index by 1. Repeats that until a valid (outer index, inner index) pair is found, or iterartor is out of
+       * bounds. Valid index pair has outer index > inner index and points to an element in adjacencyList
+       * @return reference to passed iterator
+       */
       Iterator& operator++() {
         assert(pPosition.outerIndex < pAdjacencyList.size() && "Iterator is already behind end!");
 
@@ -497,16 +630,25 @@ private:
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       */
       bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
 
+      /*!
+       * @brief checks if inner index < outer index
+       */
       bool toLowerIndex() const { return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex; }
 
     private:
+      /*!
+       * @brief checks if the inner index is still in the range of neighbours vector
+       */
       bool outOfNeighbours() const { return pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size(); }
 
-      const std::vector<std::vector<size_t>>& pAdjacencyList;
-      AdjListPos pPosition;
-    };  // end Iterator class
+      const std::vector<std::vector<size_t>>& pAdjacencyList; /**< reference to graphs adjacency list */
+      AdjListPos pPosition;                                   /**< position in the adjacency list */
+    };                                                        // end Iterator class
 
   public:
     Edges(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
