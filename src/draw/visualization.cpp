@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
 #include <GL/glew.h>
@@ -52,13 +53,13 @@ static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
   return DrawData(*new Buffers{coordinates, tour, tourCoordinates}, floatVertices);
 }
 
-static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {
-  const VertexArray& vao = *new VertexArray;
-  vao.bind();
-  vao.mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
-  vao.enable(programs.drawCircles.id(), "vertexPosition");
-  vao.bindBufferBase(buffers.tourCoordinates, 0);
-  vao.bindBufferBase(buffers.tour, 1);
+static std::unique_ptr<VertexArray> bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {
+  std::unique_ptr<VertexArray> vao = std::make_unique<VertexArray>();
+  vao->bind();
+  vao->mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
+  vao->enable(programs.drawCircles.id(), "vertexPosition");
+  vao->bindBufferBase(buffers.tourCoordinates, 0);
+  vao->bindBufferBase(buffers.tour, 1);
   return vao;
 }
 
@@ -90,8 +91,8 @@ void visualize(const graph::Euclidean& euclidean) {
   const ShaderProgram drawLineProgram  = collection.linkLineDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawPathSegments, drawLineProgram);
 
-  DrawData drawData      = setUpBufferMemory(euclidean);
-  const VertexArray& vao = bindBufferMemory(drawData.buffers, programs);
+  DrawData drawData                = setUpBufferMemory(euclidean);
+  std::unique_ptr<VertexArray> vao = bindBufferMemory(drawData.buffers, programs);
 
   // enable vsync
   glfwSwapInterval(1);
@@ -126,7 +127,6 @@ void visualize(const graph::Euclidean& euclidean) {
   }
 
   // clean up memory
-  delete &vao;
   delete &drawData.buffers;
 
   // clean up Dear ImGui

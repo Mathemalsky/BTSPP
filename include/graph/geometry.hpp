@@ -121,8 +121,9 @@ inline Vector2D direction(const Point2D& a, const Point2D& b) {
  * @brief checks if the line segment lies on the left side of the vector
  * @param seg is the line segment to check
  * @return true if seg lies on left side, false otherwise
+ * @note inline keyword is needed for linker
  */
-bool Vector2D::liesOnLeftSide(const LineSegment& seg) const {
+inline bool Vector2D::liesOnLeftSide(const LineSegment& seg) const {
   const Vector2D dir1 = direction(seg);
   const Vector2D dir2 = direction(seg.b, *this);
   return (dir1.y * dir2.x - dir1.x * dir2.y <= 0.0);
