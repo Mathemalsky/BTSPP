@@ -277,7 +277,7 @@ private:
   class Edges {
   private:
     /*!
-     * @brief Iterator on edges of an euclidean graph
+     * @brief Iterator on edges of an Euclidean graph
      */
     class Iterator {
     public:
@@ -455,13 +455,25 @@ private:
       bool operator!=(const Iterator& other) const { return pPosition != other.pPosition; }
 
     private:
-      size_t pPosition;
-    };  // end Iterator class
+      size_t pPosition; /**< position of index in nodes*/
+    };                  // end Iterator class
 
   public:
+    /*!
+     * constructor for for nodes facade
+     */
     Nodes(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
+    /*!
+     * @brief creates an iterator pointing in front of the first node
+     * @return begin iterator
+     */
     Iterator begin() const { return Iterator(0); }
+
+    /*!
+     * @brief creates an iterator pointing in behind the last node
+     * @return end iterator
+     */
     Iterator end() const { return Iterator(pNumberOfNodes); }
 
   private:
