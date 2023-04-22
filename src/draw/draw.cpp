@@ -1,6 +1,7 @@
 #include "draw/draw.hpp"
 
 #include <array>
+#include <memory>
 #include <vector>
 
 #include <GL/glew.h>
@@ -38,11 +39,11 @@ static void drawVertices(const ShaderProgram& drawCircles, const size_t numberOf
 }
 
 static void drawPath(const ShaderProgram& drawPathSegments,
-                     const ShaderBuffer& shaderBuffer,
+                     const std::shared_ptr<ShaderBuffer> shaderBuffer,
                      const std::vector<unsigned int>& order,
                      const float thickness,
                      const RGBA_COLOUR& colour) {
-  shaderBuffer.bufferSubData(order);
+  shaderBuffer->bufferSubData(order);
   drawPathSegments.use();
   drawPathSegments.setUniform("u_thickness", thickness);
   drawPathSegments.setUniform("u_resolution", mainwindow::WIDTH, mainwindow::HEIGHT);
