@@ -91,7 +91,7 @@ struct DrawData {
   DrawData(const Buffers& buffers, const FloatVertices& floatVertices) : buffers(buffers), floatVertices(floatVertices) {
     appearance.init();
   }
-  const Buffers& buffers;
+  const Buffers buffers;
   FloatVertices floatVertices;
   Results results;
   VertexOrder vertexOrder;
