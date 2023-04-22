@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <vector>
 
 #include <GL/glew.h>
@@ -162,7 +163,7 @@ public:
    * the data \param shaderProgramID id of shaderprogram with attribute, which needs the data \param name the attributes
    * name
    */
-  void mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) const;
+  void mapBufferToAttribute(const std::shared_ptr<VertexBuffer> vbo, const GLuint shaderProgramID, const char* name) const;
 
   /*!
    * \brief enables the given attribute in given shaderprogram
@@ -177,7 +178,7 @@ public:
    * bindingpoint as parameters \param shaderBuffer the ShaderBuffer to bind \param bindingPoint position to bind the
    * buffer (like an address)
    */
-  void bindBufferBase(const ShaderBuffer& shaderBuffer, const GLuint bindingPoint) const;
+  void bindBufferBase(const std::shared_ptr<ShaderBuffer> shaderBuffer, const GLuint bindingPoint) const;
 
 private:
   GLuint pID; /**< this buffers OpenGL ID */
@@ -187,15 +188,9 @@ private:
  * \brief Buffers bundles various buffers
  */
 struct Buffers {
-  const VertexBuffer& coordinates;     /**< coordinates of graph vertices */
-  const ShaderBuffer& tour;            /**< vertex indeces in order as they appear in the tour */
-  const ShaderBuffer& tourCoordinates; /**< coordinates of graph vertices */
-
-  ~Buffers() {
-    delete &coordinates;
-    delete &tour;
-    delete &tourCoordinates;
-  }
+  std::shared_ptr<VertexBuffer> coordinates;     /**< coordinates of graph vertices */
+  std::shared_ptr<ShaderBuffer> tour;            /**< vertex indeces in order as they appear in the tour */
+  std::shared_ptr<ShaderBuffer> tourCoordinates; /**< coordinates of graph vertices */
 };
 
 /***********************************************************************************************************************

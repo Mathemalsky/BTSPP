@@ -25,8 +25,8 @@ static void moveNode(GLFWwindow* window, DrawData& drawData) {
   glfwGetCursorPos(window, &x, &y);
   drawing::EUCLIDEAN.vertices()[input::mouse::NODE_IN_MOTION] = transformCoordinates(x, y);
   drawData.floatVertices.updatePointsfFromEuclidean(drawing::EUCLIDEAN);
-  drawData.buffers.coordinates.bufferSubData(drawData.floatVertices.read());
-  drawData.buffers.tourCoordinates.bufferSubData(drawData.floatVertices.read());
+  drawData.buffers.coordinates->bufferSubData(drawData.floatVertices.read());
+  drawData.buffers.tourCoordinates->bufferSubData(drawData.floatVertices.read());
 }
 
 static void handleFastEvents(GLFWwindow* window, DrawData& drawData) {

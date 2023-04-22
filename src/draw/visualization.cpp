@@ -46,11 +46,13 @@ static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
   FloatVertices floatVertices;
   floatVertices.updatePointsfFromEuclidean(drawing::EUCLIDEAN);
 
-  const VertexBuffer& coordinates     = *new VertexBuffer(floatVertices.read(), 2);  // components per vertex
-  const ShaderBuffer& tourCoordinates = *new ShaderBuffer(floatVertices.read());     // copy vertex coords to shader buffer
-  const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
+  std::shared_ptr<VertexBuffer> coordinates = std::make_shared<VertexBuffer>(floatVertices.read(), 2);  // components per vertex
+  std::shared_ptr<ShaderBuffer> tourCoordinates =
+      std::make_shared<ShaderBuffer>(floatVertices.read());  // copy vertex coords to shader buffer
+  std::shared_ptr<ShaderBuffer> tour =
+      std::make_shared<ShaderBuffer>(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
-  return DrawData(*new Buffers{coordinates, tour, tourCoordinates}, floatVertices);
+  return DrawData(Buffers{coordinates, tour, tourCoordinates}, floatVertices);
 }
 
 static std::unique_ptr<VertexArray> bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {
@@ -125,9 +127,6 @@ void visualize(const graph::Euclidean& euclidean) {
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
   }
-
-  // clean up memory
-  delete &drawData.buffers;
 
   // clean up Dear ImGui
   cleanUpImgui();
