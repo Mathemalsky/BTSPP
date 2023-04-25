@@ -508,8 +508,15 @@ public:
     return it != neighbour.end();
   }
 
+  /*!
+   * @brief checks if there is an edge e in the graph
+   * @param e edge to check
+   */
   bool adjacent(const Edge& e) const override { return adjacent(e.u, e.v); }
 
+  /*!
+   * @brief returns the number of nodes in adjacency list
+   */
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   /*!
@@ -611,13 +618,22 @@ protected:
  */
 class AdjacencyListGraph : public AdjListGraph, public UndirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges in AdjacencyListGraph graph.
+   */
   class Edges {
   private:
+    /*!
+     * @brief Iterator on edges of an AdjacencyListGraph graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief AdjListPos bundles inner and outer index of the position
+       */
       struct AdjListPos {
-        size_t outerIndex;
-        size_t innerIndex;
+        size_t outerIndex; /**< outer index (out node) */
+        size_t innerIndex; /**< inner index (in node) */
       };
 
       /*!
