@@ -484,9 +484,24 @@ public:
   ~AdjListGraph() = default;
 
   AdjListGraph(const AdjListGraph& graph) = default;
+
+  /*!
+   * @brief constructor, resizes the internal adjacency list to numberOfNodes
+   * @param numberOfNodes number of nodes in constructed graph
+   */
   AdjListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
+  /*!
+   * @brief constructor, sets the internal adjacency list to adjacencyList
+   * @param adjacencyList adjacency list
+   */
   AdjListGraph(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
 
+  /*!
+   * @brief checks if v appears in the list of neighbours of u
+   * @param u node
+   * @param v node
+   */
   bool adjacent(const size_t u, const size_t v) const override {
     const std::vector<size_t>& neighbour         = pAdjacencyList[u];
     const std::vector<size_t>::const_iterator it = std::find(neighbour.begin(), neighbour.end(), v);
