@@ -160,6 +160,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
     digraph.addEdge(ear[0], ear[1]);  // add the first edge directing into the ear
     size_t earPosOfLastDoubledEdge = 0;
 
+    // struct to bundle edge and index
     struct EdgeIndex {
       graph::Edge e;
       size_t index;
@@ -184,10 +185,20 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
     }
 
     // implicitly detect a node y and direct the edges according to paper
-    if (earPosOfLastDoubledEdge != 0) {
+    if (earPosOfLastDoubledEdge == 0) { // if there isn't any doubled edge
+      for (const EdgeIndex& edge : edgesToBeDirected) {
+        if (edge.index != ear.size() - 2) {
+          digraph.addEdge(edge.e);
+        }
+        else {
+          digraph.addEdge(edge.e.reverse());
+        }
+      }
+    }
+    else { // if an edge was doubled
       const graph::Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
       graph.removeEdge(lastDoubledEdge);
-      graph.removeEdge(lastDoubledEdge);
+      graph.removeEdge(lastDoubledEdge); // the edge was doubled so it needs to be removed twice
 
       digraph.removeEdge(lastDoubledEdge);
       digraph.removeEdge(lastDoubledEdge.reverse());
@@ -198,16 +209,6 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         }
         else {
           // the case of equality is implicitly excluded, because then the edge would have been doubled
-          digraph.addEdge(edge.e.reverse());
-        }
-      }
-    }
-    else {
-      for (const EdgeIndex& edge : edgesToBeDirected) {
-        if (edge.index != ear.size() - 2) {
-          digraph.addEdge(edge.e);
-        }
-        else {
           digraph.addEdge(edge.e.reverse());
         }
       }

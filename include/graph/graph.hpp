@@ -416,7 +416,8 @@ protected:
 };
 
 /*!
- * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as list.
+ * @brief The AdjListGraph class is an abstract class for graphs which store adjacency as list.
+ * @details This class can handle multigraphs, but does not differentiate between parallel edges.
  */
 class AdjListGraph : public Modifyable {
 private:
@@ -884,7 +885,7 @@ public:
 };
 
 /*!
- * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as sparse matrix.
+ * \brief.The AdjListGraph class is an abstract class for graphs which store adjacency as sparse matrix.
  * \details Graphs with adjacency matrix storage are generally assumed to be simple (without parallel edges) weighted
  * graphs.
  */
@@ -1086,7 +1087,7 @@ public:
 /*!
  * \brief The AdjacencyMatrixGraph class implements the concrete class for directed graphs.
  * \details The functions checking for connectivity are checking for connectivity in the sense of weak connectivity.
- * Digraphs may have antiparallel edges.
+ * AdjacencyMatrixDigraph may have antiparallel edges.
  */
 class AdjacencyMatrixDigraph : public AdjMatGraph, public DirectedGraph {
 private:
