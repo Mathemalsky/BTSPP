@@ -40,31 +40,31 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version) {
   ImGui_ImplOpenGL3_Init(glsl_version);
 }
 
-void drawImgui(Appearance& appearance) {
+void drawImgui(Appearance& appearance, Settings& settings) {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
   if (drawing::SHOW_DEBUG_WINDOW) {
-    ImGui::Begin("Debug", &drawing::SHOW_DEBUG_WINDOW);
+    ImGui::Begin("Debug", &settings.showDebugWindow);
     ImGui::Text("Node in motion: %d", input::mouse::NODE_IN_MOTION);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::End();
   }
 
   if (drawing::SHOW_SETTINGS_WINDOW) {
-    ImGui::Begin("Settings", &drawing::SHOW_SETTINGS_WINDOW);
+    ImGui::Begin("Settings", &settings.showSettingsWindow);
 
-    ImGui::Checkbox("BTSP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]);
+    ImGui::Checkbox("BTSP approx", &settings.activeness[std::to_underlying(ProblemType::BTSP_approx)]);
     ImGui::ColorEdit3("##BTSP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSP_approx)]);
     ImGui::SliderFloat("thickness##BTSP approx", &appearance.thickness[std::to_underlying(ProblemType::BTSP_approx)], 0.0f, 30.0f, "%.1f");
 
-    ImGui::Checkbox("biconnectd graph##BTSP approx", &drawing::BTSP_DRAW_BICONNECTED_GRAPH);
+    ImGui::Checkbox("biconnectd graph##BTSP approx", &settings.BTSP_drawBiconnectedGraph);
     ImGui::SameLine();
-    ImGui::Checkbox("open ear decomp.", &drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION);
-    ImGui::Checkbox("hamilton cycle", &drawing::BTSP_DRAW_HAMILTON_CYCLE);
+    ImGui::Checkbox("open ear decomp.", &settings.BTSP_drawOpenEarDecomposition);
+    ImGui::Checkbox("hamilton cycle", &settings.BTSP_drawHamiltonCycle);
 
-    ImGui::Checkbox("BTSPP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
+    ImGui::Checkbox("BTSPP approx", &settings.activeness[std::to_underlying(ProblemType::BTSPP_approx)]);
     ImGui::ColorEdit3("##BTSPP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_approx)]);
     ImGui::SliderFloat("thickness##BTSPP approx",
                        &appearance.thickness[std::to_underlying(ProblemType::BTSPP_approx)],
@@ -72,21 +72,21 @@ void drawImgui(Appearance& appearance) {
                        30.0f,
                        "%.1f");
 
-    ImGui::Checkbox("biconnectd graph##BTSPP approx", &drawing::BTSPP_DRAW_BICONNECTED_GRAPH);
+    ImGui::Checkbox("biconnectd graph##BTSPP approx", &settings.BTSPP_drawBiconnectedGraph);
     ImGui::SameLine();
-    ImGui::Checkbox("hamilton path", &drawing::BTSPP_DRAW_HAMILTON_PATH);
+    ImGui::Checkbox("hamilton path", &settings.BTSPP_drawHamiltonPath);
 
-    ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
+    ImGui::Checkbox("BTSP exact", &settings.activeness[std::to_underlying(ProblemType::BTSP_exact)]);
     ImGui::SliderFloat("thickness##BTSP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSP_exact)], 0.0f, 20.0f, "%.1f");
     ImGui::ColorEdit3("##BTSP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSP_exact)]);
 
-    ImGui::Checkbox("fobid crossing##BTSP exact", &solve::BTSP_FORBID_CROSSING);
+    ImGui::Checkbox("fobid crossing##BTSP exact", &settings.BTSP_forbidCrossing);
 
-    ImGui::Checkbox("BTSPP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
+    ImGui::Checkbox("BTSPP exact", &settings.activeness[std::to_underlying(ProblemType::BTSPP_exact)]);
     ImGui::SliderFloat("thickness##BTSPP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSPP_exact)], 0.0f, 20.0f, "%.1f");
     ImGui::ColorEdit3("##BTSPP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_exact)]);
 
-    ImGui::Checkbox("TSP  exact", &drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
+    ImGui::Checkbox("TSP  exact", &settings.activeness[std::to_underlying(ProblemType::TSP_exact)]);
     ImGui::ColorEdit3("##TSP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::TSP_exact)]);
     ImGui::SliderFloat("thickness##TSP exact", &appearance.thickness[std::to_underlying(ProblemType::TSP_exact)], 0.0f, 30.0f, "%.1f");
 

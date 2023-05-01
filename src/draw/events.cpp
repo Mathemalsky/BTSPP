@@ -43,29 +43,29 @@ static void handleFastEvents(GLFWwindow* window, std::shared_ptr<drawing::DrawDa
  **********************************************************************************************************************/
 
 static void handleSlowEvents(std::shared_ptr<DrawData> drawData) {
-  if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_approx)]) {
-    solve::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
-    drawData->results.BTSP_APPROX_RESULT                        = approximation::approximateBTSP(drawing::EUCLIDEAN);
+  if (drawData->settings.solve[std::to_underlying(ProblemType::BTSP_approx)]) {
+    drawData->settings.solve[std::to_underlying(ProblemType::BTSP_approx)] = false;
+    drawData->results.BTSP_APPROX_RESULT                                   = approximation::approximateBTSP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
-  if (solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
-    solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
-    drawData->results.BTSPP_APPROX_RESULT                        = approximation::approximateBTSPP(drawing::EUCLIDEAN);
+  if (drawData->settings.solve[std::to_underlying(ProblemType::BTSPP_approx)]) {
+    drawData->settings.solve[std::to_underlying(ProblemType::BTSPP_approx)] = false;
+    drawData->results.BTSPP_APPROX_RESULT                                   = approximation::approximateBTSPP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
   }
-  if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
-    solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
+  if (drawData->settings.solve[std::to_underlying(ProblemType::BTSP_exact)]) {
+    drawData->settings.solve[std::to_underlying(ProblemType::BTSP_exact)] = false;
     drawData->results.BTSP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact, solve::BTSP_FORBID_CROSSING);
     drawData->vertexOrder.updateOrder(drawData->results.BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
   }
-  if (solve::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)]) {
-    solve::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)] = false;
+  if (drawData->settings.solve[std::to_underlying(ProblemType::BTSPP_exact)]) {
+    drawData->settings.solve[std::to_underlying(ProblemType::BTSPP_exact)] = false;
     drawData->results.BTSPP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact, solve::BTSP_FORBID_CROSSING);
     drawData->vertexOrder.updateOrder(drawData->results.BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
   }
-  if (solve::SOLVE[std::to_underlying(ProblemType::TSP_exact)]) {
-    solve::SOLVE[std::to_underlying(ProblemType::TSP_exact)] = false;
-    exactsolver::Result res                                  = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
+  if (drawData->settings.solve[std::to_underlying(ProblemType::TSP_exact)]) {
+    drawData->settings.solve[std::to_underlying(ProblemType::TSP_exact)] = false;
+    exactsolver::Result res                                              = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
     drawData->vertexOrder.updateOrder(res.tour, ProblemType::TSP_exact);
   }
 }
@@ -99,35 +99,35 @@ static void selectNodeToMove(GLFWwindow* window) {
   }
 }
 
-static void cycleBTSPApproxDisplay() {
-  if (drawing::BTSP_DRAW_BICONNECTED_GRAPH) {
-    drawing::BTSP_DRAW_BICONNECTED_GRAPH      = false;
-    drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = true;
+static void cycleBTSPApproxDisplay(Settings& settings) {
+  if (settings.BTSP_drawBiconnectedGraph) {
+    settings.BTSP_drawBiconnectedGraph     = false;
+    settings.BTSP_drawOpenEarDecomposition = true;
   }
-  else if (drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION) {
-    drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = false;
-    drawing::BTSP_DRAW_HAMILTON_CYCLE         = true;
+  else if (settings.BTSP_drawOpenEarDecomposition) {
+    settings.BTSP_drawOpenEarDecomposition = false;
+    settings.BTSP_drawHamiltonCycle        = true;
   }
   else if (drawing::BTSP_DRAW_HAMILTON_CYCLE) {
-    drawing::BTSP_DRAW_HAMILTON_CYCLE    = false;
-    drawing::BTSP_DRAW_BICONNECTED_GRAPH = true;
+    settings.BTSP_drawHamiltonCycle    = false;
+    settings.BTSP_drawBiconnectedGraph = true;
   }
   else {
-    drawing::BTSP_DRAW_BICONNECTED_GRAPH = true;
+    settings.BTSP_drawBiconnectedGraph = true;
   }
 }
 
-static void cycleBTSPPApproxDisplay() {
-  if (drawing::BTSPP_DRAW_BICONNECTED_GRAPH) {
-    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = false;
-    drawing::BTSPP_DRAW_HAMILTON_PATH     = true;
+static void cycleBTSPPApproxDisplay(Settings& settings) {
+  if (settings.BTSPP_drawBiconnectedGraph) {
+    settings.BTSPP_drawBiconnectedGraph = false;
+    settings.BTSPP_drawHamiltonPath     = true;
   }
-  else if (drawing::BTSPP_DRAW_HAMILTON_PATH) {
-    drawing::BTSPP_DRAW_HAMILTON_PATH     = false;
-    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = true;
+  else if (settings.BTSPP_drawHamiltonPath) {
+    settings.BTSPP_drawHamiltonPath     = false;
+    settings.BTSPP_drawBiconnectedGraph = true;
   }
   else {
-    drawing::BTSPP_DRAW_BICONNECTED_GRAPH = true;
+    settings.BTSPP_drawBiconnectedGraph = true;
   }
 }
 
@@ -135,44 +135,49 @@ static void cycleBTSPPApproxDisplay() {
  *                                                      callbacks
  **********************************************************************************************************************/
 
-void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
+void keyCallback([[maybe_unused]] GLFWwindow* window,
+                 int key,
+                 [[maybe_unused]] int scancode,
+                 int action,
+                 [[maybe_unused]] int mods,
+                 std::shared_ptr<DrawData> drawData) {
   if (key == GLFW_KEY_F1 && action == GLFW_PRESS) {
-    toggle(drawing::SHOW_DEBUG_WINDOW);
+    toggle(drawData->settings.showDebugWindow);
   }
   if (key == GLFW_KEY_F3 && action == GLFW_PRESS) {
-    toggle(drawing::SHOW_SETTINGS_WINDOW);
+    toggle(drawData->settings.showSettingsWindow);
   }
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
   if (key == GLFW_KEY_R && action == GLFW_PRESS) {
     for (const ProblemType& type : problemType::PROBLEM_TYPES) {
-      if (drawing::ACTIVE[std::to_underlying(type)]) {
-        solve::SOLVE[std::to_underlying(type)] = true;
+      if (drawData->settings.activeness[std::to_underlying(type)]) {
+        drawData->settings.solve[std::to_underlying(type)] = true;
       }
     }
   }
   if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]);
+    toggle(drawData->settings.activeness[std::to_underlying(ProblemType::BTSP_approx)]);
   }
   if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
+    toggle(drawData->settings.activeness[std::to_underlying(ProblemType::BTSPP_approx)]);
   }
   if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
+    toggle(drawData->settings.activeness[std::to_underlying(ProblemType::BTSP_exact)]);
   }
   if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
+    toggle(drawData->settings.activeness[std::to_underlying(ProblemType::BTSPP_exact)]);
   }
   if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
+    toggle(drawData->settings.activeness[std::to_underlying(ProblemType::TSP_exact)]);
   }
   if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-    if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]) {
-      cycleBTSPApproxDisplay();
+    if (drawData->settings.activeness[std::to_underlying(ProblemType::BTSP_approx)]) {
+      cycleBTSPApproxDisplay(drawData->settings);
     }
-    if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
-      cycleBTSPPApproxDisplay();
+    if (drawData->settings.activeness[std::to_underlying(ProblemType::BTSPP_approx)]) {
+      cycleBTSPPApproxDisplay(drawData->settings);
     }
   }
 }

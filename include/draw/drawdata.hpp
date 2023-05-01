@@ -87,14 +87,56 @@ private:
   std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> pInitialized;
 };
 
+struct Settings {
+  // showing windows
+  bool showDebugWindow;
+  bool showSettingsWindow;
+
+  std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> activeness;
+  std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> solve;
+
+  // aproximation
+  bool BTSP_drawBiconnectedGraph;
+  bool BTSP_drawOpenEarDecomposition;
+  bool BTSP_drawHamiltonCycle;
+  bool BTSPP_drawBiconnectedGraph;
+  bool BTSPP_drawHamiltonPath;
+
+  // exact solving
+  bool BTSP_forbidCrossing;
+
+  void init() {
+    // showing windows
+    showDebugWindow    = INITIAL_SHOW_DEBUG_WINDOW;
+    showSettingsWindow = INITIAL_SHOW_DEBUG_WINDOW;
+
+    // general
+    activeness = INITIAL_ACTIVENESS;
+    // solve
+
+    // approximation
+    BTSP_drawBiconnectedGraph     = INITIAL_BTSP_DRAW_BICONNECTED_GRAPH;
+    BTSP_drawOpenEarDecomposition = INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
+    BTSP_drawHamiltonCycle        = INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
+    BTSPP_drawBiconnectedGraph    = INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
+    BTSPP_drawHamiltonPath        = INITIAL_BTSPP_DRAW_HAMILTON_PATH;
+
+    // exact solving
+    BTSP_forbidCrossing = false;
+  }
+};
+
 struct DrawData {
   DrawData(const Buffers& buffers, const FloatVertices& floatVertices) : buffers(buffers), floatVertices(floatVertices) {
     appearance.init();
+    settings.init();
   }
   const Buffers buffers;
   FloatVertices floatVertices;
   Results results;
   VertexOrder vertexOrder;
   Appearance appearance;
+  Settings settings;
 };
+
 }  // namespace drawing

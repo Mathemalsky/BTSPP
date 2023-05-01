@@ -22,7 +22,7 @@ void setUpImgui(GLFWwindow* window, const char* glsl_version);
 /*!
  * \brief drawImgui draws the updated gui for every frame
  */
-void drawImgui(drawing::Appearance& appearance);
+void drawImgui(drawing::Appearance& appearance, drawing::Settings& settings);
 
 /*!
  * \brief cleanUpImgui frees memory for gui and performs proper shutdown of windows

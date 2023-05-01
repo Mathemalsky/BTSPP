@@ -18,9 +18,9 @@ void VertexOrder::updateOrder(const std::vector<unsigned int>& order, const Prob
   }
   else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
     pVertexOrder[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
-    pVertexOrder[std::to_underlying(type)][0] = order[1];
+    pVertexOrder[std::to_underlying(type)][0] = order.back();
     std::memcpy(pVertexOrder[std::to_underlying(type)].data() + 1, order.data(), bytes_of(order));
-    pVertexOrder[std::to_underlying(type)].back() = order[order.size() - 2];
+    pVertexOrder[std::to_underlying(type)].back() = order.front();
   }
   pInitialized[std::to_underlying(type)] = true;
 }

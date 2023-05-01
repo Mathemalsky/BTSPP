@@ -1,6 +1,7 @@
 #include "draw/visualization.hpp"
 
 #include <cstdio>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -20,21 +21,11 @@
 #include "solve/exactsolver.hpp"
 
 using namespace drawing;
+using namespace std::placeholders;
 
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
-}
-
-static void initDrawingVariables() {
-  SHOW_DEBUG_WINDOW                = INITIAL_SHOW_DEBUG_WINDOW;
-  SHOW_SETTINGS_WINDOW             = INITIAL_SHOW_SETTINGS_WINDOW;
-  ACTIVE                           = INITIAL_ACTIVENESS;
-  BTSP_DRAW_BICONNECTED_GRAPH      = INITIAL_BTSP_DRAW_BICONNECTED_GRAPH;
-  BTSP_DRAW_OPEN_EAR_DECOMPOSITION = INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
-  BTSP_DRAW_HAMILTON_CYCLE         = INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
-  BTSPP_DRAW_BICONNECTED_GRAPH     = INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
-  BTSPP_DRAW_HAMILTON_PATH         = INITIAL_BTSPP_DRAW_HAMILTON_PATH;
 }
 
 static void initInputVariables() {
@@ -100,14 +91,14 @@ void visualize(const graph::Euclidean& euclidean) {
   glfwSwapInterval(1);
 
   // set callbacks for keyboard and mouse, must be called before Imgui
-  glfwSetKeyCallback(window, keyCallback);
+  auto keyCallbackAdapter = std::bind(keyCallback, _1, _2, _3, _4, _5, drawData);
+  glfwSetKeyCallback(window, keyCallbackAdapter);
   glfwSetMouseButtonCallback(window, mouseButtonCallback);
 
   // setup Dear ImGui
   setUpImgui(window, glsl_version);
 
   // set initial state of variables for drawing and input
-  initDrawingVariables();
   initInputVariables();
 
   // main loop
@@ -122,7 +113,7 @@ void visualize(const graph::Euclidean& euclidean) {
     draw(window, programs, drawData);
 
     // draw the gui
-    drawImgui(drawData->appearance);
+    drawImgui(drawData->appearance, drawData->settings);
 
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
