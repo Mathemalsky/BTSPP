@@ -52,6 +52,7 @@ static graph::AdjacencyListGraph makeMinimallyBiconnected(const graph::Adjacency
  * @return std::unordered_set<size_t> of cutted nodes
  */
 static std::unordered_set<size_t> reduceToGminus(const graph::AdjacencyListDigraph& digraph, graph::AdjacencyListGraph& graph) {
+  // create digraph with opposite edge directions to facilate detection of 2 incoming edges
   graph::AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
   for (const graph::Edge& e : digraph.edges()) {
     reverseDirgaph.addEdge(e.reverse());
@@ -98,8 +99,8 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
 /*!
  * @brief finds an euler tour in graph
  * @param graph
- * @param digraph holds information needed to contruct an euler tour that can be shortcutted to hamiltonian cycle
- * @return std::vector<size_t> of node indices, first is not repeated as last
+ * @param digraph holds information needed to construct an euler tour that can be shortcutted to hamiltonian cycle
+ * @return std::vector<size_t> of node indices; first is not repeated as last
  */
 static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const graph::AdjacencyListDigraph& digraph) {
   std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
@@ -117,21 +118,21 @@ static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const
 static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsigned int>& longEulertour,
                                                          graph::AdjacencyListDigraph& digraph) {
   std::vector<unsigned int> hamiltoncycle;
-  hamiltoncycle.reserve(digraph.numberOfNodes() + 1);
+  hamiltoncycle.reserve(digraph.numberOfNodes());
   hamiltoncycle.push_back(longEulertour[0]);
 
   for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
     const size_t u = longEulertour[i - 1];
-    const size_t w = longEulertour[i];
-    const size_t v = longEulertour[i + 1];
-    if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
-      hamiltoncycle.push_back(v);
-      digraph.removeEdge(w, u);  // prevent the node from beeing skipped again between the same 2 nodes
-      digraph.removeEdge(w, v);
+    const size_t v = longEulertour[i];
+    const size_t w = longEulertour[i + 1];
+    if (digraph.adjacent(v, u) && digraph.adjacent(v, w) && u != w) {
+      hamiltoncycle.push_back(w);
+      digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
+      digraph.removeEdge(v, w);
       ++i;  // do not consider next node for skipping. It's alredy added.
     }
     else {
-      hamiltoncycle.push_back(w);
+      hamiltoncycle.push_back(v);
     }
   }
   return hamiltoncycle;
@@ -185,7 +186,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
     }
 
     // implicitly detect a node y and direct the edges according to paper
-    if (earPosOfLastDoubledEdge == 0) { // if there isn't any doubled edge
+    if (earPosOfLastDoubledEdge == 0) {  // if there isn't any doubled edge
       for (const EdgeIndex& edge : edgesToBeDirected) {
         if (edge.index != ear.size() - 2) {
           digraph.addEdge(edge.e);
@@ -195,10 +196,10 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         }
       }
     }
-    else { // if an edge was doubled
+    else {  // if an edge was doubled
       const graph::Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
       graph.removeEdge(lastDoubledEdge);
-      graph.removeEdge(lastDoubledEdge); // the edge was doubled so it needs to be removed twice
+      graph.removeEdge(lastDoubledEdge);  // the edge was doubled so it needs to be removed twice
 
       digraph.removeEdge(lastDoubledEdge);
       digraph.removeEdge(lastDoubledEdge.reverse());
