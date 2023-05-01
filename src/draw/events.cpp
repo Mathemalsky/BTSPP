@@ -45,12 +45,12 @@ static void handleFastEvents(GLFWwindow* window, std::shared_ptr<drawing::DrawDa
 static void handleSlowEvents(std::shared_ptr<DrawData> drawData) {
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_approx)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
-    drawData->results.BTSP_APPROX_RESULT                        = approximation::approximateBTSP(drawing::EUCLIDEAN);
+    drawData->results.BTSP_APPROX_RESULT                       = approximation::approximateBTSP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
-    drawData->results.BTSPP_APPROX_RESULT                        = approximation::approximateBTSPP(drawing::EUCLIDEAN);
+    drawData->results.BTSPP_APPROX_RESULT                       = approximation::approximateBTSPP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
