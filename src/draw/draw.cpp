@@ -150,7 +150,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const Dra
   if (ACTIVE[typeInt] && drawData.vertexOrder.initialized(ProblemType::BTSPP_exact)) {
     drawPath(programs.drawPathSegments,
              drawData.buffers.tour,
-             drawData.vertexOrder[ProblemType::BTSP_exact],
+             drawData.vertexOrder[ProblemType::BTSPP_exact],
              drawData.appearance.thickness[typeInt],
              drawData.appearance.colour[typeInt]);
     drawEdge(programs.drawLine,
