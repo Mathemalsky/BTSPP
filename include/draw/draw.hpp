@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -14,5 +16,5 @@ namespace drawing {
  * \param programs containes all shaderprograms compiled in this project
  * \param drawData contains all data used for drawing including all buffers allocated in this project
  */
-void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const DrawData& drawData);
+void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std::shared_ptr<DrawData> drawData);
 }  // namespace drawing
