@@ -93,8 +93,8 @@ void visualize(const graph::Euclidean& euclidean) {
   const ShaderProgram drawLineProgram  = collection.linkLineDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawPathSegments, drawLineProgram);
 
-  DrawData drawData                = setUpBufferMemory(euclidean);
-  std::unique_ptr<VertexArray> vao = bindBufferMemory(drawData.buffers, programs);
+  std::shared_ptr<DrawData> drawData = std::make_shared<DrawData>(setUpBufferMemory(euclidean));
+  std::unique_ptr<VertexArray> vao   = bindBufferMemory(drawData->buffers, programs);
 
   // enable vsync
   glfwSwapInterval(1);
@@ -122,7 +122,7 @@ void visualize(const graph::Euclidean& euclidean) {
     draw(window, programs, drawData);
 
     // draw the gui
-    drawImgui(drawData.appearance);
+    drawImgui(drawData->appearance);
 
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);

@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -13,4 +14,4 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
 
 void mouseButtonCallback([[maybe_unused]] GLFWwindow* window, int button, int action, [[maybe_unused]] int mods);
 
-void handleEvents(GLFWwindow* window, drawing::DrawData& drawData);
+void handleEvents(GLFWwindow* window, std::shared_ptr<drawing::DrawData> drawData);

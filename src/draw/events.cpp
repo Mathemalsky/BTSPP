@@ -1,5 +1,7 @@
 #include "draw/events.hpp"
 
+#include <memory>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -20,16 +22,16 @@ static graph::Point2D transformCoordinates(const double x, const double y) {
   return graph::Point2D{2.0 * x / mainwindow::WIDTH - 1.0, -2.0 * y / mainwindow::HEIGHT + 1.0};
 }
 
-static void moveNode(GLFWwindow* window, DrawData& drawData) {
+static void moveNode(GLFWwindow* window, std::shared_ptr<drawing::DrawData> drawData) {
   double x, y;
   glfwGetCursorPos(window, &x, &y);
   drawing::EUCLIDEAN.vertices()[input::mouse::NODE_IN_MOTION] = transformCoordinates(x, y);
-  drawData.floatVertices.updatePointsfFromEuclidean(drawing::EUCLIDEAN);
-  drawData.buffers.coordinates->bufferSubData(drawData.floatVertices.read());
-  drawData.buffers.tourCoordinates->bufferSubData(drawData.floatVertices.read());
+  drawData->floatVertices.updatePointsfFromEuclidean(drawing::EUCLIDEAN);
+  drawData->buffers.coordinates->bufferSubData(drawData->floatVertices.read());
+  drawData->buffers.tourCoordinates->bufferSubData(drawData->floatVertices.read());
 }
 
-static void handleFastEvents(GLFWwindow* window, DrawData& drawData) {
+static void handleFastEvents(GLFWwindow* window, std::shared_ptr<drawing::DrawData> drawData) {
   glfwGetFramebufferSize(window, &mainwindow::WIDTH, &mainwindow::HEIGHT);  // update window size
   if (input::STATE[GLFW_MOUSE_BUTTON_LEFT] && input::mouse::NODE_IN_MOTION != namedInts::INVALID) {
     moveNode(window, drawData);
@@ -40,31 +42,31 @@ static void handleFastEvents(GLFWwindow* window, DrawData& drawData) {
  *                                               slow events
  **********************************************************************************************************************/
 
-static void handleSlowEvents(DrawData& drawData) {
+static void handleSlowEvents(std::shared_ptr<DrawData> drawData) {
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_approx)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
-    drawData.results.BTSP_APPROX_RESULT                        = approximation::approximateBTSP(drawing::EUCLIDEAN);
-    drawData.vertexOrder.updateOrder(drawData.results.BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
+    drawData->results.BTSP_APPROX_RESULT                        = approximation::approximateBTSP(drawing::EUCLIDEAN);
+    drawData->vertexOrder.updateOrder(drawData->results.BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
-    drawData.results.BTSPP_APPROX_RESULT                        = approximation::approximateBTSPP(drawing::EUCLIDEAN);
-    drawData.vertexOrder.updateOrder(drawData.results.BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
+    drawData->results.BTSPP_APPROX_RESULT                        = approximation::approximateBTSPP(drawing::EUCLIDEAN);
+    drawData->vertexOrder.updateOrder(drawData->results.BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
-    drawData.results.BTSP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact, solve::BTSP_FORBID_CROSSING);
-    drawData.vertexOrder.updateOrder(drawData.results.BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
+    drawData->results.BTSP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact, solve::BTSP_FORBID_CROSSING);
+    drawData->vertexOrder.updateOrder(drawData->results.BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)] = false;
-    drawData.results.BTSPP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact, solve::BTSP_FORBID_CROSSING);
-    drawData.vertexOrder.updateOrder(drawData.results.BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
+    drawData->results.BTSPP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact, solve::BTSP_FORBID_CROSSING);
+    drawData->vertexOrder.updateOrder(drawData->results.BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::TSP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::TSP_exact)] = false;
     exactsolver::Result res                                  = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
-    drawData.vertexOrder.updateOrder(res.tour, ProblemType::TSP_exact);
+    drawData->vertexOrder.updateOrder(res.tour, ProblemType::TSP_exact);
   }
 }
 
@@ -72,7 +74,7 @@ static void handleSlowEvents(DrawData& drawData) {
  *                                           event handling
  **********************************************************************************************************************/
 
-void handleEvents(GLFWwindow* window, DrawData& drawData) {
+void handleEvents(GLFWwindow* window, std::shared_ptr<drawing::DrawData> drawData) {
   handleFastEvents(window, drawData);
   handleSlowEvents(drawData);
 }
