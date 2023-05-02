@@ -52,6 +52,7 @@ static graph::AdjacencyListGraph makeMinimallyBiconnected(const graph::Adjacency
  * @return std::unordered_set<size_t> of cutted nodes
  */
 static std::unordered_set<size_t> reduceToGminus(const graph::AdjacencyListDigraph& digraph, graph::AdjacencyListGraph& graph) {
+  // create digraph with opposite edge directions to facilate detection of 2 incoming edges
   graph::AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
   for (const graph::Edge& e : digraph.edges()) {
     reverseDirgaph.addEdge(e.reverse());
@@ -78,7 +79,8 @@ static std::unordered_set<size_t> reduceToGminus(const graph::AdjacencyListDigra
  * @param cuttedNodes are the nodes to be inserted
  * @param digraph holds information needed to find places for insertion
  */
-static void insertNodecuts(std::vector<size_t>& eulertourInGMinus, std::unordered_set<size_t>& cuttedNodes,
+static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
+                           std::unordered_set<size_t>& cuttedNodes,
                            const graph::AdjacencyListDigraph& digraph) {
   eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
   for (size_t i = eulertourInGMinus.size() - 1; i > 0; --i) {
@@ -97,8 +99,8 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus, std::unordere
 /*!
  * @brief finds an euler tour in graph
  * @param graph
- * @param digraph holds information needed to contruct an euler tour that can be shortcutted to hamiltonian cycle
- * @return std::vector<size_t> of node indices, first is not repeated as last
+ * @param digraph holds information needed to construct an euler tour that can be shortcutted to hamiltonian cycle
+ * @return std::vector<size_t> of node indices; first is not repeated as last
  */
 static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const graph::AdjacencyListDigraph& digraph) {
   std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
@@ -116,21 +118,21 @@ static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const
 static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsigned int>& longEulertour,
                                                          graph::AdjacencyListDigraph& digraph) {
   std::vector<unsigned int> hamiltoncycle;
-  hamiltoncycle.reserve(digraph.numberOfNodes() + 1);
+  hamiltoncycle.reserve(digraph.numberOfNodes());
   hamiltoncycle.push_back(longEulertour[0]);
 
   for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
     const size_t u = longEulertour[i - 1];
-    const size_t w = longEulertour[i];
-    const size_t v = longEulertour[i + 1];
-    if (digraph.adjacent(w, u) && digraph.adjacent(w, v) && u != v) {
-      hamiltoncycle.push_back(v);
-      digraph.removeEdge(w, u);  // prevent the node from beeing skipped again between the same 2 nodes
-      digraph.removeEdge(w, v);
+    const size_t v = longEulertour[i];
+    const size_t w = longEulertour[i + 1];
+    if (digraph.adjacent(v, u) && digraph.adjacent(v, w) && u != w) {
+      hamiltoncycle.push_back(w);
+      digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
+      digraph.removeEdge(v, w);
       ++i;  // do not consider next node for skipping. It's alredy added.
     }
     else {
-      hamiltoncycle.push_back(w);
+      hamiltoncycle.push_back(v);
     }
   }
   return hamiltoncycle;
@@ -159,6 +161,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
     digraph.addEdge(ear[0], ear[1]);  // add the first edge directing into the ear
     size_t earPosOfLastDoubledEdge = 0;
 
+    // struct to bundle edge and index
     struct EdgeIndex {
       graph::Edge e;
       size_t index;
@@ -183,10 +186,20 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
     }
 
     // implicitly detect a node y and direct the edges according to paper
-    if (earPosOfLastDoubledEdge != 0) {
+    if (earPosOfLastDoubledEdge == 0) {  // if there isn't any doubled edge
+      for (const EdgeIndex& edge : edgesToBeDirected) {
+        if (edge.index != ear.size() - 2) {
+          digraph.addEdge(edge.e);
+        }
+        else {
+          digraph.addEdge(edge.e.reverse());
+        }
+      }
+    }
+    else {  // if an edge was doubled
       const graph::Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
       graph.removeEdge(lastDoubledEdge);
-      graph.removeEdge(lastDoubledEdge);
+      graph.removeEdge(lastDoubledEdge);  // the edge was doubled so it needs to be removed twice
 
       digraph.removeEdge(lastDoubledEdge);
       digraph.removeEdge(lastDoubledEdge.reverse());
@@ -197,16 +210,6 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         }
         else {
           // the case of equality is implicitly excluded, because then the edge would have been doubled
-          digraph.addEdge(edge.e.reverse());
-        }
-      }
-    }
-    else {
-      for (const EdgeIndex& edge : edgesToBeDirected) {
-        if (edge.index != ear.size() - 2) {
-          digraph.addEdge(edge.e);
-        }
-        else {
           digraph.addEdge(edge.e.reverse());
         }
       }
@@ -230,10 +233,12 @@ static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const g
   return tour;
 }
 
-static void printInfos(const double objective, const double maxEdgeWeight) {
-  std::cout << "objective           : " << objective << std::endl;
-  std::cout << "lower bound on OPT  : " << maxEdgeWeight << std::endl;
-  std::cout << "a fortiori guarantee: " << objective / maxEdgeWeight << std::endl;
+static void printInfos(const double objective, const double maxEdgeWeight, const ProblemType problemType) {
+  std::cout << "-------------------------------------------------------\n";
+  std::cout << "Approximated an instance of " << problemType << std::endl;
+  std::cout << "objective                : " << objective << std::endl;
+  std::cout << "lower bound on OPT       : " << maxEdgeWeight << std::endl;
+  std::cout << "a fortiori guarantee     : " << objective / maxEdgeWeight << std::endl;
   assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
 }
 
@@ -247,7 +252,7 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
   const double objective                             = euclidean.weight(bottleneckEdge);
 
   if (printInfo) {
-    printInfos(objective, maxEdgeWeight);
+    printInfos(objective, maxEdgeWeight, ProblemType::BTSP_approx);
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
@@ -277,8 +282,10 @@ static void reverse(std::vector<Type>& vec) {
  * @brief creates graph consisting of 5 copies of the original graph
  * @details Copies original graph, adds 2 nodes x and y and connects x to all copies of s and y to all copies of t
  */
-static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euclidean, const graph::AdjacencyListGraph& minimalBiconnected,
-                                                     const size_t s, const size_t t) {
+static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euclidean,
+                                                     const graph::AdjacencyListGraph& minimalBiconnected,
+                                                     const size_t s,
+                                                     const size_t t) {
   const size_t numberOfNodes           = euclidean.numberOfNodes();
   const size_t numberOfNodes5FoldGraph = 5 * numberOfNodes + 2;
   std::vector<std::vector<size_t>> adjacencyList;
@@ -374,7 +381,8 @@ static std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned 
  * @param t end node
  * @return AdjacencyListGraph minimal with desired property
  */
-static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyMatrixGraph& biconnectedGraph, const size_t s,
+static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyMatrixGraph& biconnectedGraph,
+                                                                       const size_t s,
                                                                        const size_t t) {
   const graph::Edge st_Edge{s, t};
   const graph::EarDecomposition ears = schmidt(biconnectedGraph);
@@ -389,7 +397,6 @@ static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const gra
 }
 
 Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
-  const size_t numberOfNodes = euclidean.numberOfNodes();
   double maxEdgeWeight;
 
   // find graph s.t. G = (V,E) + (s,t) is biconnected
@@ -404,7 +411,7 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const double objective                             = euclidean.weight(bottleneckEdge);
 
   if (printInfo) {
-    printInfos(objective, maxEdgeWeight);
+    printInfos(objective, maxEdgeWeight, ProblemType::BTSPP_approx);
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};

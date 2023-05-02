@@ -10,26 +10,44 @@ struct Vector2D;
 
 using Point2D = Vector2D;
 
+/*!
+ * @brief Vector2D represents a vector or point in 2D
+ */
 struct Vector2D {
-  double x, y;
+  //!@{
+  double x, y; /**< coordinates */
+  //!@}
 
+  /*!
+   * @brief subtract Vector2Ds componentwise
+   * @param subtrahend will be subtracted
+   */
   Vector2D operator-(const Vector2D& subtrahend) const { return Vector2D{x - subtrahend.x, y - subtrahend.y}; }
 
+  /*!
+   * @brief subtract Vector2D componentwise
+   * @param subtrahend will be subtracted
+   */
   void operator-=(const Vector2D& subtrahend) {
     x -= subtrahend.x;
     y -= subtrahend.y;
   }
 
-  void operator+=(const Vector2D& subtrahend) {
-    x += subtrahend.x;
-    y += subtrahend.y;
+  /*!
+   * @brief subtract Vector2D componentwise
+   * @param summand will be added
+   */
+  void operator+=(const Vector2D& summand) {
+    x += summand.x;
+    y += summand.y;
   }
 
   /*!
    * \brief liesOnLeftSide checks if p lies in the left half space defined by directed vector seg.a -> seg.b
    * \details check is performed by checking if the euclidean scalar product of (seg.a, seg.b) and the vector obtained
-   * by rotating (seg.b, p) by \pi /2 is nonpositiv \param seg half space defining vector \return bool if p lies in the
-   * left closed half space
+   * by rotating (seg.b, p) by \pi /2 is nonpositiv
+   * \param seg half space defining vector
+   * \return bool if p lies in the left closed half space
    */
   bool liesOnLeftSide(const LineSegment& seg) const;
 };
@@ -46,7 +64,7 @@ inline double norm2(const double x, const double y) {
 
 /*!
  * \brief norm2 computes the 2 norm of a vector
- * \varam v vector
+ * \param v vector
  * \return euclidean norm (2 norm)
  */
 inline double norm2(const Vector2D& v) {
@@ -63,6 +81,11 @@ inline double dist(const Point2D& p, const Point2D& q) {
   return norm2(p.x - q.x, p.y - q.y);
 }
 
+/*!
+ * @brief add point in paranthesis to output stream
+ * @param os output stream
+ * @param point point or vector to be printed
+ */
 inline std::ostream& operator<<(std::ostream& os, const Point2D& point) {
   return os << "(" << point.x << ", " << point.y << ") ";
 }
@@ -94,7 +117,13 @@ inline Vector2D direction(const Point2D& a, const Point2D& b) {
   return b - a;
 }
 
-inline bool Point2D::liesOnLeftSide(const LineSegment& seg) const {
+/*!
+ * @brief checks if the line segment lies on the left side of the vector
+ * @param seg is the line segment to check
+ * @return true if seg lies on left side, false otherwise
+ * @note inline keyword is needed for linker
+ */
+inline bool Vector2D::liesOnLeftSide(const LineSegment& seg) const {
   const Vector2D dir1 = direction(seg);
   const Vector2D dir2 = direction(seg.b, *this);
   return (dir1.y * dir2.x - dir1.x * dir2.y <= 0.0);

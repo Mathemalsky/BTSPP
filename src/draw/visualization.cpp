@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
 #include <GL/glew.h>
@@ -10,6 +11,7 @@
 #include "draw/buffers.hpp"
 #include "draw/definitions.hpp"
 #include "draw/draw.hpp"
+#include "draw/drawdata.hpp"
 #include "draw/events.hpp"
 #include "draw/gui.hpp"
 #include "draw/shader.hpp"
@@ -17,49 +19,49 @@
 
 #include "solve/exactsolver.hpp"
 
+using namespace drawing;
+
 // error callback function which prints glfw errors in case they arise
 static void glfw_error_callback(int error, const char* description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 
 static void initDrawingVariables() {
-  drawing::SHOW_DEBUG_WINDOW                = drawing::INITIAL_SHOW_DEBUG_WINDOW;
-  drawing::SHOW_SETTINGS_WINDOW             = drawing::INITIAL_SHOW_SETTINGS_WINDOW;
-  drawing::ACTIVE                           = drawing::INITIAL_ACTIVENESS;
-  drawing::COLOUR                           = drawing::INITIAL_COLOUR;
-  drawing::BTSP_DRAW_BICONNECTED_GRAPH      = drawing::INITIAL_BTSP_DRAW_BICONNECTED_GRAPH;
-  drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION = drawing::INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
-  drawing::BTSP_DRAW_HAMILTON_CYCLE         = drawing::INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
-  drawing::BTSPP_DRAW_BICONNECTED_GRAPH     = drawing::INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
-  drawing::BTSPP_DRAW_HAMILTON_PATH         = drawing::INITIAL_BTSPP_DRAW_HAMILTON_PATH;
-  drawing::INITIALIZED                      = drawing::INITIAL_ACTIVENESS;
-  drawing::THICKNESS                        = drawing::INITIAL_THICKNESS;
-  drawing::CLEAR_COLOUR                     = drawing::INITIAL_CLEAR_COLOUR;
-  drawing::VERTEX_COLOUR                    = drawing::INITIAL_VERTEX_COLOUR;
+  SHOW_DEBUG_WINDOW                = INITIAL_SHOW_DEBUG_WINDOW;
+  SHOW_SETTINGS_WINDOW             = INITIAL_SHOW_SETTINGS_WINDOW;
+  ACTIVE                           = INITIAL_ACTIVENESS;
+  BTSP_DRAW_BICONNECTED_GRAPH      = INITIAL_BTSP_DRAW_BICONNECTED_GRAPH;
+  BTSP_DRAW_OPEN_EAR_DECOMPOSITION = INITIAL_BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
+  BTSP_DRAW_HAMILTON_CYCLE         = INITIAL_BTSP_DRAW_HAMILTON_CYCLE;
+  BTSPP_DRAW_BICONNECTED_GRAPH     = INITIAL_BTSPP_DRAW_BICONNECTED_GRAPH;
+  BTSPP_DRAW_HAMILTON_PATH         = INITIAL_BTSPP_DRAW_HAMILTON_PATH;
 }
 
 static void initInputVariables() {
   input::mouse::NODE_IN_MOTION = input::mouse::INITIAL_NODE_IN_MOTION;
 }
 
-static const Buffers& setUpBufferMemory(const graph::Euclidean& euclidean) {
+static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
   drawing::EUCLIDEAN = euclidean;
-  drawing::updatePointsfFromEuclidean();  // convert to 32 bit floats because opengl isn't capable to deal with 64 bit
+  FloatVertices floatVertices;
+  floatVertices.updatePointsfFromEuclidean(drawing::EUCLIDEAN);
 
-  const VertexBuffer& coordinates     = *new VertexBuffer(drawing::POINTS_F, 2);  // components per vertex
-  const ShaderBuffer& tourCoordinates = *new ShaderBuffer(drawing::POINTS_F);     // copy vertex coords to shader buffer
-  const ShaderBuffer& tour = *new ShaderBuffer(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
+  std::shared_ptr<VertexBuffer> coordinates = std::make_shared<VertexBuffer>(floatVertices.read(), 2);  // components per vertex
+  std::shared_ptr<ShaderBuffer> tourCoordinates =
+      std::make_shared<ShaderBuffer>(floatVertices.read());  // copy vertex coords to shader buffer
+  std::shared_ptr<ShaderBuffer> tour =
+      std::make_shared<ShaderBuffer>(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
-  return *new Buffers{coordinates, tour, tourCoordinates};
+  return DrawData(Buffers{coordinates, tour, tourCoordinates}, floatVertices);
 }
 
-static const VertexArray& bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {
-  const VertexArray& vao = *new VertexArray;
-  vao.bind();
-  vao.mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
-  vao.enable(programs.drawCircles.id(), "vertexPosition");
-  vao.bindBufferBase(buffers.tourCoordinates, 0);
-  vao.bindBufferBase(buffers.tour, 1);
+static std::unique_ptr<VertexArray> bindBufferMemory(const Buffers& buffers, const ShaderProgramCollection& programs) {
+  std::unique_ptr<VertexArray> vao = std::make_unique<VertexArray>();
+  vao->bind();
+  vao->mapBufferToAttribute(buffers.coordinates, programs.drawCircles.id(), "vertexPosition");
+  vao->enable(programs.drawCircles.id(), "vertexPosition");
+  vao->bindBufferBase(buffers.tourCoordinates, 0);
+  vao->bindBufferBase(buffers.tour, 1);
   return vao;
 }
 
@@ -91,8 +93,8 @@ void visualize(const graph::Euclidean& euclidean) {
   const ShaderProgram drawLineProgram  = collection.linkLineDrawProgram();
   const ShaderProgramCollection programs(drawCircles, drawPathSegments, drawLineProgram);
 
-  const Buffers& buffers = setUpBufferMemory(euclidean);
-  const VertexArray& vao = bindBufferMemory(buffers, programs);
+  std::shared_ptr<DrawData> drawData = std::make_shared<DrawData>(setUpBufferMemory(euclidean));
+  std::unique_ptr<VertexArray> vao   = bindBufferMemory(drawData->buffers, programs);
 
   // enable vsync
   glfwSwapInterval(1);
@@ -114,21 +116,17 @@ void visualize(const graph::Euclidean& euclidean) {
     glfwPollEvents();
 
     // handle Events triggert by user input, like keyboard etc.
-    handleEvents(window, buffers);
+    handleEvents(window, drawData);
 
     // draw the content
-    draw(window, programs, buffers);
+    draw(window, programs, drawData);
 
     // draw the gui
-    drawImgui();
+    drawImgui(drawData->appearance);
 
     // swap the drawings to the displayed frame
     glfwSwapBuffers(window);
   }
-
-  // clean up memory
-  delete &vao;
-  delete &buffers;
 
   // clean up Dear ImGui
   cleanUpImgui();

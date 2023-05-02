@@ -53,6 +53,7 @@ key   | function
 `R`   | recompute solution(s)
 `T`   | switch display of approximation to next mode
 `1`   | toggle drawing of BTSP approximation
+`2`   | toggle drawing of BTSPP approximation
 `3`   | toggle drawing of BTSP exact solution
 `4`   | toggle drawing of BTSPP exact solution
 `5`   | toggle drawing of TSP exact solution
@@ -82,6 +83,7 @@ Possible arguments are:
 argument  | effect
 ----------|------------------
 `-btsp`   | approximates BTSP
+`-btspp`  | approximates BTSPP
 `-btsp-e` | solves exact BTSP
 `-btspp-e`| solves exact BTSPP
 `-tsp-e`  | solves exact TSP

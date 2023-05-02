@@ -70,7 +70,6 @@ struct Edge {
 
 /*!
  * \brief The Directionality enum can be Directed or Undirected
- * \details This enum can be passed as template argument to some graph classes.
  */
 enum class Directionality {
   Undirected,
@@ -82,27 +81,66 @@ public:
   EdgeWeight()  = default;
   ~EdgeWeight() = default;
 
-  EdgeWeight(const double cost) : pCost(cost) {}
+  /*!
+   * @brief constructs EdgeWeight with value weight
+   */
+  EdgeWeight(const double weight) : pWeight(weight) {}
 
-  double cost() const { return pCost; }
+  /*!
+   * @brief returns the weight as double
+   */
+  double weight() const { return pWeight; }
 
-  double operator()() const { return pCost; }
-  void operator=(const double cost) { pCost = cost; }
-  bool operator==(const double compare) { return pCost == compare; }
-  bool operator!=(const double compare) { return pCost != compare; }
+  /*!
+   * @brief assignment operator from double
+   */
+  void operator=(const double weight) { pWeight = weight; }
 
-  bool operator<=(const EdgeWeight other) { return pCost <= other.pCost; }
-  EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pCost, other.pCost)); }
-  EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pCost + other.pCost); }
+  /*!
+   * @brief compares for inquality with double
+   */
+  bool operator==(const double compare) { return pWeight == compare; }
+
+  /*!
+   * @brief compares for inequality with double
+   */
+  bool operator!=(const double compare) { return pWeight != compare; }
+
+  /*!
+   * @brief compares for \leq with double
+   * @details This function is needed in Eigen.
+   */
+  bool operator<=(const EdgeWeight other) { return pWeight <= other.pWeight; }
+
+  /*!
+   * @brief operator+ implements the minimum of the edgeweights
+   * @details This function is needed in Eigen.
+   */
+  EdgeWeight operator+(const EdgeWeight other) const { return EdgeWeight(std::min(pWeight, other.pWeight)); }
+
+  /*!
+   * @brief operator* implements the sum of the edgeweights
+   * @details This function is needed in Eigen.
+   */
+  EdgeWeight operator*(const EdgeWeight other) const { return EdgeWeight(pWeight + other.pWeight); }
+
+  /*!
+   * @brief operator+= setsto  the minimum of the edgeweights
+   * @details This function is needed in Eigen.
+   */
   EdgeWeight& operator+=(const EdgeWeight other) {
-    pCost = std::min(pCost, other.pCost);
+    pWeight = std::min(pWeight, other.pWeight);
     return *this;
   }
 
-  friend EdgeWeight abs(const EdgeWeight weight) { return EdgeWeight(std::abs(weight.pCost)); }
+  /*!
+   * @brief returns absolut value
+   * @details This function is needed in Eigen.
+   */
+  friend EdgeWeight abs(const EdgeWeight weight) { return EdgeWeight(std::abs(weight.pWeight)); }
 
 private:
-  double pCost;
+  double pWeight; /*!< stores the weight of the edge*/
 };
 }  // namespace graph
 
@@ -140,11 +178,33 @@ namespace graph {
  */
 class Graph {
 public:
+  /*!
+   * @brief checks if there is an edge (u,v) in the graph
+   * @param u outgoing vertex
+   * @param v incomming vertex
+   */
   virtual bool adjacent(const size_t u, const size_t v) const = 0;
-  virtual bool adjacent(const Edge& e) const                  = 0;
-  virtual bool connected() const                              = 0;
-  virtual size_t numberOfEdges() const                        = 0;
-  virtual size_t numberOfNodes() const                        = 0;
+
+  /*!
+   * @brief checks if there is an edge e in the graph
+   * @param e edge to check
+   */
+  virtual bool adjacent(const Edge& e) const = 0;
+
+  /*!
+   * @brief checks if the graph is connected
+   */
+  virtual bool connected() const = 0;
+
+  /*!
+   * @brief returns the number of edges in the graph
+   */
+  virtual size_t numberOfEdges() const = 0;
+
+  /*!
+   * @brief returns the number of nodes in the graph
+   */
+  virtual size_t numberOfNodes() const = 0;
 };
 
 /*!
@@ -152,8 +212,18 @@ public:
  */
 class WeightedGraph : public virtual Graph {
 public:
+  /*!
+   * @brief returns the edge's weight
+   * @param u outgoing vertex
+   * @param v incomming vertex
+   */
   virtual double weight(const size_t u, const size_t v) const = 0;
-  virtual double weight(const Edge& e) const                  = 0;
+
+  /*!
+   * @brief returns the edge's weight
+   * @param e edge
+   */
+  virtual double weight(const Edge& e) const = 0;
 };
 
 /*!
@@ -163,14 +233,30 @@ public:
  */
 class CompleteGraph : public virtual Graph {
 public:
+  /*!
+   * @brief returns true because it's a complete graph and every node is connected to every node
+   */
   bool adjacent([[maybe_unused]] const size_t u, [[maybe_unused]] const size_t v) const override { return true; }
+
+  /*!
+   * @brief returns true because it's a complete graph and every node is connected to every node
+   */
   bool adjacent([[maybe_unused]] const Edge& e) const override { return true; }
+
+  /*!
+   * @brief returns true because it's a complete graph and every node is connected to every node
+   */
   bool connected() const override { return true; }
-  size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
+/*!
+ * @brief class DirectedGraph is a virtual base class for all directed graphs
+ */
 class DirectedGraph : public virtual Graph {};
 
+/*!
+ * @brief class UndirectedGraph is a virtual base class for all directed graphs
+ */
 class UndirectedGraph : public virtual Graph {};
 
 /*!
@@ -180,58 +266,132 @@ class UndirectedGraph : public virtual Graph {};
  */
 class Euclidean : public CompleteGraph, public WeightedGraph, public UndirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges in euclidean graph.
+   */
   class Edges {
   private:
+    /*!
+     * @brief Iterator on edges of an Euclidean graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief wraps position variables
+       */
       struct Position {
-        size_t index;
-        const size_t numberOfNodes;
+        size_t index;               /**< index of edge, edge is (index / numberOfNodes, index % numberOfNodes)*/
+        const size_t numberOfNodes; /**< number of nodes in euclidean graph*/
       };
+
+      /*!
+       * @brief constructs iterator at position pos
+       */
       Iterator(const Position& pos) : pPosition(pos) {}
 
+      /*!
+       * @brief constructs edge from current position as explicit object
+       * @return edge from current position as explicit object
+       */
       Edge operator*() const { return Edge{pPosition.index / pPosition.numberOfNodes, pPosition.index % pPosition.numberOfNodes}; }
 
+      /*!
+       * @brief increases index by one
+       * @return reference to this iterator after increasing index
+       */
       Iterator& operator++() {
         ++pPosition.index;
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       */
       bool operator!=(const Iterator& other) const { return pPosition.index != other.pPosition.index; }
 
     private:
-      Position pPosition;
-    };  // end Iterator class
+      Position pPosition; /**< position of index in graph*/
+    };                    // end Iterator class
 
   public:
+    /*!
+     * @brief creates edges instance of edges
+     * @param numberOfNodes needed to compute the index correct
+     */
     Edges(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
+    /*!
+     * @brief creates an iterator pointing in front of the first edge
+     * @return begin iterator
+     */
     Iterator begin() const { return Iterator(Iterator::Position{0, pNumberOfNodes}); }
+
+    /*!
+     * @brief creates an iterator pointing in behind the last edge
+     * @return end iterator
+     */
     Iterator end() const { return Iterator(Iterator::Position{pNumberOfNodes * pNumberOfNodes, pNumberOfNodes}); }
 
   private:
-    const size_t pNumberOfNodes;
-  };  // end Edges class
+    const size_t pNumberOfNodes; /**< number of nodes in euclidean graph */
+  };                             // end Edges class
 
 public:
   Euclidean()          = default;
   virtual ~Euclidean() = default;
 
+  /*!
+   * @brief constructor from vector of Point2D
+   */
   Euclidean(const std::vector<Point2D>& positions) : pPositions(positions) {}
+
+  /*!
+   * @brief move constructor from vector of Point2D
+   */
   Euclidean(std::vector<Point2D>&& positions) : pPositions(positions) {}
 
+  /*!
+   * @brief number of Edges in graph. Depends only on the number of nodes since it is a complete graph
+   */
+  size_t numberOfEdges() const override { return pPositions.size() * (pPositions.size() - 1) / 2; }
+
+  /*!
+   * @brief returns number of points in internal vector as number of nodes
+   */
   size_t numberOfNodes() const override { return pPositions.size(); }
 
+  /*!
+   * @brief returns euclidean distance between nodes
+   * @param u start node
+   * @param v end node
+   */
   double weight(const size_t u, const size_t v) const override { return dist(pPositions[u], pPositions[v]); }
+
+  /*!
+   * @brief returns euclidean distance between nodes
+   * @param e edge for which weight is requested
+   */
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
 
+  /*!
+   * @brief creates edges object to iterate of the edges
+   */
   Edges edges() const { return Edges(numberOfNodes()); }
 
+  /*!
+   * @brief position of node in plane
+   * @param v node
+   * @return position of node v
+   */
   Point2D position(const size_t v) const { return pPositions[v]; }
+
+  /*!
+   * @brief returns reference to internal Point2D vector
+   */
   std::vector<Point2D>& vertices() { return pPositions; }
 
 private:
-  std::vector<Point2D> pPositions;
+  std::vector<Point2D> pPositions; /**< vector of Point2D holding the nodes position in plane*/
 };
 
 /*!
@@ -239,59 +399,125 @@ private:
  */
 class Modifyable : public virtual Graph {
 protected:
+  /*!
+   * @brief adds an edge from out to in with weight edgeWeight
+   * @param out start vertex of edge
+   * @param end vertex of edge
+   * @param edgeWeight of new edge
+   */
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) = 0;
-  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight)                     = 0;
+
+  /*!
+   * @brief adds an edge from out to in with weight edgeWeight
+   * @param e edge to be added
+   * @param edgeWeight of new edge
+   */
+  virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) = 0;
 };
 
 /*!
- * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as list.
+ * @brief The AdjListGraph class is an abstract class for graphs which store adjacency as list.
+ * @details This class can handle multigraphs, but does not differentiate between parallel edges.
  */
 class AdjListGraph : public Modifyable {
 private:
+  /*!
+   * @brief Nodes is a facade class to iterate over all nodes in AdjListGraph.
+   */
   class Nodes {
   private:
+    /*!
+     * @brief Iterator on nodes of an AdjListGraph graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief creates Iterator at position pos.
+       */
       Iterator(const size_t pos) : pPosition(pos) {}
 
+      /*!
+       * @brief returns node at current position
+       */
       size_t operator*() const { return pPosition; }
 
+      /*!
+       * @brief moves iterator one node forward
+       * @return reference to this iterator after incrementation
+       */
       Iterator& operator++() {
         ++pPosition;
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       */
       bool operator!=(const Iterator& other) const { return pPosition != other.pPosition; }
 
     private:
-      size_t pPosition;
-    };  // end Iterator class
+      size_t pPosition; /**< position of index in nodes*/
+    };                  // end Iterator class
 
   public:
+    /*!
+     * constructor for for nodes facade
+     */
     Nodes(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
+    /*!
+     * @brief creates an iterator pointing in front of the first node
+     * @return begin iterator
+     */
     Iterator begin() const { return Iterator(0); }
+
+    /*!
+     * @brief creates an iterator pointing in behind the last node
+     * @return end iterator
+     */
     Iterator end() const { return Iterator(pNumberOfNodes); }
 
   private:
-    const size_t pNumberOfNodes;
-  };  // end Nodes class
+    const size_t pNumberOfNodes; /**< number of nodes in adjacency list graph */
+  };                             // end Nodes class
 public:
   AdjListGraph()  = default;
   ~AdjListGraph() = default;
 
   AdjListGraph(const AdjListGraph& graph) = default;
+
+  /*!
+   * @brief constructor, resizes the internal adjacency list to numberOfNodes
+   * @param numberOfNodes number of nodes in constructed graph
+   */
   AdjListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
+  /*!
+   * @brief constructor, sets the internal adjacency list to adjacencyList
+   * @param adjacencyList adjacency list
+   */
   AdjListGraph(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
 
+  /*!
+   * @brief checks if v appears in the list of neighbours of u
+   * @param u node
+   * @param v node
+   */
   bool adjacent(const size_t u, const size_t v) const override {
     const std::vector<size_t>& neighbour         = pAdjacencyList[u];
     const std::vector<size_t>::const_iterator it = std::find(neighbour.begin(), neighbour.end(), v);
     return it != neighbour.end();
   }
 
+  /*!
+   * @brief checks if there is an edge e in the graph
+   * @param e edge to check
+   */
   bool adjacent(const Edge& e) const override { return adjacent(e.u, e.v); }
 
+  /*!
+   * @brief returns the number of nodes in adjacency list
+   */
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   /*!
@@ -383,7 +609,7 @@ public:
   }
 
 protected:
-  std::vector<std::vector<size_t>> pAdjacencyList;
+  std::vector<std::vector<size_t>> pAdjacencyList; /**< i-th vector contains neighbours of i */
 };
 
 /*!
@@ -393,21 +619,45 @@ protected:
  */
 class AdjacencyListGraph : public AdjListGraph, public UndirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges in AdjacencyListGraph graph.
+   */
   class Edges {
   private:
+    /*!
+     * @brief Iterator on edges of an AdjacencyListGraph graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief AdjListPos bundles inner and outer index of the position
+       */
       struct AdjListPos {
-        size_t outerIndex;
-        size_t innerIndex;
+        size_t outerIndex; /**< outer index (out node) */
+        size_t innerIndex; /**< inner index (in node) */
       };
 
+      /*!
+       * @brief creates an iterator pointing at pos
+       * @param adjacencyList reference to graphs adjacency list
+       * @param pos contains position as pair (outer, inner)
+       */
       Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
         pAdjacencyList(adjacencyList),
         pPosition(pos) {}
 
+      /*!
+       * @brief constructs edge from current position as explicit object
+       * @return edge from current position as explicit object
+       */
       Edge operator*() const { return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]}; }
 
+      /*!
+       * @brief moves the operator one position forward
+       * @details Increases inner index by 1. Repeats that until a valid (outer index, inner index) pair is found, or iterartor is out of
+       * bounds. Valid index pair has outer index > inner index and points to an element in adjacencyList
+       * @return reference to passed iterator
+       */
       Iterator& operator++() {
         assert(pPosition.outerIndex < pAdjacencyList.size() && "Iterator is already behind end!");
 
@@ -424,16 +674,25 @@ private:
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       */
       bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
 
+      /*!
+       * @brief checks if inner index < outer index
+       */
       bool toLowerIndex() const { return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex; }
 
     private:
+      /*!
+       * @brief checks if the inner index is still in the range of neighbours vector
+       */
       bool outOfNeighbours() const { return pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size(); }
 
-      const std::vector<std::vector<size_t>>& pAdjacencyList;
-      AdjListPos pPosition;
-    };  // end Iterator class
+      const std::vector<std::vector<size_t>>& pAdjacencyList; /**< reference to graphs adjacency list */
+      AdjListPos pPosition;                                   /**< position in the adjacency list */
+    };                                                        // end Iterator class
 
   public:
     Edges(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
@@ -466,14 +725,37 @@ public:
   ~AdjacencyListGraph() = default;
 
   AdjacencyListGraph(const AdjacencyListGraph& graph) = default;
+
+  /*!
+   * @brief constructor, resizes the internal adjacency list to numberOfNodes
+   * @param numberOfNodes number of nodes in constructed graph
+   */
   AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
+  /*!
+   * @brief constructor, sets the internal adjacency list to adjacencyList
+   * @param adjacencyList adjacency list
+   */
   AdjacencyListGraph(const std::vector<std::vector<size_t>>& adjacencyList) : AdjListGraph(adjacencyList) {}
 
+  /*!
+   * @brief adds an edge to the graph
+   * @details adds also an reverse directed edge
+   * @param out node at the edge's end
+   * @param in node at the edge's end
+   * @param edgeWeight not used
+   */
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     pAdjacencyList[out].push_back(in);
     pAdjacencyList[in].push_back(out);
   }
 
+  /*!
+   * @brief adds an edge to the graph
+   * @details adds also an reverse directed edge
+   * @param e edge to add
+   * @param edgeWeight
+   */
   void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     pAdjacencyList[e.u].push_back(e.v);
     pAdjacencyList[e.v].push_back(e.u);
@@ -491,7 +773,9 @@ public:
    * @return size_t
    */
   size_t numberOfEdges() const override {
-    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0,
+    return std::accumulate(pAdjacencyList.begin(),
+                           pAdjacencyList.end(),
+                           0,
                            [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); })
            / 2;
   }
@@ -502,8 +786,17 @@ public:
    */
   bool biconnected() const { return checkBiconnectivity(*this); }
 
+  /*!
+   * @brief creates iteratable instance of Edges
+   * @return instance of Edges with adjacency list of this graph
+   */
   Edges edges() const { return Edges(pAdjacencyList); }
 
+  /*!
+   * @brief removes an edge from the graph
+   * @details removes copy for revrse directed edge as well, removes only one per direction
+   * @param e edge to be removed
+   */
   void removeEdge(const Edge& e) {
     [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.u], e.v);
     assert(removed && "Edge to be removed does not exist in graph!");
@@ -511,6 +804,12 @@ public:
     assert(removed2 && "Edge to be removed does not exist in graph!");
   }
 
+  /*!
+   * @brief removes an edge from the graph
+   * @details removes copy for revrse directed edge as well, removes only one per direction
+   * @param u one end of the edge
+   * @param v other end of the edge
+   */
   void removeEdge(const size_t u, const size_t v) {
     [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[u], v);
     assert(removed && "Edge to be removed does not exist in graph!");
@@ -525,20 +824,44 @@ public:
  */
 class AdjacencyListDigraph : public AdjListGraph, public DirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges in AdjacencyListDigraph graph.
+   */
   class Edges {
   private:
+    /*!
+     * @brief Iterator on edges of an AdjacencyListDigraph graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief Position in adjacency list containing outer index and inner index
+       */
       struct AdjListPos {
         size_t outerIndex;
         size_t innerIndex;
       };
+
+      /*!
+       * @brief creates an Iterator poining to pos in adjacencyList
+       * @param adjacencyList adjacency list of graph
+       * @param pos position
+       */
       Iterator(const std::vector<std::vector<size_t>>& adjacencyList, const AdjListPos& pos) :
         pAdjacencyList(adjacencyList),
         pPosition(pos) {}
 
+      /*!
+       * @brief constructs edge from current position as explicit object
+       * @return edge from current position as explicit object
+       */
       Edge operator*() const { return Edge{pPosition.outerIndex, pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex]}; }
 
+      /*!
+       * @brief moves iterator forward by one position
+       * @details if at the end of neighbours of a node set Iterator to next nodes neighbours
+       * @return reference to this iterator after incrementation
+       */
       Iterator& operator++() {
         ++pPosition.innerIndex;
         while (pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size() && pPosition.outerIndex < pAdjacencyList.size()) {
@@ -548,16 +871,29 @@ private:
         return *this;
       }
 
+      /*!
+       * @brief compares iterators for inequality
+       * @param other iterator to compare with
+       * @return if the iterators are different
+       */
       bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
 
     private:
-      const std::vector<std::vector<size_t>>& pAdjacencyList;
-      AdjListPos pPosition;
-    };  // end Iterator class
+      const std::vector<std::vector<size_t>>& pAdjacencyList; /**< i-th vector contains neighbours of i */
+      AdjListPos pPosition;                                   /**< outer and inner index of current position */
+    };                                                        // end Iterator class
 
   public:
+    /*!
+     * @brief creates edges instance of edges
+     * @param adjacencyList adjacency list of graph
+     */
     Edges(const std::vector<std::vector<size_t>>& adjacencyList) : pAdjacencyList(adjacencyList) {}
 
+    /*!
+     * @brief creates an iterator pointing in front of the first edge
+     * @return begin iterator
+     */
     Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{0, 0}); }
 
     /*!
@@ -569,21 +905,42 @@ private:
     Iterator end() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{pAdjacencyList.size(), 0}); }
 
   private:
-    const std::vector<std::vector<size_t>>& pAdjacencyList;
-  };  // end Edges class
+    const std::vector<std::vector<size_t>>& pAdjacencyList; /**< i-th vector contains neighbours of i */
+  };                                                        // end Edges class
 
 public:
   AdjacencyListDigraph()  = default;
   ~AdjacencyListDigraph() = default;
 
   AdjacencyListDigraph(const AdjacencyListDigraph& graph) = default;
+
+  /*!
+   * @brief constructor, resizes the internal adjacency list to numberOfNodes
+   * @param numberOfNodes number of nodes in constructed graph
+   */
   AdjacencyListDigraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
+  /*!
+   * @brief constructor, sets the internal adjacency list to adjacencyList
+   * @param adjacencyList adjacency list
+   */
   AdjacencyListDigraph(const std::vector<std::vector<size_t>>& adjacencyList) : AdjListGraph(adjacencyList) {}
 
+  /*!
+   * @brief adds an edge to the graph
+   * @param out node at the edge's begin
+   * @param in node at the edge is directed to
+   * @param edgeWeight not used
+   */
   void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
     pAdjacencyList[out].push_back(in);
   }
 
+  /*!
+   * @brief adds an edge to the graph
+   * @param e edge to be added
+   * @param edgeWeight
+   */
   void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override { pAdjacencyList[e.u].push_back(e.v); }
 
   /*!
@@ -595,20 +952,43 @@ public:
    */
   bool connected() const override { return undirected().connected(); }
 
+  /*!
+   * @brief returns number of edges in the graph
+   * @details counts the entries in adjacency list
+   * @return number of edges in the graph
+   */
   size_t numberOfEdges() const override {
-    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0,
-                           [](const unsigned int sum, const std::vector<size_t>& vec) { return sum + vec.size(); });
+    return std::accumulate(pAdjacencyList.begin(), pAdjacencyList.end(), 0, [](const unsigned int sum, const std::vector<size_t>& vec) {
+      return sum + vec.size();
+    });
   }
 
+  /*!
+   * @brief checks if the graph is biconnected
+   * @return true if the graph is biconnected
+   */
   bool biconnected() const { return checkBiconnectivity(this->undirected()); }
 
+  /*!
+   * @brief creates iteratable instance of Edges
+   * @return instance of Edges with adjacency list of this graph
+   */
   Edges edges() const { return Edges(pAdjacencyList); }
 
+  /*!
+   * @brief removes an edge from the graph
+   * @param e edge to be removed
+   */
   void removeEdge(const Edge& e) {
     [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[e.u], e.v);
     assert(removed && "Edge to be removed does not exist in graph!");
   }
 
+  /*!
+   * @brief removes an edge from the graph
+   * @param u outgoing node of the edge to be removed
+   * @param v ingoing node of the edge to be removed
+   */
   void removeEdge(const size_t u, const size_t v) {
     [[maybe_unused]] const bool removed = removeAnyElementByValue(pAdjacencyList[u], v);
     assert(removed && "Edge to be removed does not exist in graph!");
@@ -623,12 +1003,15 @@ public:
 };
 
 /*!
- * \brief The AdjListGraph class is an abstract class for graphs which store adjacency as sparse matrix.
+ * \brief.The AdjListGraph class is an abstract class for graphs which store adjacency as sparse matrix.
  * \details Graphs with adjacency matrix storage are generally assumed to be simple (without parallel edges) weighted
  * graphs.
  */
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 private:
+  /*!
+   * @brief Neighbours is a facade class to iterate over all neighbours of an edge
+   */
   class Neighbours {
   private:
     class Iterator {
@@ -680,11 +1063,11 @@ public:
 
   double weight(const Edge& e) const override {
     assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
-    return pAdjacencyMatrix.coeff(e.u, e.v).cost();
+    return pAdjacencyMatrix.coeff(e.u, e.v).weight();
   }
   double weight(const size_t u, const size_t v) const override {
     assert(pAdjacencyMatrix.coeff(u, v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
-    return pAdjacencyMatrix.coeff(u, v).cost();
+    return pAdjacencyMatrix.coeff(u, v).weight();
   }
 
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
@@ -745,7 +1128,7 @@ private:
           if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
-          ++pPosition.outerIndex;  // goes to next row
+          ++pPosition.outerIndex;                                           // goes to next row
         }
         return *this;
       }
@@ -825,7 +1208,7 @@ public:
 /*!
  * \brief The AdjacencyMatrixGraph class implements the concrete class for directed graphs.
  * \details The functions checking for connectivity are checking for connectivity in the sense of weak connectivity.
- * Digraphs may have antiparallel edges.
+ * AdjacencyMatrixDigraph may have antiparallel edges.
  */
 class AdjacencyMatrixDigraph : public AdjMatGraph, public DirectedGraph {
 private:

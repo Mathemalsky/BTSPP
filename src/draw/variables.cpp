@@ -15,52 +15,16 @@
 
 namespace drawing {
 graph::Euclidean EUCLIDEAN;
-std::vector<float> POINTS_F;
 
 bool SHOW_DEBUG_WINDOW;
 bool SHOW_SETTINGS_WINDOW;
 
 std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
-std::array<RGBA_COLOUR, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> COLOUR;
 bool BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
 bool BTSP_DRAW_BICONNECTED_GRAPH;
 bool BTSP_DRAW_HAMILTON_CYCLE;
 bool BTSPP_DRAW_BICONNECTED_GRAPH;
 bool BTSPP_DRAW_HAMILTON_PATH;
-std::array<std::vector<unsigned int>, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ORDER;
-std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> INITIALIZED;
-std::array<float, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> THICKNESS;
-RGBA_COLOUR CLEAR_COLOUR;
-RGBA_COLOUR VERTEX_COLOUR;
-
-approximation::Result BTSP_APPROX_RESULT;
-approximation::Result BTSPP_APPROX_RESULT;
-exactsolver::Result BTSP_EXACT_RESULT;
-exactsolver::Result BTSPP_EXACT_RESULT;
-
-void updatePointsfFromEuclidean() {
-  POINTS_F.resize(2 * EUCLIDEAN.numberOfNodes());
-  const std::vector<graph::Point2D> points = EUCLIDEAN.vertices();
-  for (size_t i = 0; i < points.size(); ++i) {
-    POINTS_F[2 * i]     = (float) points[i].x;
-    POINTS_F[2 * i + 1] = (float) points[i].y;
-  }
-}
-
-void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
-  if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
-    ORDER[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD);
-    std::memcpy(ORDER[std::to_underlying(type)].data(), order.data(), bytes_of(order));
-    std::memcpy(ORDER[std::to_underlying(type)].data() + order.size(), order.data(), PATH_OVERHEAD * sizeof(unsigned int));
-  }
-  else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
-    ORDER[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
-    ORDER[std::to_underlying(type)][0] = order[1];
-    std::memcpy(ORDER[std::to_underlying(type)].data() + 1, order.data(), bytes_of(order));
-    ORDER[std::to_underlying(type)].back() = order[order.size() - 2];
-  }
-  INITIALIZED[std::to_underlying(type)] = true;
-}
 }  // namespace drawing
 
 namespace input {
@@ -77,6 +41,7 @@ int HEIGHT;
 int WIDTH;
 }  // namespace mainwindow
 
-namespace slowEvents {
+namespace solve {
+bool BTSP_FORBID_CROSSING;
 std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> SOLVE;
-}  // namespace slowEvents
+}  // namespace solve

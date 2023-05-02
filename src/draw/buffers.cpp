@@ -1,5 +1,7 @@
 #include "draw/buffers.hpp"
 
+#include <memory>
+
 template <>
 VertexBuffer::VertexBuffer(const std::vector<float>& dat, const GLuint componentsPerVertex) :
   pComponentsPerVertex(componentsPerVertex),
@@ -9,11 +11,11 @@ VertexBuffer::VertexBuffer(const std::vector<float>& dat, const GLuint component
   GL_CALL(glBufferData(GL_ARRAY_BUFFER, bytes_of(dat), dat.data(), GL_DYNAMIC_DRAW);)
 }
 
-void VertexArray::mapBufferToAttribute(const VertexBuffer& vbo, const GLuint shaderProgramID, const char* name) const {
+void VertexArray::mapBufferToAttribute(const std::shared_ptr<VertexBuffer> vbo, const GLuint shaderProgramID, const char* name) const {
   this->bind();
-  vbo.bind();
+  vbo->bind();
   GL_CALL(const GLint vertexAttribLocation = glGetAttribLocation(shaderProgramID, name);)
-  GL_CALL(glVertexAttribPointer(vertexAttribLocation, vbo.compPerVertex(), vbo.type(), GL_FALSE, 0, nullptr);)
+  GL_CALL(glVertexAttribPointer(vertexAttribLocation, vbo->compPerVertex(), vbo->type(), GL_FALSE, 0, nullptr);)
 }
 
 void VertexArray::enable(const GLuint shaderProgramID, const char* name) const {
@@ -22,8 +24,8 @@ void VertexArray::enable(const GLuint shaderProgramID, const char* name) const {
   GL_CALL(glEnableVertexAttribArray(vertexAttribLocation);)
 }
 
-void VertexArray::bindBufferBase(const ShaderBuffer& shaderBuffer, const GLuint bindingPoint) const {
-  shaderBuffer.bind();
+void VertexArray::bindBufferBase(const std::shared_ptr<ShaderBuffer> shaderBuffer, const GLuint bindingPoint) const {
+  shaderBuffer->bind();
   this->bind();
-  GL_CALL(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, shaderBuffer.id());)
+  GL_CALL(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, bindingPoint, shaderBuffer->id());)
 }
