@@ -1297,7 +1297,16 @@ public:
  * \brief The Tree class is an abstract which implements the methods all trees have in common.
  */
 class Tree : public virtual Graph {
+  /*!
+   * @brief trees are always connected and hence the return is always true
+   * @return true
+   */
   bool connected() const override { return true; }
+
+  /*!
+   * @brief a tree has one edge less than nodes
+   * @return number of nodes -1
+   */
   size_t numberOfEdges() const override { return numberOfNodes() - 1; }
 };
 
@@ -1308,20 +1317,40 @@ class Tree : public virtual Graph {
  */
 class DfsTree : public Tree, public DirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges in the DfsTree
+   */
   class Edges {
   private:
+    /*!
+     * @brief iterator on a DfsTrees edges
+     */
     class Iterator {
     public:
+      /*!
+       * @brief creates iterator object
+       * @param adjacencyList the trees adjacency list
+       * @param root index of root node
+       * @param pos iterator position
+       */
       Iterator(const std::vector<size_t>& adjacencyList, const size_t root, const size_t pos) :
         pAdjacencyList(adjacencyList),
         pRoot(root),
         pPosition(pos) {}
 
+      /*!
+       * @brief creates an edge object for the edge of current iteration
+       * @return Edge starting at current position
+       */
       Edge operator*() const {
         assert(pPosition != pRoot && "No outging edge from root node!");
         return Edge{pPosition, pAdjacencyList[pPosition]};
       }
 
+      /*!
+       * @brief increments the iterator, the root is skipped
+       * @return reference to iterator after incrementation
+       */
       Iterator& operator++() {
         ++pPosition;
         if (pPosition == pRoot) {
@@ -1330,13 +1359,18 @@ private:
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       * @param other Iterator to compare
+       * @return true if iterators are different
+       */
       bool operator!=(const Iterator& other) const { return pPosition != other.pPosition; }
 
     private:
-      const std::vector<size_t>& pAdjacencyList;
-      const size_t pRoot;
-      size_t pPosition;
-    };  // end Iterator class
+      const std::vector<size_t>& pAdjacencyList; /**< the tree's adjacency list */
+      const size_t pRoot;                        /**< root index */
+      size_t pPosition;                          /**< position in adjacenecy list */
+    };                                           // end Iterator class
 
   public:
     Edges(const std::vector<size_t>& adjacencyList, const size_t root) : pAdjacencyList(adjacencyList), pRoot(root) {}
