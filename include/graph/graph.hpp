@@ -247,11 +247,6 @@ public:
    * @brief returns true because it's a complete graph and every node is connected to every node
    */
   bool connected() const override { return true; }
-
-  /*!
-   * @brief returns true because it's a complete graph and every node is connected to every node
-   */
-  size_t numberOfEdges() const override { return numberOfNodes() * (numberOfNodes() - 1) / 2; }
 };
 
 /*!
@@ -354,6 +349,11 @@ public:
    * @brief move constructor from vector of Point2D
    */
   Euclidean(std::vector<Point2D>&& positions) : pPositions(positions) {}
+
+  /*!
+   * @brief number of Edges in graph. Depends only on the number of nodes since it is a complete graph
+   */
+  size_t numberOfEdges() const override { return pPositions.size() * (pPositions.size() - 1) / 2; }
 
   /*!
    * @brief returns number of points in internal vector as number of nodes
@@ -1128,7 +1128,7 @@ private:
           if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
-          ++pPosition.outerIndex;  // goes to next row
+          ++pPosition.outerIndex;                                           // goes to next row
         }
         return *this;
       }

@@ -15,6 +15,7 @@
 !Doxyfile
 !format.sh
 !editorconfig
+!LICENCE
 
 # allow implementation
 !CMakeLists.txt
