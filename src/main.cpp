@@ -18,6 +18,9 @@
  */
 #include <iostream>
 
+// graph library
+#include "exceptions.hpp"
+
 #include "exception/exceptions.hpp"
 
 #include "utility/utils.hpp"
@@ -29,6 +32,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[]) {
     interpretCommandLine(argc, argv);
   }
   catch (const Exception& error) {
+    printLightred("Error");
+    std::cerr << ": " << error.what() << std::endl;
+    return -1;
+  }
+  catch (const graph::Exception& error) {
     printLightred("Error");
     std::cerr << ": " << error.what() << std::endl;
     return -1;
