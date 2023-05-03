@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <numeric>
 #include <stdexcept>
-#include <string>  // can be removed when error handling is implemented
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -1073,15 +1072,30 @@ public:
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
+  /*!
+   * @brief calls makeCompressed() on the underlying sparse eigen matrix
+   */
   void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
 
+  /*!
+   * @brief provides read only accessto the underlying sparse matrix
+   * @return const reference to sparse eigen matrix
+   */
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
 
   Neighbours neighbours(const size_t node) const { return Neighbours(pAdjacencyMatrix, node); }
 
-  void pruneMatrix() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
+  /*!
+   * @brief makes explicit zeros implicit zeros
+   * @attention eigen and EdgeWeight are not yet sufficiently adjusted to each other to use this function
+   */
+  // void pruneMatrix() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
 
-  void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
+  /*!
+   * @brief computes the square of a graph
+   * @attention eigen and EdgeWeight are not yet sufficiently adjusted to each other to use this function
+   */
+  // void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
 protected:
   Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor> pAdjacencyMatrix;
