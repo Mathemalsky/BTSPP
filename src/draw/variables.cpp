@@ -6,8 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include "graph/geometry.hpp"
-#include "graph/graph.hpp"
+// graph library
+#include "geometry.hpp"
+#include "graph.hpp"
 
 #include "utility/utils.hpp"
 

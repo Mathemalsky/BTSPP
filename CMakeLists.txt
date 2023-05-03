@@ -36,6 +36,9 @@ else()
   file(GLOB HEADERS "include/*.hpp" "include/graph/*.hpp" "include/solve/*.hpp" "include/utility/*.hpp")
 endif()
 
+# include graph library
+add_subdirectory(lib/graph)
+
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 
 # check include directory for included files
@@ -48,8 +51,8 @@ find_package(HIGHS REQUIRED)
 find_package(Threads)
 
 if(${Visualization} STREQUAL ON)
-  target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI Eigen3::Eigen libhighs)
+  target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI GRAPH Eigen3::Eigen libhighs)
 else()
   # glfw, GLEW and IMGUI not needed
-  target_link_libraries (${PROJECT_NAME} PRIVATE Eigen3::Eigen libhighs)
+  target_link_libraries (${PROJECT_NAME} PRIVATE GRAPH Eigen3::Eigen libhighs)
 endif()

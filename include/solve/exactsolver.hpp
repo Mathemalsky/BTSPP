@@ -4,7 +4,8 @@
 
 #include <solve/definitions.hpp>
 
-#include "graph/graph.hpp"
+// graph library
+#include "graph.hpp"
 
 namespace exactsolver {
 

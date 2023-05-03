@@ -5,7 +5,10 @@
 #include <string>
 #include <unordered_set>
 
-#include "graph/graph.hpp"
+// graph library
+#include "graph.hpp"
+
+#include "exception/exceptions.hpp"
 
 #include "solve/approximation.hpp"
 #include "solve/definitions.hpp"

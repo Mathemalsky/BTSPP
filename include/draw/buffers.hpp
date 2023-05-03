@@ -11,7 +11,8 @@
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
-#include "graph/geometry.hpp"
+// graph library
+#include "geometry.hpp"
 
 #include "utility/utils.hpp"
 

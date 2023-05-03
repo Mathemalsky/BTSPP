@@ -2,7 +2,8 @@
 
 #include <vector>
 
-#include "graph/graph.hpp"
+// graph library
+#include "graph.hpp"
 
 graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<unsigned int>& tour, const bool isCycle) {
   unsigned int bottleneckEdgeEnd = 0;

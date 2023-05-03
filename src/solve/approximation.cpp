@@ -12,9 +12,9 @@
 
 #include "draw/definitions.hpp"
 
-#include "graph/algorithm.hpp"
-#include "graph/graph.hpp"
-#include "graph/utils.hpp"
+#include "algorithm.hpp"
+#include "graph.hpp"
+#include "utils.hpp"
 
 #include "solve/commonfunctions.hpp"
 
@@ -129,7 +129,7 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsig
       hamiltoncycle.push_back(w);
       digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
       digraph.removeEdge(v, w);
-      ++i;  // do not consider next node for skipping. It's alredy added.
+      ++i;                       // do not consider next node for skipping. It's alredy added.
     }
     else {
       hamiltoncycle.push_back(v);
@@ -404,7 +404,7 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const graph::AdjacencyListGraph minimal            = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
   graph::AdjacencyListGraph fiveFoldGraph            = createFiveFoldGraph(euclidean, minimal, s, t);
   const size_t numberOfNodes5FoldGraph               = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars             = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
+  const graph::EarDecomposition openEars             = schmidt(fiveFoldGraph);                // calculate proper ear decomposition
   std::vector<unsigned int> wholeTour                = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
   const std::vector<unsigned int> tour               = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
   const graph::Edge bottleneckEdge                   = findBottleneck(euclidean, tour, false);

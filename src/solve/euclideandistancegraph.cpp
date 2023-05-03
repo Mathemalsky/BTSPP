@@ -7,8 +7,8 @@
 #include <random>
 #include <vector>
 
-#include "graph/geometry.hpp"
-#include "graph/graph.hpp"
+#include "geometry.hpp"
+#include "graph.hpp"
 
 #include "solve/definitions.hpp"
 

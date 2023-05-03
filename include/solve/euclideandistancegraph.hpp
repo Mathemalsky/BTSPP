@@ -2,7 +2,8 @@
 
 #include <array>
 
-#include "graph/graph.hpp"
+// graph library
+#include "graph.hpp"
 
 #include "solve/definitions.hpp"
 

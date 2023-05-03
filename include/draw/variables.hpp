@@ -7,8 +7,9 @@
 
 #include "draw/definitions.hpp"
 
-#include "graph/geometry.hpp"
-#include "graph/graph.hpp"
+// graph library
+#include "geometry.hpp"
+#include "graph.hpp"
 
 #include "solve/approximation.hpp"
 #include "solve/exactsolver.hpp"

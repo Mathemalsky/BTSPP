@@ -13,7 +13,8 @@
 #include "draw/shader.hpp"
 #include "draw/variables.hpp"
 
-#include "graph/graph.hpp"
+// graph library
+#include "graph.hpp"
 
 namespace drawing {
 static RGBA_COLOUR operator*(const RGBA_COLOUR& colour, const float fade) {

@@ -1,5 +1,6 @@
 #pragma once
 
-#include "graph/graph.hpp"
+// graph library
+#include "graph.hpp"
 
 void visualize(const graph::Euclidean& euclidean);

@@ -3,9 +3,10 @@
 #include <array>
 #include <vector>
 
-#include "draw/buffers.hpp"
+// graph library
+#include "graph.hpp"
 
-#include "graph/graph.hpp"
+#include "draw/buffers.hpp"
 
 #include "solve/definitions.hpp"
 

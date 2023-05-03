@@ -48,7 +48,7 @@ static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
 
   std::shared_ptr<VertexBuffer> coordinates = std::make_shared<VertexBuffer>(floatVertices.read(), 2);  // components per vertex
   std::shared_ptr<ShaderBuffer> tourCoordinates =
-      std::make_shared<ShaderBuffer>(floatVertices.read());  // copy vertex coords to shader buffer
+      std::make_shared<ShaderBuffer>(floatVertices.read());                                      // copy vertex coords to shader buffer
   std::shared_ptr<ShaderBuffer> tour =
       std::make_shared<ShaderBuffer>(std::vector<unsigned int>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
