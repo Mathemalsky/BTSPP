@@ -19,6 +19,7 @@
 #pragma once
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <fstream>
 #include <iostream>
@@ -58,3 +59,19 @@ inline void printYellow(std::string word) noexcept {
   std::cout << word;
   std::cout << "\033[0m";
 }
+
+class Stopwatch {
+public:
+  Stopwatch()  = default;
+  ~Stopwatch() = default;
+
+  void reset() { pStartTime = std::chrono::high_resolution_clock::now(); }
+
+  double elapsedTimeInMilliseconds() const {
+    const std::chrono::time_point<std::chrono::high_resolution_clock> now;
+    return std::round(std::chrono::duration_cast<std::chrono::microseconds>(now - pStartTime).count()) / 1000.0;
+  }
+
+private:
+  std::chrono::time_point<std::chrono::high_resolution_clock> pStartTime;
+};
