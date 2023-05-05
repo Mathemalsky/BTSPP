@@ -122,14 +122,14 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
  */
 static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const graph::AdjacencyListDigraph& digraph) {
   std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
-  std::vector<size_t> eulertourInGMinus  = eulertour(graph);
+  std::vector<size_t> eulertourInGMinus  = hierholzer(graph);
   insertNodecuts(eulertourInGMinus, cuttedNodes, digraph);
   return eulertourInGMinus;
 }
 
 /*!
- * @brief shortcuts eulertour to hamiltonian cycle
- * @param longEulertour eulertour in full graph
+ * @brief shortcuts euler tour to hamiltonian cycle
+ * @param longEulertour euler tour in multigraph
  * @param digraph holds information for shortcutting
  * @return std::vector<unsigned int> of node indices, first is not repeated as last
  */
@@ -147,7 +147,7 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsig
       hamiltoncycle.push_back(w);
       digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
       digraph.removeEdge(v, w);
-      ++i;  // do not consider next node for skipping. It's alredy added.
+      ++i;                       // do not consider next node for skipping. It's alredy added.
     }
     else {
       hamiltoncycle.push_back(v);
@@ -422,7 +422,7 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const graph::AdjacencyListGraph minimal            = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
   graph::AdjacencyListGraph fiveFoldGraph            = createFiveFoldGraph(euclidean, minimal, s, t);
   const size_t numberOfNodes5FoldGraph               = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars             = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
+  const graph::EarDecomposition openEars             = schmidt(fiveFoldGraph);                // calculate proper ear decomposition
   std::vector<unsigned int> wholeTour                = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
   const std::vector<unsigned int> tour               = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
   const graph::Edge bottleneckEdge                   = findBottleneck(euclidean, tour, false);

@@ -34,14 +34,24 @@ namespace graph {
  *                                             types for graph algorithms
  **********************************************************************************************************************/
 
+/*!
+ * @brief EarDecomposition is a vector of ears (= vector of nodes)
+ */
 struct EarDecomposition {
-  std::vector<std::vector<size_t>> ears;
+  std::vector<std::vector<size_t>> ears; /**< list of ears */
 };
 
 /***********************************************************************************************************************
  *                                                  graph algorithms
  **********************************************************************************************************************/
 
+/*!
+ * @brief performs a depth first search on given graph with given node as root node
+ * @tparam G type of graph
+ * @param graph input graph
+ * @param rootNode root node index
+ * @return DfsTree providing the order the nodes are explored and the parent of each node
+ */
 template <typename G>
 DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
@@ -178,15 +188,16 @@ size_t findNonIsolatedNode(const G& graph)
 }
 
 /*!
- * @brief finds an euler tour in graph
+ * @brief finds an euler tour in graph using Hierholzers algorithm
  * @tparam G type of graph
  * @param graph an instance of a simple graph, all nodes are required to have even degree, all nodes with nonzero degree
  * must be connected (in fact 2-edge-connected)
+ * @attention no check if input graph is indeed eulerian is performed
  * @return vector containing the nodes in the order they appear in the tour. The first node isn't added as last node
  * again.
  */
 template <typename G>
-std::vector<size_t> eulertour(const G& graph)
+std::vector<size_t> hierholzer(const G& graph)
   requires(std::is_base_of_v<Graph, G>)
 {
   G workingCopy = graph;
@@ -240,8 +251,20 @@ AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
 
+/*!
+ * @brief makes graph minimally biconnected
+ * @details removes edges until all edges left are 2-essential
+ * @param graph input graph
+ * @return minimally biconnected subgraph of input graph
+ */
 AdjacencyListGraph minimallyBiconnectedSubgraph(const AdjacencyListGraph& graph);
 
+/*!
+ * @brief makes graph minimally biconnected but leaves given edge in the graph
+ * @param graph input graph
+ * @param keepEdge edge to keep
+ * @return minimally biconnected graph the contains the edge keepEdge
+ */
 AdjacencyListGraph edgeKeepingMinimallyBiconectedSubgraph(const AdjacencyListGraph& graph, const Edge& keepEdge);
 
 }  // namespace graph

@@ -1246,8 +1246,8 @@ private:
        * @brief bundle inner and outer index
        */
       struct SparseMatrixPos {
-        size_t innerIndex;
-        size_t outerIndex;
+        size_t innerIndex; /**< inner index is column index */
+        size_t outerIndex; /**< outer index is row index */
       };
 
       /*!
@@ -1343,10 +1343,15 @@ public:
 
   Edges edges() const { return Edges(pAdjacencyMatrix); }
 
+  /*!
+   * @brief removes an edge from the graph (and the reverse directed copy too)
+   * @param e edge to be removed
+   * @attention sets weight to zero, does not make the entry implicit
+   */
   void removeEdge(const Edge& e) {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edge to be removed does not exist in graph!");
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0.0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
-    assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "Edge to be removed does not exist in graph!");
+    assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0.0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.v, e.u) = 0.0;
   }
 };
