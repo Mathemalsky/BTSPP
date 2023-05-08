@@ -28,7 +28,7 @@
 
 namespace approximation {
 struct Result {
-  graph::AdjacencyMatrixGraph biconnectedGraph;
+  graph::AdjacencyListGraph biconnectedGraph;
   graph::EarDecomposition openEarDecomposition;
   std::vector<unsigned int> tour;
   double opt;

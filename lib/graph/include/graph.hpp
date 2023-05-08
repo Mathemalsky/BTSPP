@@ -1330,11 +1330,24 @@ public:
   AdjacencyMatrixGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
+  /*!
+   * @brief adds an edge as entry in the adjacency matrix
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param out outgoing node
+   * @param in ingoing node
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     AdjMatGraph::addEdge(out, in, edgeWeight);
     AdjMatGraph::addEdge(in, out, edgeWeight);
   }
 
+  /*!
+   * @brief adds an edge as entry in the adjacency matrix
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param e edge to be added
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { addEdge(e.u, e.v, edgeWeight); }
 
   bool connected() const override;
@@ -1426,8 +1439,21 @@ public:
   AdjacencyMatrixDigraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
+  /*!
+   * @brief adds an edge to the graph
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param out outgoing node
+   * @param in ingoing node
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override { AdjMatGraph::addEdge(out, in, edgeWeight); }
 
+  /*!
+   * @brief adds an edge to the graph
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param e edge to be added
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { addEdge(e.u, e.v, edgeWeight); }
 
   bool connected() const override { return undirected().connected(); };
@@ -1440,7 +1466,7 @@ public:
     assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
   }
-  AdjacencyMatrixDigraph removeUncriticalEdges() const;
+
   AdjacencyMatrixGraph undirected() const;
 };
 

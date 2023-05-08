@@ -60,23 +60,20 @@ static std::vector<size_t> createEdgeIndeces(const Euclidean& euclidean) {
   return edgeIndices;
 }
 
-static AdjacencyMatrixGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
-                                                     const Index index,
-                                                     const std::vector<size_t>& edgeIndices,
-                                                     double& maxEdgeWeight) {
+static AdjacencyListGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
+                                                   const Index index,
+                                                   const std::vector<size_t>& edgeIndices,
+                                                   double& maxEdgeWeight) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   const size_t numberOfEdges = euclidean.numberOfEdges();
 
   // add the first numberOfNodes many edges
-  std::vector<Entry> entries;
-  entries.reserve(numberOfNodes);
+  AdjacencyListGraph graph(numberOfNodes);
   for (size_t i = 0; i < numberOfNodes; ++i) {
     const Edge e = index.edge(edgeIndices[i]);
-    entries.push_back(Entry(e.u, e.v, euclidean.weight(e)));
-    entries.push_back(Entry(e.v, e.u, euclidean.weight(e)));
+    graph.addEdge(e);
   }
-  AdjacencyMatrixGraph graph(numberOfNodes, entries);  // create an undirected graph from that
-  AdjacencyMatrixGraph graphCopy = graph;              // and a copy
+  AdjacencyListGraph graphCopy = graph;  // and a copy
 
   // use bisection search to find bottleneck optimal biconnected subgraph
   size_t upperbound = numberOfEdges;
@@ -87,7 +84,6 @@ static AdjacencyMatrixGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
       const Edge e = index.edge(edgeIndices[i]);
       graphCopy.addEdge(e, euclidean.weight(e));
     }
-    graphCopy.compressMatrix();
 
     if (graphCopy.biconnected()) {
       upperbound = middle;
@@ -104,7 +100,7 @@ static AdjacencyMatrixGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
   return graph;
 }
 
-AdjacencyMatrixGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight) {
+AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight) {
   // sort the edges
   const Index index(euclidean.numberOfNodes());
   std::vector<size_t> edgeIndices = createEdgeIndeces(euclidean);
@@ -112,12 +108,10 @@ AdjacencyMatrixGraph biconnectedSubgraph(const Euclidean& euclidean, double& max
     return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
   });
 
-  AdjacencyMatrixGraph graph = addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
-  graph.compressMatrix();  // matrix became uncommpressed when adding edges
-  return graph;
+  return addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
 }
 
-AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight) {
+AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight) {
   // sort the edges, put the augmentation edge in first position
   const Index index(euclidean.numberOfNodes());
   std::vector<size_t> edgeIndices    = createEdgeIndeces(euclidean);
@@ -127,9 +121,7 @@ AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean
     return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
   });
 
-  AdjacencyMatrixGraph graph = addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
-  graph.compressMatrix();  // matrix became uncommpressed when adding edges
-  return graph;
+  return addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
 }
 
 AdjacencyListGraph minimallyBiconnectedSubgraph(const AdjacencyListGraph& graph) {

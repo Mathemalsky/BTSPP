@@ -224,9 +224,9 @@ std::vector<size_t> hierholzer(const G& graph) requires(std::is_base_of_v<Graph,
  * increasing in their length and successively added until the graph is biconnected.
  * @param euclidean complete graph, providing distances between nodes
  * @param maxEdgeWeight
- * @return undirected AdjacencyMatrixGraph
+ * @return undirected AdjacencyListGraph
  */
-AdjacencyMatrixGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
+AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
 
 /*!
  * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
@@ -237,7 +237,7 @@ AdjacencyMatrixGraph biconnectedSubgraph(const Euclidean& euclidean, double& max
  * @param maxEdgeWeight
  * @return undirected AdjacencyMatrixGraph
  */
-AdjacencyMatrixGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
+AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
 
 /*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
