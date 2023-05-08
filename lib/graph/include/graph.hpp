@@ -369,7 +369,7 @@ public:
   /*!
    * @brief move constructor from vector of Point2D
    */
-  Euclidean(std::vector<Point2D>&& positions) : pPositions(positions) {}
+  Euclidean(std::vector<Point2D>&& positions) : pPositions(std::move(positions)) {}
 
   /*!
    * @brief number of Edges in graph. Depends only on the number of nodes since it is a complete graph
@@ -1285,7 +1285,7 @@ private:
           if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
-          ++pPosition.outerIndex;  // goes to next row
+          ++pPosition.outerIndex;                                           // goes to next row
         }
         return *this;
       }
