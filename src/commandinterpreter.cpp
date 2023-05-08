@@ -129,32 +129,32 @@ static void readArguments(const int argc, char* argv[]) {
   if (arguments.contains("-btsp")) {
     stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSP(euclidean);
-    std::cout << " eleapsed time: " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "eleapsed time            : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btsp");
   }
   if (arguments.contains("-btspp")) {
     stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSPP(euclidean);
-    std::cout << " eleapsed time: " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "eleapsed time            : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btspp");
   }
   if (arguments.contains("-btsp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains("-no-crossing"));
-    std::cout << " eleapsed time: " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "eleapsed time            : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btsp-e");
     arguments.erase("-no-crossing");
   }
   if (arguments.contains("-btspp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSPP_exact);
-    std::cout << " eleapsed time: " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "eleapsed time            : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btspp-e");
   }
   if (arguments.contains("-tsp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::TSP_exact);
-    std::cout << " eleapsed time: " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "eleapsed time            : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-tsp-e");
   }
 

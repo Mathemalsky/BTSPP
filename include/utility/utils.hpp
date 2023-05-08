@@ -69,7 +69,7 @@ public:
   void reset() { pStartTime = std::chrono::high_resolution_clock::now(); }
 
   double elapsedTimeInMilliseconds() const {
-    const std::chrono::time_point<std::chrono::high_resolution_clock> now;
+    const std::chrono::time_point<std::chrono::high_resolution_clock> now = std::chrono::high_resolution_clock::now();
     return std::round(std::chrono::duration_cast<std::chrono::microseconds>(now - pStartTime).count()) / 1000.0;
   }
 
