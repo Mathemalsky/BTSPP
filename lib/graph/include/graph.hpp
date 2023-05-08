@@ -762,6 +762,18 @@ public:
   AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
 
   /*!
+   * @brief constructor, resizes the internal adjacency list, and reserves space for neighbours
+   * @param numberOfNodes number of nodes in constructed graph
+   * @param reserveNeighbours number of neighbours that can be added without reallocating
+   */
+  AdjacencyListGraph(const size_t numberOfNodes, const size_t reserveNeighbours) {
+    pAdjacencyList.resize(numberOfNodes);
+    for (std::vector<size_t>& vec : pAdjacencyList) {
+      vec.reserve(reserveNeighbours);
+    }
+  }
+
+  /*!
    * @brief constructor, sets the internal adjacency list to adjacencyList
    * @param adjacencyList adjacency list
    */
@@ -1285,7 +1297,7 @@ private:
           if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
-          ++pPosition.outerIndex;                                           // goes to next row
+          ++pPosition.outerIndex;  // goes to next row
         }
         return *this;
       }

@@ -278,13 +278,13 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, c
 
   Highs highs;
   highs.setOptionValue("output_flag", false);
-  HighsStatus return_status = highs.passModel(model);
+  [[maybe_unused]] HighsStatus return_status = highs.passModel(model);
   assert(return_status == HighsStatus::kOk);
 
   return_status = highs.run();  // solve instance
   assert(return_status == HighsStatus::kOk);
 
-  const HighsModelStatus& model_status = highs.getModelStatus();
+  [[maybe_unused]] const HighsModelStatus& model_status = highs.getModelStatus();
   assert(model_status == HighsModelStatus::kOptimal);
 
   const HighsInfo& info = highs.getInfo();

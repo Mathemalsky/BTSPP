@@ -271,6 +271,9 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
   const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, true);
   const double objective                           = euclidean.weight(bottleneckEdge);
 
+  // TEST
+  std::cerr << "edges in biconnected graph: " << biconnectedGraph.numberOfEdges() << std::endl;
+
   if (printInfo) {
     printInfos(objective, maxEdgeWeight, ProblemType::BTSP_approx);
   }
@@ -345,13 +348,13 @@ static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euc
  * @return std::vector<unsigned int> hamiltonian s-t path in original graph
  */
 static std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned int>& wholeTour, const size_t s, const size_t t) {
-  const size_t numberOfNodes5FoldGraph = wholeTour.size();
-  const size_t numberOfNodes           = (numberOfNodes5FoldGraph - 2) / 5;
-  const size_t x                       = numberOfNodes5FoldGraph - 2;
-  const size_t y                       = numberOfNodes5FoldGraph - 1;
-  const size_t pos_x                   = graph::findPosition(wholeTour, static_cast<unsigned int>(x));
-  const size_t pos_y                   = graph::findPosition(wholeTour, static_cast<unsigned int>(y));
-  const size_t posDistance             = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
+  const size_t numberOfNodes5FoldGraph      = wholeTour.size();
+  const size_t numberOfNodes                = (numberOfNodes5FoldGraph - 2) / 5;
+  const size_t x                            = numberOfNodes5FoldGraph - 2;
+  const size_t y                            = numberOfNodes5FoldGraph - 1;
+  const size_t pos_x                        = graph::findPosition(wholeTour, static_cast<unsigned int>(x));
+  const size_t pos_y                        = graph::findPosition(wholeTour, static_cast<unsigned int>(y));
+  [[maybe_unused]] const size_t posDistance = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
   assert((posDistance - 1) % numberOfNodes == 0 && "Distance between index positions does not fit!");
 
   std::vector<unsigned int> tour;
