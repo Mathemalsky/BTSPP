@@ -42,21 +42,20 @@ class Index {
 public:
   Index(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
 
-  size_t edgeIndex(const size_t i, const size_t j) const { return i > j ? 0.5 * (i * i - i) + j : 0.5 * (j * j - j) + i; }
-  size_t edgeIndex(const Edge& edge) const { return edgeIndex(edge.u, edge.v); }
+  size_t edgeIndex(const Edge& edge) const { return edge.u * pNumberOfNodes + edge.v; }
 
-  Edge edge(const size_t k) const {
-    const size_t i = std::floor(std::sqrt(0.25 + 2 * k) + 0.5);
-    return Edge{i, k - (i * i - i) / 2};
-  }
+  Edge edge(const size_t index) const { return Edge{index / pNumberOfNodes, index % pNumberOfNodes}; }
 
 private:
   const size_t pNumberOfNodes;
 };
 
-static std::vector<size_t> createEdgeIndeces(const Euclidean& euclidean) {
-  std::vector<size_t> edgeIndices(euclidean.numberOfEdges());
-  std::iota(edgeIndices.begin(), edgeIndices.end(), 0);
+static std::vector<size_t> createEdgeIndeces(const Euclidean& euclidean, const Index& index) {
+  std::vector<size_t> edgeIndices;
+  edgeIndices.reserve(euclidean.numberOfEdges());
+  for (const Edge& edge : euclidean.edges()) {
+    edgeIndices.push_back(index.edgeIndex(edge));
+  }
   return edgeIndices;
 }
 
@@ -103,8 +102,8 @@ static AdjacencyListGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
 AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight) {
   // sort the edges
   const Index index(euclidean.numberOfNodes());
-  std::vector<size_t> edgeIndices = createEdgeIndeces(euclidean);
-  std::sort(edgeIndices.begin(), edgeIndices.end(), [euclidean, index](const size_t a, const size_t b) {
+  std::vector<size_t> edgeIndices = createEdgeIndeces(euclidean, index);
+  std::sort(edgeIndices.begin(), edgeIndices.end(), [&euclidean, &index](const size_t a, const size_t b) {
     return euclidean.weightSquared(index.edge(a)) < euclidean.weightSquared(index.edge(b));
   });
 
@@ -114,10 +113,10 @@ AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEd
 AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight) {
   // sort the edges, put the augmentation edge in first position
   const Index index(euclidean.numberOfNodes());
-  std::vector<size_t> edgeIndices    = createEdgeIndeces(euclidean);
+  std::vector<size_t> edgeIndices    = createEdgeIndeces(euclidean, index);
   const size_t augmentationEdgeIndex = findPosition(edgeIndices, index.edgeIndex(augmentationEdge));
   std::swap(edgeIndices.front(), edgeIndices[augmentationEdgeIndex]);
-  std::sort(edgeIndices.begin() + 1, edgeIndices.end(), [euclidean, index, augmentationEdge](const size_t a, const size_t b) {
+  std::sort(edgeIndices.begin() + 1, edgeIndices.end(), [&euclidean, &index, &augmentationEdge](const size_t a, const size_t b) {
     return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
   });
 

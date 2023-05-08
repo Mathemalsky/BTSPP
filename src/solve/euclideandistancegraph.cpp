@@ -52,5 +52,5 @@ graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes, const s
     point.x = distribution(generator);
     point.y = distribution(generator);
   }
-  return graph::Euclidean(std::move(positions));
+  return graph::Euclidean(positions);
 }
