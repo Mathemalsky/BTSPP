@@ -91,6 +91,25 @@ inline double norm2(const Vector2D& v) {
 }
 
 /*!
+ * \brief norm2squared computes the square of the 2 norm
+ * \param x
+ * \param y
+ * \return square of euclidean norm (2 norm) of the vector (x, y)
+ */
+inline double norm2squared(const double x, const double y) {
+  return x * x + y * y;
+}
+
+/*!
+ * \brief norm2squared computes the square of the 2 norm
+ * \param v vector
+ * \return square of euclidean norm (2 norm)
+ */
+inline double norm2squared(const Vector2D& v) {
+  return norm2squared(v.x, v.y);
+}
+
+/*!
  * \brief dist messures the euclidean distance between p and q
  * \param p point
  * \param q point
@@ -98,6 +117,16 @@ inline double norm2(const Vector2D& v) {
  */
 inline double dist(const Point2D& p, const Point2D& q) {
   return norm2(p.x - q.x, p.y - q.y);
+}
+
+/*!
+ * \brief distSquared computes the square of the euclidean distance between p and q
+ * \param p point
+ * \param q point
+ * \return square of euclidean norm (2 norm) of (p - q)
+ */
+inline double distSquared(const Point2D& p, const Point2D& q) {
+  return norm2squared(p.x - q.x, p.y - q.y);
 }
 
 /*!

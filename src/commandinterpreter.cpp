@@ -65,7 +65,7 @@ static void printSyntax() {
  *                                                  visual program
  **********************************************************************************************************************/
 
-#if (VISUALIZATION)
+#if (VISUALISATION)
 
   #include "draw/visualization.hpp"
 void interpretCommandLine(const int argc, char* argv[]) {
@@ -103,7 +103,7 @@ void interpretCommandLine(const int argc, char* argv[]) {
  *                                               command line program
  **********************************************************************************************************************/
 
-#if not(VISUALIZATION)
+#if not(VISUALISATION)
 static void readArguments(const int argc, char* argv[]) {
   std::unordered_set<std::string> arguments;
   bool seeded = false;

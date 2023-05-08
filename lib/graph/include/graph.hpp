@@ -388,8 +388,16 @@ public:
   /*!
    * @brief returns euclidean distance between nodes
    * @param e edge for which weight is requested
+   * @return square of distance
    */
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
+
+  /*!
+   * @brief returns square of euclidean distance between nodes
+   * @param e edge for which squared weight is requested
+   * @return square of distance
+   */
+  double weightSquared(const Edge& e) const { return distSquared(pPositions[e.u], pPositions[e.v]); }
 
   /*!
    * @brief creates edges object to iterate of the edges

@@ -25,10 +25,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -O0 -g -Wall -Wextra -pedantic")
 
-OPTION(Visualization "Visualization" ON)
-message(STATUS "Visualization=${Visualization}")
+OPTION(Visualization "Visualisation" ON)
+message(STATUS "Visualisation=${Visualisation}")
 
-if(${Visualization} STREQUAL ON)
+if(${Visualisation} STREQUAL ON)
   # lists all sourcefiles to be compiled with the project
   file(GLOB SOURCES "src/*.cpp" "src/draw/*.cpp" "src/graph/*.cpp" "src/solve/*.cpp")
 
@@ -43,7 +43,7 @@ if(${Visualization} STREQUAL ON)
   add_subdirectory(lib/imgui)
 
   # pass the visalization argument to preprocessor to cut of unnecessary code
-  add_compile_definitions(VISUALIZATION=1)
+  add_compile_definitions(VISUALISATION=1)
 else()
   # lists all sourcefiles to be compiled with the project
   file(GLOB SOURCES "src/*.cpp" "src/graph/*.cpp" "src/solve/*.cpp")
@@ -66,7 +66,7 @@ set(HIGHS_DIR ${CMAKE_SYSTEM_PREFIX_PATH}/lib/cmake/highs)
 find_package(HIGHS REQUIRED)
 find_package(Threads)
 
-if(${Visualization} STREQUAL ON)
+if(${Visualisation} STREQUAL ON)
   target_link_libraries (${PROJECT_NAME} PRIVATE glfw GLEW::GLEW IMGUI GRAPH Eigen3::Eigen libhighs)
 else()
   # glfw, GLEW and IMGUI not needed
