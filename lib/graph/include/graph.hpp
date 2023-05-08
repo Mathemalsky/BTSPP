@@ -318,7 +318,10 @@ private:
        * @return this iterator after increasing index
        */
       Iterator& operator++() {
-        ++pPosition.index;
+        do {
+          ++pPosition.index;
+        } while (pPosition.index % pPosition.numberOfNodes >= pPosition.index / pPosition.numberOfNodes);
+
         return *this;
       }
 
