@@ -198,10 +198,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         earPosOfLastDoubledEdge = i;
       }
       else {
-        edgesToBeDirected.push_back(EdgeIndex{
-            graph::Edge{u, v},
-            i
-        });
+        edgesToBeDirected.emplace_back(graph::Edge{u, v}, i);
       }
     }
 
@@ -271,11 +268,10 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
   const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, true);
   const double objective                           = euclidean.weight(bottleneckEdge);
 
-  // TEST
-  std::cerr << "edges in biconnected graph: " << biconnectedGraph.numberOfEdges() << std::endl;
-
   if (printInfo) {
     printInfos(objective, maxEdgeWeight, ProblemType::BTSP_approx);
+    std::cout << "edges in biconnected graph          : " << biconnectedGraph.numberOfEdges() << std::endl;
+    std::cout << "edges in minimally biconnected graph: " << minimal.numberOfEdges() << std::endl;
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};

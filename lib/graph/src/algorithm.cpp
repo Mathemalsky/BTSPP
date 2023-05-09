@@ -44,7 +44,11 @@ public:
 
   size_t edgeIndex(const Edge& edge) const { return edge.u * pNumberOfNodes + edge.v; }
 
-  Edge edge(const size_t index) const { return Edge{index / pNumberOfNodes, index % pNumberOfNodes}; }
+  Edge edge(const size_t index) const {
+    const size_t u = index / pNumberOfNodes;
+    const size_t v = index - u * pNumberOfNodes;  // avoiding modulo operation appeared to be faster
+    return Edge{u, v};
+  }
 
 private:
   const size_t pNumberOfNodes;
