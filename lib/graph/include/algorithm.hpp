@@ -28,7 +28,22 @@
 #include "exceptions.hpp"
 #include "graph.hpp"
 
+// DEBUG
+#include <iostream>
+#include "ostream.hpp"
+#include "utils.hpp"
+
 namespace graph {
+
+// DEBUG
+template <typename Type>
+std::ostream& operator<<(std::ostream& os, const std::vector<Type>& vec) {
+  const size_t size = vec.size();
+  for (size_t i = 0; i < size; ++i) {
+    os << vec[i] << (i == size - 1 ? "" : " ");
+  }
+  return os << std::endl;
+}
 
 /***********************************************************************************************************************
  *                                             types for graph algorithms
@@ -107,6 +122,11 @@ EarDecomposition schmidt(const G& graph) {
   const DfsTree tree                 = dfs(graph);
   const AdjacencyListGraph backedges = findBackedges(graph, tree);
   const size_t numberOfNodes         = graph.numberOfNodes();
+
+  // DEBUG
+  std::cerr << "biconnected graph\n" << graph;
+  std::cerr << "backedges\n" << backedges;
+  std::cerr << "explorationorder\n" << tree.explorationOrder();
 
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;

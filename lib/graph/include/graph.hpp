@@ -691,6 +691,22 @@ private:
         assert(pPosition.outerIndex < pAdjacencyList.size() && "Iterator is already behind end!");
 
         ++pPosition.innerIndex;
+        makeValid();
+
+        return *this;
+      }
+
+      /*!
+       * @brief compares for inequality
+       */
+      bool operator!=(const Iterator& other) const {
+        return pPosition.outerIndex != other.pPosition.outerIndex || pPosition.innerIndex != other.pPosition.innerIndex;
+      }
+
+      /*!
+       * @brief set iterator to next valid position or to end iterator
+       */
+      void makeValid() {
         while (pPosition.outerIndex < pAdjacencyList.size() && (outOfNeighbours() || !toLowerIndex())) {
           if (outOfNeighbours()) {
             pPosition.innerIndex = 0;
@@ -700,24 +716,18 @@ private:
             ++pPosition.innerIndex;
           }
         }
-        return *this;
       }
-
-      /*!
-       * @brief compares for inequality
-       */
-      bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
-
-      /*!
-       * @brief checks if inner index < outer index
-       */
-      bool toLowerIndex() const { return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex; }
 
     private:
       /*!
        * @brief checks if the inner index is still in the range of neighbours vector
        */
       bool outOfNeighbours() const { return pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size(); }
+
+      /*!
+       * @brief checks if inner index < outer index
+       */
+      bool toLowerIndex() const { return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex; }
 
       const std::vector<std::vector<size_t>>& pAdjacencyList; /**< reference to graphs adjacency list */
       AdjListPos pPosition;                                   /**< position in the adjacency list */
@@ -734,7 +744,8 @@ private:
      */
     Iterator begin() const {
       Iterator it(pAdjacencyList, Iterator::AdjListPos{1, 0});
-      return it.toLowerIndex() ? it : ++it;
+      it.makeValid();
+      return it;
     }
 
     /*!

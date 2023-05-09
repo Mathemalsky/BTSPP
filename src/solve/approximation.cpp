@@ -36,6 +36,10 @@
 
 #include "solve/commonfunctions.hpp"
 
+// DEBUG
+#include "ostream.hpp"
+#include "utility/utils.hpp"
+
 namespace approximation {
 
 struct GraphPair {
@@ -234,38 +238,6 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         }
       }
     }
-
-    /*
-    // implicitly detect a node y and direct the edges according to paper
-    if (earPosOfLastDoubledEdge == 0) {  // if there isn't any doubled edge
-      for (const EdgeIndex& edge : edgesToBeDirected) {
-        if (edge.index != ear.size() - 2) {
-          digraph.addEdge(edge.e);
-        }
-        else {
-          digraph.addEdge(edge.e.reverse());
-        }
-      }
-    }
-    else {  // if an edge was doubled
-      const graph::Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
-      graph.removeEdge(lastDoubledEdge);
-      graph.removeEdge(lastDoubledEdge);  // the edge was doubled so it needs to be removed twice
-
-      digraph.removeEdge(lastDoubledEdge);
-      digraph.removeEdge(lastDoubledEdge.reverse());
-
-      for (const EdgeIndex& edge : edgesToBeDirected) {
-        if (edge.index < earPosOfLastDoubledEdge) {
-          digraph.addEdge(edge.e);
-        }
-        else {
-          // the case of equality is implicitly excluded, because then the edge would have been doubled
-          digraph.addEdge(edge.e.reverse());
-        }
-      }
-    }
-    */
   }
 
   return GraphPair{digraph, graph};
@@ -273,14 +245,25 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
 
 static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars,
                                                                          const size_t numberOfNodes) {
+  // DEBUG
+  std::cerr << "openEars\n" << openEars.ears;
+
   std::vector<unsigned int> tour;
   if (openEars.ears.size() == 1) {
     tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
   }
+
   else {
     GraphPair graphpair           = constructGraphPair(openEars, numberOfNodes);
     const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-    tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
+
+    // DEBUG
+    std::cerr << "eulertour\n" << tmp;
+
+    tour = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
+
+    // DEBUG
+    std::cerr << "hamiltoncycle\n" << tour;
   }
   assert(tour.size() == numberOfNodes && "Missmatching number of nodes in hamilton cycle!");
   return tour;
@@ -457,13 +440,25 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   // find graph s.t. G = (V,E) + (s,t) is biconnected
   const graph::AdjacencyListGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, graph::Edge{s, t}, maxEdgeWeight);
   const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
-  graph::AdjacencyListGraph fiveFoldGraph          = createFiveFoldGraph(euclidean, minimal, s, t);
-  const size_t numberOfNodes5FoldGraph             = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);  // calculate proper ear decomposition
-  std::vector<unsigned int> wholeTour              = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
-  const std::vector<unsigned int> tour             = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
-  const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, false);
-  const double objective                           = euclidean.weight(bottleneckEdge);
+
+  // DEBUG
+  std::cerr << "minimal\n" << minimal;
+
+  graph::AdjacencyListGraph fiveFoldGraph = createFiveFoldGraph(euclidean, minimal, s, t);
+  const size_t numberOfNodes5FoldGraph    = fiveFoldGraph.numberOfNodes();
+
+  // DEBUG
+  std::cerr << "fiveFoldGraph\n" << fiveFoldGraph;
+
+  const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate open ear decomposition
+
+  // DEBUG
+  std::cerr << "openEars\n" << openEars.ears;
+
+  std::vector<unsigned int> wholeTour  = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
+  const std::vector<unsigned int> tour = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
+  const graph::Edge bottleneckEdge     = findBottleneck(euclidean, tour, false);
+  const double objective               = euclidean.weight(bottleneckEdge);
 
   if (printInfo) {
     printInfos(objective, maxEdgeWeight, ProblemType::BTSPP_approx);
