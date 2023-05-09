@@ -177,6 +177,8 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
   // the other ears deletion of at most one edge can occur
   for (long j = ears.ears.size() - 2; j >= 0; --j) {
     const std::vector<size_t>& ear = ears.ears[j];
+    const size_t pos_y =
+        std::distance(ear.begin(), std::find_if(ear.begin() + 1, ear.end() - 1, [&](size_t u) { return graph.degree(u) == 2; }));
 
     digraph.addEdge(ear[0], ear[1]);  // add the first edge directing into the ear
     size_t earPosOfLastDoubledEdge = 0;
@@ -202,6 +204,38 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
       }
     }
 
+    if (earPosOfLastDoubledEdge == ear.size() - 2) {  // if the last edge was doubled
+      for (const EdgeIndex& edgeIndex : edgesToBeDirected) {
+        digraph.addEdge(edgeIndex.e);
+      }
+
+      const graph::Edge lastDoubledEdge{ear[earPosOfLastDoubledEdge], ear[earPosOfLastDoubledEdge + 1]};
+      graph.removeEdge(lastDoubledEdge);
+      graph.removeEdge(lastDoubledEdge);  // the edge was doubled so it needs to be removed twice
+
+      digraph.removeEdge(lastDoubledEdge);
+      digraph.removeEdge(lastDoubledEdge.reverse());
+    }
+    else {
+      const size_t y           = ear[pos_y];
+      const size_t y_successor = ear[pos_y + 1];
+      if (digraph.adjacent(y, y_successor) && digraph.adjacent(y_successor, y)) {  // edges adjcent to y are doubled
+        graph.removeEdge(y, y_successor);
+        graph.removeEdge(y, y_successor);
+        digraph.removeEdge(y, y_successor);
+        digraph.removeEdge(y_successor, y);
+      }
+      for (const EdgeIndex& edge : edgesToBeDirected) {
+        if (edge.index <= pos_y) {
+          digraph.addEdge(edge.e);
+        }
+        else {
+          digraph.addEdge(edge.e.reverse());
+        }
+      }
+    }
+
+    /*
     // implicitly detect a node y and direct the edges according to paper
     if (earPosOfLastDoubledEdge == 0) {  // if there isn't any doubled edge
       for (const EdgeIndex& edge : edgesToBeDirected) {
@@ -231,6 +265,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         }
       }
     }
+    */
   }
 
   return GraphPair{digraph, graph};
@@ -247,15 +282,16 @@ static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const g
     const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
     tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
   }
+  assert(tour.size() == numberOfNodes && "Missmatching number of nodes in hamilton cycle!");
   return tour;
 }
 
 static void printInfos(const double objective, const double maxEdgeWeight, const ProblemType problemType) {
   std::cout << "-------------------------------------------------------\n";
   std::cout << "Approximated an instance of " << problemType << std::endl;
-  std::cout << "objective                : " << objective << std::endl;
-  std::cout << "lower bound on OPT       : " << maxEdgeWeight << std::endl;
-  std::cout << "a fortiori guarantee     : " << objective / maxEdgeWeight << std::endl;
+  std::cout << "objective                            : " << objective << std::endl;
+  std::cout << "lower bound on OPT                   : " << maxEdgeWeight << std::endl;
+  std::cout << "a fortiori guarantee                 : " << objective / maxEdgeWeight << std::endl;
   assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
 }
 
@@ -270,8 +306,8 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
 
   if (printInfo) {
     printInfos(objective, maxEdgeWeight, ProblemType::BTSP_approx);
-    std::cout << "edges in biconnected graph          : " << biconnectedGraph.numberOfEdges() << std::endl;
-    std::cout << "edges in minimally biconnected graph: " << minimal.numberOfEdges() << std::endl;
+    std::cout << "edges in biconnected graph           : " << biconnectedGraph.numberOfEdges() << std::endl;
+    std::cout << "edges in minimally biconnected graph : " << minimal.numberOfEdges() << std::endl;
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};

@@ -588,8 +588,8 @@ public:
    * @param criteria lambda function implemnting the criteria
    * @return first neighbour not matching the criteria
    */
-  template <typename func>
-  size_t neighbourAnyExcept(const size_t u, func&& criteria) {
+  template <typename Function>
+  size_t neighbourAnyExcept(const size_t u, Function&& criteria) {
     for (const size_t v : pAdjacencyList[u]) {
       if (!criteria(v)) {
         return v;
@@ -605,8 +605,8 @@ public:
    * @param criteria lambda function implemnting the criteria
    * @return first neighbour matching the criteria, if there is no then the fist neigbour
    */
-  template <typename func>
-  size_t neighbourAnyPrefer(const size_t u, func&& criteria) {
+  template <typename Function>
+  size_t neighbourAnyPrefer(const size_t u, Function&& criteria) {
     for (const size_t v : pAdjacencyList[u]) {
       if (criteria(v)) {
         return v;
