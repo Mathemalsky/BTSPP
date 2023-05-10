@@ -36,10 +36,6 @@
 
 #include "solve/commonfunctions.hpp"
 
-// DEBUG
-#include "ostream.hpp"
-#include "utility/utils.hpp"
-
 namespace approximation {
 
 struct GraphPair {
@@ -107,10 +103,6 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
                            std::unordered_set<size_t>& cuttedNodes,
                            const graph::AdjacencyListDigraph& digraph) {
   eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
-
-  // DEBUG
-  std::cerr << "eulertourInGMinus\n" << eulertourInGMinus;
-
   for (size_t i = eulertourInGMinus.size() - 1; i > 0; --i) {
     const size_t v = eulertourInGMinus[i];
     const size_t w = eulertourInGMinus[i - 1];
@@ -124,20 +116,28 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
   }
 }
 
-static void (GraphPair& graphPair) {
-  graph::AdjacencyListDigraph reverseDirgaph(graphPair.digraph.numberOfNodes());
+static void prepareForEulertour(GraphPair& graphPair) {
+  const size_t numberOfNodes = graphPair.graph.numberOfNodes();
+
+  graph::AdjacencyListDigraph reverseDirgaph(numberOfNodes);
   for (const graph::Edge& e : graphPair.digraph.edges()) {
     reverseDirgaph.addEdge(e.reverse());
   }
 
+  graphPair.graph.addIsolatedNodes(numberOfNodes);
+  graphPair.digraph.addIsolatedNodes(numberOfNodes);
   for (const size_t u : reverseDirgaph.nodes()) {
     if (reverseDirgaph.degree(u) == 2) {
       const size_t v = reverseDirgaph.neighbours(u)[0];
       const size_t w = reverseDirgaph.neighbours(u)[1];
-      graphPair.graph.removeEdge(u, v);
-      graphPair.graph.removeEdge(u, w);
-      graphPair.graph.addEdge(v, w);
-      graphPair.cuttedNodes.insert(u);
+      graphPair.graph.removeEdge(v, u);
+      graphPair.graph.removeEdge(w, u);
+      graphPair.digraph.removeEdge(v, u);
+      graphPair.digraph.removeEdge(w, u);
+      graphPair.graph.addEdge(v, u + numberOfNodes);
+      graphPair.graph.addEdge(w, u + numberOfNodes);
+      graphPair.digraph.addEdge(v, u + numberOfNodes);
+      graphPair.digraph.addEdge(w, u + numberOfNodes);
     }
   }
 }
@@ -148,10 +148,14 @@ static void (GraphPair& graphPair) {
  * @param digraph holds information needed to construct an euler tour that can be shortcutted to hamiltonian cycle
  * @return std::vector<size_t> of node indices; first is not repeated as last
  */
-static std::vector<size_t> findEulertour(graph::AdjacencyListGraph& graph, const graph::AdjacencyListDigraph& digraph) {
-  std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
-  std::vector<size_t> eulertourInGMinus  = hierholzer(graph);
-  insertNodecuts(eulertourInGMinus, cuttedNodes, digraph);
+static std::vector<size_t> findEulertour(GraphPair& graphPair) {
+  // std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
+  // std::vector<size_t> eulertourInGMinus  = hierholzer(graph);
+  // insertNodecuts(eulertourInGMinus, cuttedNodes, digraph);
+
+  prepareForEulertour(graphPair);
+  std::vector<size_t> eulertourInGMinus = hierholzer(graphPair.graph);
+
   return eulertourInGMinus;
 }
 
@@ -181,6 +185,13 @@ static std::vector<unsigned int> shortcutToHamiltoncycle(const std::vector<unsig
       hamiltoncycle.push_back(v);
     }
   }
+
+  for (unsigned int& node : hamiltoncycle) {
+    if (node >= digraph.numberOfNodes() / 2) {
+      node -= digraph.numberOfNodes() / 2;
+    }
+  }
+
   return hamiltoncycle;
 }
 
@@ -203,10 +214,6 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
   // the other ears deletion of at most one edge can occur
   for (long j = ears.ears.size() - 2; j >= 0; --j) {
     const std::vector<size_t>& ear = ears.ears[static_cast<size_t>(j)];
-
-    // DEBUG
-    // std::cerr << "ear: " << ear;
-
     const size_t pos_y =
         std::distance(ear.begin(), std::find_if(ear.begin() + 1, ear.end() - 1, [&](size_t u) { return graph.degree(u) == 2; }));
 
@@ -247,11 +254,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
       digraph.removeEdge(lastDoubledEdge.reverse());
     }
     else {
-      const size_t y = ear[pos_y];
-
-      // DEBUG
-      // std::cerr << "y: " << y << std::endl;
-
+      const size_t y           = ear[pos_y];
       const size_t y_successor = ear[pos_y + 1];
       if (digraph.adjacent(y, y_successor) && digraph.adjacent(y_successor, y)) {  // edges adjcent to y are doubled
         graph.removeEdge(y, y_successor);
@@ -268,9 +271,6 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         }
       }
     }
-    // DEBUG
-    // std::cerr << "multigraph\n" << graph;
-    // std::cerr << "digraph\n" << digraph;
   }
 
   return GraphPair{digraph, graph};
@@ -278,30 +278,15 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
 
 static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars,
                                                                          const size_t numberOfNodes) {
-  // DEBUG
-  std::cerr << "openEars\n" << openEars.ears;
-
   std::vector<unsigned int> tour;
   if (openEars.ears.size() == 1) {
     tour = std::vector<unsigned int>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
   }
 
   else {
-    GraphPair graphpair = constructGraphPair(openEars, numberOfNodes);
-
-    // DEBUG
-    std::cerr << "multigraph\n" << graphpair.graph;
-    std::cerr << "digraph\n" << graphpair.digraph;
-
-    const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
-
-    // DEBUG
-    std::cerr << "eulertour\n" << tmp;
-
-    tour = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphpair.digraph);
-
-    // DEBUG
-    std::cerr << "hamiltoncycle\n" << tour;
+    GraphPair graphPair           = constructGraphPair(openEars, numberOfNodes);
+    const std::vector<size_t> tmp = findEulertour(graphPair);
+    tour                          = shortcutToHamiltoncycle(std::vector<unsigned int>(tmp.begin(), tmp.end()), graphPair.digraph);
   }
   assert(tour.size() == numberOfNodes && "Missmatching number of nodes in hamilton cycle!");
   return tour;
@@ -401,14 +386,14 @@ static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euc
  * @return std::vector<unsigned int> hamiltonian s-t path in original graph
  */
 static std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned int>& wholeTour, const size_t s, const size_t t) {
-  const size_t numberOfNodes5FoldGraph      = wholeTour.size();
-  const size_t numberOfNodes                = (numberOfNodes5FoldGraph - 2) / 5;
-  const size_t x                            = numberOfNodes5FoldGraph - 2;
-  const size_t y                            = numberOfNodes5FoldGraph - 1;
-  const size_t pos_x                        = graph::findPosition(wholeTour, static_cast<unsigned int>(x));
-  const size_t pos_y                        = graph::findPosition(wholeTour, static_cast<unsigned int>(y));
+  const size_t numberOfNodes5FoldGraph = wholeTour.size();
+  const size_t numberOfNodes           = (numberOfNodes5FoldGraph - 2) / 5;
+  const size_t x                       = numberOfNodes5FoldGraph - 2;
+  const size_t y                       = numberOfNodes5FoldGraph - 1;
+  const size_t pos_x                   = graph::findPosition(wholeTour, static_cast<unsigned int>(x));
+  const size_t pos_y                   = graph::findPosition(wholeTour, static_cast<unsigned int>(y));
   //[[maybe_unused]] const size_t posDistance = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
-  //assert((posDistance - 1) % numberOfNodes == 0 && "Distance between index positions does not fit!");
+  // assert((posDistance - 1) % numberOfNodes == 0 && "Distance between index positions does not fit!");
 
   std::vector<unsigned int> tour;
   tour.reserve(numberOfNodes);
@@ -478,25 +463,13 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   // find graph s.t. G = (V,E) + (s,t) is biconnected
   const graph::AdjacencyListGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, graph::Edge{s, t}, maxEdgeWeight);
   const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
-
-  // DEBUG
-  // std::cerr << "minimal\n" << minimal;
-
-  graph::AdjacencyListGraph fiveFoldGraph = createFiveFoldGraph(euclidean, minimal, s, t);
-  const size_t numberOfNodes5FoldGraph    = fiveFoldGraph.numberOfNodes();
-
-  // DEBUG
-  // std::cerr << "fiveFoldGraph\n" << fiveFoldGraph;
-
-  const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate open ear decomposition
-
-  // DEBUG
-  // std::cerr << "openEars\n" << openEars.ears;
-
-  std::vector<unsigned int> wholeTour  = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
-  const std::vector<unsigned int> tour = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
-  const graph::Edge bottleneckEdge     = findBottleneck(euclidean, tour, false);
-  const double objective               = euclidean.weight(bottleneckEdge);
+  graph::AdjacencyListGraph fiveFoldGraph          = createFiveFoldGraph(euclidean, minimal, s, t);
+  const size_t numberOfNodes5FoldGraph             = fiveFoldGraph.numberOfNodes();
+  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);  // calculate open ear decomposition
+  std::vector<unsigned int> wholeTour              = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
+  const std::vector<unsigned int> tour             = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
+  const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, false);
+  const double objective                           = euclidean.weight(bottleneckEdge);
 
   if (printInfo) {
     printInfos(objective, maxEdgeWeight, ProblemType::BTSPP_approx);

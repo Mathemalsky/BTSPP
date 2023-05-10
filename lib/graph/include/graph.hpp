@@ -333,8 +333,9 @@ private:
        * @brief increases position until edge is directed from higher to lower index
        */
       void makeValid() {
-        while (pPosition.index % pPosition.numberOfNodes >= pPosition.index / pPosition.numberOfNodes) {
-          ++pPosition.index;
+        const size_t outerIndex = pPosition.index / pPosition.numberOfNodes;
+        if (pPosition.index >= outerIndex * (pPosition.numberOfNodes + 1)) {
+          pPosition.index = (outerIndex + 1) * pPosition.numberOfNodes;
         }
       }
 
@@ -560,6 +561,12 @@ public:
    * @brief returns the number of nodes in adjacency list
    */
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
+
+  /*!
+   * @brief appends empty entries to adjacency list
+   * @param numberOfNodesToAdd number of isolated nodes that are added to the graph
+   */
+  void addIsolatedNodes(const size_t numberOfNodesToAdd) { pAdjacencyList.resize(numberOfNodes() + numberOfNodesToAdd); }
 
   /*!
    * @brief gives complete adjacency list
