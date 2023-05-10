@@ -97,8 +97,8 @@ public:
   VertexOrder() : pInitialized(INITIAL_ACTIVENESS) {}
   ~VertexOrder() = default;
 
-  void updateOrder(const std::vector<unsigned int>& order, const ProblemType& type);
-  const std::vector<unsigned int>& operator[](const ProblemType type) const { return pVertexOrder[std::to_underlying(type)]; }
+  void updateOrder(const std::vector<size_t>& order, const ProblemType& type);
+  const std::vector<uint32_t>& operator[](const ProblemType type) const { return pVertexOrder[std::to_underlying(type)]; }
   bool initialized(const ProblemType& type) const { return pInitialized[std::to_underlying(type)]; }
 
 private:

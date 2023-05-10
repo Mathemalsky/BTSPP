@@ -30,7 +30,7 @@ namespace approximation {
 struct Result {
   graph::AdjacencyListGraph biconnectedGraph;
   graph::EarDecomposition openEarDecomposition;
-  std::vector<unsigned int> tour;
+  std::vector<size_t> tour;
   double opt;
   graph::Edge bottleneckEdge;
 };

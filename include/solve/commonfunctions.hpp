@@ -26,7 +26,7 @@
 
 #include "solve/definitions.hpp"
 
-graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<unsigned int>& tour, const bool cycle);
+graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<size_t>& tour, const bool cycle);
 
 template <typename Type>
 Type previousInCycle(const std::vector<Type>& vec, const size_t position) {

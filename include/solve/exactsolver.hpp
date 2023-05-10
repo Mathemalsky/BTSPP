@@ -28,7 +28,7 @@
 namespace exactsolver {
 
 struct Result {
-  std::vector<unsigned int> tour;
+  std::vector<size_t> tour;
   double opt;
   graph::Edge bottleneckEdge;
 };

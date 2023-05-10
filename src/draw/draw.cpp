@@ -59,7 +59,7 @@ static void drawVertices(const ShaderProgram& drawCircles, const size_t numberOf
 
 static void drawPath(const ShaderProgram& drawPathSegments,
                      const std::shared_ptr<ShaderBuffer> shaderBuffer,
-                     const std::vector<unsigned int>& order,
+                     const std::vector<uint32_t>& order,
                      const float thickness,
                      const RGBA_COLOUR& colour) {
   shaderBuffer->bufferSubData(order);
@@ -97,11 +97,11 @@ static void drawGraph(const ShaderProgram& drawLine, const FloatVertices& floatV
 static void drawOpenEarDecomposition(const ShaderProgram& drawLine,
                                      const std::shared_ptr<DrawData> drawData,
                                      const graph::EarDecomposition& openEarDecomp) {
-  for (unsigned int i = 0; i < openEarDecomp.ears.size(); ++i) {
+  for (size_t i = 0; i < openEarDecomp.ears.size(); ++i) {
     const std::vector<size_t>& chain = openEarDecomp.ears[i];
     RGBA_COLOUR colour =
         drawData->appearance.colour[std::to_underlying(ProblemType::BTSP_approx)] * ((float) i / (openEarDecomp.ears.size() - 1));
-    for (unsigned int j = chain.size() - 1; j > 0; --j) {
+    for (size_t j = chain.size() - 1; j > 0; --j) {
       drawEdge(drawLine, drawData->floatVertices, graph::Edge{chain[j], chain[j - 1]}, 5.0f, colour);
     }
   }

@@ -28,17 +28,18 @@
 #include "solve/definitions.hpp"
 
 namespace drawing {
-void VertexOrder::updateOrder(const std::vector<unsigned int>& order, const ProblemType& type) {
+void VertexOrder::updateOrder(const std::vector<size_t>& order, const ProblemType& type) {
+  const std::vector<uint32_t> order32bit(order.begin(), order.end());  // cast to 32 bit integer
   if (type == ProblemType::BTSP_approx || type == ProblemType::BTSP_exact || type == ProblemType::TSP_exact) {
-    pVertexOrder[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD);
-    std::memcpy(pVertexOrder[std::to_underlying(type)].data(), order.data(), bytes_of(order));
-    std::memcpy(pVertexOrder[std::to_underlying(type)].data() + order.size(), order.data(), PATH_OVERHEAD * sizeof(unsigned int));
+    pVertexOrder[std::to_underlying(type)].resize(order32bit.size() + PATH_OVERHEAD);
+    std::memcpy(pVertexOrder[std::to_underlying(type)].data(), order32bit.data(), bytes_of(order32bit));
+    std::memcpy(pVertexOrder[std::to_underlying(type)].data() + order32bit.size(), order32bit.data(), PATH_OVERHEAD * sizeof(uint32_t));
   }
   else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
-    pVertexOrder[std::to_underlying(type)].resize(order.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
-    pVertexOrder[std::to_underlying(type)][0] = order[1];
-    std::memcpy(pVertexOrder[std::to_underlying(type)].data() + 1, order.data(), bytes_of(order));
-    pVertexOrder[std::to_underlying(type)].back() = order[order.size() - 2];
+    pVertexOrder[std::to_underlying(type)].resize(order32bit.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
+    pVertexOrder[std::to_underlying(type)][0] = order32bit[1];
+    std::memcpy(pVertexOrder[std::to_underlying(type)].data() + 1, order32bit.data(), bytes_of(order32bit));
+    pVertexOrder[std::to_underlying(type)].back() = order32bit[order32bit.size() - 2];
   }
   pInitialized[std::to_underlying(type)] = true;
 }

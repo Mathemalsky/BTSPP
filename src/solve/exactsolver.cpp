@@ -149,7 +149,7 @@ static void setAntiCrossingBounds(HighsModel& model, const size_t numAntiCrossin
   const size_t numberOfPreviousConstraints = model.lp_.row_lower_.size();
   model.lp_.row_lower_.resize(numberOfPreviousConstraints + numAntiCrossingConstraints);
   model.lp_.row_upper_.resize(numberOfPreviousConstraints + numAntiCrossingConstraints);
-  for (unsigned i = numberOfPreviousConstraints; i < numberOfPreviousConstraints + numAntiCrossingConstraints; ++i) {
+  for (size_t i = numberOfPreviousConstraints; i < numberOfPreviousConstraints + numAntiCrossingConstraints; ++i) {
     model.lp_.row_lower_[i] = 0.0;
     model.lp_.row_upper_[i] = 1.0;
   }
@@ -199,13 +199,13 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
 static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Index& index, const graph::Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   size_t row                 = index.numConstraints();
-  for (unsigned int i = 0; i < numberOfNodes; ++i) {
-    for (unsigned int j = i + 1; j < numberOfNodes; ++j) {
-      for (unsigned int k = i + 1; k < numberOfNodes; ++k) {
+  for (size_t i = 0; i < numberOfNodes; ++i) {
+    for (size_t j = i + 1; j < numberOfNodes; ++j) {
+      for (size_t k = i + 1; k < numberOfNodes; ++k) {
         if (k == j) {
           continue;
         }
-        for (unsigned int l = k + 1; l < numberOfNodes; ++l) {
+        for (size_t l = k + 1; l < numberOfNodes; ++l) {
           if (l == j) {
             continue;
           }
@@ -298,9 +298,9 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, c
 
   const HighsSolution& solution = highs.getSolution();  // get variables of optimal solution
 
-  std::vector<unsigned int> tour(numberOfNodes);
+  std::vector<size_t> tour(numberOfNodes);
   tour[0] = 0;  // circle starts by definition with node 0
-  for (unsigned int i = 1; i < numberOfNodes; ++i) {
+  for (size_t i = 1; i < numberOfNodes; ++i) {
     // round because solution might not exactly hit integers
     tour[std::round(solution.col_value[index.variableU(i)]) + 1] = i;
   }
