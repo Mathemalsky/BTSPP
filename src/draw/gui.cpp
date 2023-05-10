@@ -81,6 +81,7 @@ void drawImgui(Appearance& appearance) {
     ImGui::SameLine();
     ImGui::Checkbox("open ear decomp.", &drawing::BTSP_DRAW_OPEN_EAR_DECOMPOSITION);
     ImGui::Checkbox("hamilton cycle", &drawing::BTSP_DRAW_HAMILTON_CYCLE);
+    ImGui::Separator();
 
     ImGui::Checkbox("BTSPP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
     ImGui::ColorEdit3("##BTSPP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_approx)]);
@@ -93,20 +94,24 @@ void drawImgui(Appearance& appearance) {
     ImGui::Checkbox("biconnectd graph##BTSPP approx", &drawing::BTSPP_DRAW_BICONNECTED_GRAPH);
     ImGui::SameLine();
     ImGui::Checkbox("hamilton path", &drawing::BTSPP_DRAW_HAMILTON_PATH);
+    ImGui::Separator();
 
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
     ImGui::SliderFloat("thickness##BTSP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSP_exact)], 0.0f, 20.0f, "%.1f");
     ImGui::ColorEdit3("##BTSP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSP_exact)]);
 
     ImGui::Checkbox("fobid crossing##BTSP exact", &solve::BTSP_FORBID_CROSSING);
+    ImGui::Separator();
 
     ImGui::Checkbox("BTSPP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
     ImGui::SliderFloat("thickness##BTSPP exact", &appearance.thickness[std::to_underlying(ProblemType::BTSPP_exact)], 0.0f, 20.0f, "%.1f");
     ImGui::ColorEdit3("##BTSPP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSPP_exact)]);
+    ImGui::Separator();
 
     ImGui::Checkbox("TSP  exact", &drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
     ImGui::ColorEdit3("##TSP exact", (float*) &appearance.colour[std::to_underlying(ProblemType::TSP_exact)]);
     ImGui::SliderFloat("thickness##TSP exact", &appearance.thickness[std::to_underlying(ProblemType::TSP_exact)], 0.0f, 30.0f, "%.1f");
+    ImGui::Separator();
 
     ImGui::ColorEdit4("clear colour", (float*) &appearance.clearColour);
     ImGui::ColorEdit3("vertex colour", (float*) &appearance.vertexColour);
