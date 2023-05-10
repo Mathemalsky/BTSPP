@@ -1,4 +1,4 @@
-# pathBSTP
+# BBSTP
 
 ## Using the whole program
 
