@@ -62,60 +62,6 @@ static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGr
   return minimallyBiconnectedSubgraph(fromEars);
 }
 
-/*!
- * @brief computes G^{-}
- * @details Skipps certain nodes and contracts 2 adjacend edges into one. See: Alstrup, S., Georgakopoulos, A., Rotenberg, E., & Thomassen,
- * C. (2018). A Hamiltonian Cycle in the Square of a 2-connected Graph in Linear Time. In Proceedings of the Twenty-Ninth Annual ACM-SIAM
- * Symposium on Discrete Algorithms (pp. 1645-1649). Society for Industrial and Applied Mathematics.
- * @param digraph holds information for cutting
- * @param graph to be modified
- * @return std::unordered_set<size_t> of cutted nodes
- */
-static std::unordered_set<size_t> reduceToGminus(const graph::AdjacencyListDigraph& digraph, graph::AdjacencyListGraph& graph) {
-  // create digraph with opposite edge directions to facilate detection of 2 incoming edges
-  graph::AdjacencyListDigraph reverseDirgaph(digraph.numberOfNodes());
-  for (const graph::Edge& e : digraph.edges()) {
-    reverseDirgaph.addEdge(e.reverse());
-  }
-
-  std::unordered_set<size_t> cuttedNodes;
-  for (const size_t u : reverseDirgaph.nodes()) {
-    if (reverseDirgaph.degree(u) == 2) {
-      const size_t v = reverseDirgaph.neighbours(u)[0];
-      const size_t w = reverseDirgaph.neighbours(u)[1];
-      graph.removeEdge(u, v);
-      graph.removeEdge(u, w);
-      graph.addEdge(v, w);
-      cuttedNodes.insert(u);
-    }
-  }
-  return cuttedNodes;
-}
-
-/*!
- * @brief inserts cutted nodes in euler tour
- * @details inserts the nodes in the euler tour where the contracted edge occurs
- * @param eulertourInGMinus is the euler tour in contracted graph
- * @param cuttedNodes are the nodes to be inserted
- * @param digraph holds information needed to find places for insertion
- */
-static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
-                           std::unordered_set<size_t>& cuttedNodes,
-                           const graph::AdjacencyListDigraph& digraph) {
-  eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
-  for (size_t i = eulertourInGMinus.size() - 1; i > 0; --i) {
-    const size_t v = eulertourInGMinus[i];
-    const size_t w = eulertourInGMinus[i - 1];
-    for (const size_t u : digraph.neighbours(v)) {
-      if (cuttedNodes.contains(u) && digraph.adjacent(w, u)) {
-        eulertourInGMinus.insert(eulertourInGMinus.begin() + i, u);
-        cuttedNodes.erase(u);
-        break;
-      }
-    }
-  }
-}
-
 static void prepareForEulertour(GraphPair& graphPair) {
   const size_t numberOfNodes = graphPair.graph.numberOfNodes();
 
@@ -149,13 +95,8 @@ static void prepareForEulertour(GraphPair& graphPair) {
  * @return std::vector<size_t> of node indices; first is not repeated as last
  */
 static std::vector<size_t> findEulertour(GraphPair& graphPair) {
-  // std::unordered_set<size_t> cuttedNodes = reduceToGminus(digraph, graph);
-  // std::vector<size_t> eulertourInGMinus  = hierholzer(graph);
-  // insertNodecuts(eulertourInGMinus, cuttedNodes, digraph);
-
   prepareForEulertour(graphPair);
   std::vector<size_t> eulertourInGMinus = hierholzer(graphPair.graph);
-
   return eulertourInGMinus;
 }
 
