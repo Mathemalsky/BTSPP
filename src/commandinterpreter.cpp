@@ -1,3 +1,21 @@
+/*
+ * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
+ * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * Copyright (C) 2023 Jurek Rostalsky
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #include "commandinterpreter.hpp"
 
 #include <array>
@@ -5,7 +23,10 @@
 #include <string>
 #include <unordered_set>
 
-#include "graph/graph.hpp"
+// graph library
+#include "graph.hpp"
+
+#include "exception/exceptions.hpp"
 
 #include "solve/approximation.hpp"
 #include "solve/definitions.hpp"
@@ -44,7 +65,7 @@ static void printSyntax() {
  *                                                  visual program
  **********************************************************************************************************************/
 
-#if (VISUALIZATION)
+#if (VISUALISATION)
 
   #include "draw/visualization.hpp"
 void interpretCommandLine(const int argc, char* argv[]) {
@@ -82,7 +103,7 @@ void interpretCommandLine(const int argc, char* argv[]) {
  *                                               command line program
  **********************************************************************************************************************/
 
-#if not(VISUALIZATION)
+#if not(VISUALISATION)
 static void readArguments(const int argc, char* argv[]) {
   std::unordered_set<std::string> arguments;
   bool seeded = false;
@@ -95,6 +116,8 @@ static void readArguments(const int argc, char* argv[]) {
     arguments.insert(std::string(argv[i]));
   }
 
+  Stopwatch stopWatch;
+
   graph::Euclidean euclidean;
   if (seeded) {
     euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]), seed);
@@ -104,24 +127,34 @@ static void readArguments(const int argc, char* argv[]) {
   }
 
   if (arguments.contains("-btsp")) {
+    stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSP(euclidean);
+    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btsp");
   }
   if (arguments.contains("-btspp")) {
+    stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSPP(euclidean);
+    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btspp");
   }
   if (arguments.contains("-btsp-e")) {
+    stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains("-no-crossing"));
+    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btsp-e");
     arguments.erase("-no-crossing");
   }
   if (arguments.contains("-btspp-e")) {
+    stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSPP_exact);
+    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btspp-e");
   }
   if (arguments.contains("-tsp-e")) {
+    stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::TSP_exact);
+    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-tsp-e");
   }
 

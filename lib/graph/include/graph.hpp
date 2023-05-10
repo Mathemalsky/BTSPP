@@ -1,3 +1,22 @@
+/*
+ * GRAPH is a library to store and manipulate graphs as adjacency list or
+ * as sparse eigen matrix. Different specialized types of graphs are
+ * supported.
+ * Copyright (C) 2023 Jurek Rostalsky
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 #include <algorithm>
@@ -5,15 +24,13 @@
 #include <cstddef>
 #include <numeric>
 #include <stdexcept>
-#include <string>  // can be removed when error handling is implemented
 #include <vector>
 
 #include <Eigen/SparseCore>
 
-#include "exception/exceptions.hpp"
-
-#include "graph/geometry.hpp"
-#include "graph/utils.hpp"
+#include "exceptions.hpp"
+#include "geometry.hpp"
+#include "utils.hpp"
 
 namespace graph {
 
@@ -173,8 +190,9 @@ namespace graph {
  **********************************************************************************************************************/
 
 /*!
- * \brief The Graph class is the base class of all more specialist types of graph. It's designed to contain the
+ * @brief The Graph class is the base class of all more specialist types of graph. It's designed to contain the
  * functions graphs off all types have in common.
+ * @details Currently no subclass implements adding nodes after calling the constructor.
  */
 class Graph {
 public:
@@ -268,6 +286,7 @@ class Euclidean : public CompleteGraph, public WeightedGraph, public UndirectedG
 private:
   /*!
    * @brief Edges is a facade class to iterate over all edges in euclidean graph.
+   * @details
    */
   class Edges {
   private:
@@ -297,10 +316,11 @@ private:
 
       /*!
        * @brief increases index by one
-       * @return reference to this iterator after increasing index
+       * @return this iterator after increasing index
        */
       Iterator& operator++() {
         ++pPosition.index;
+        makeValid();
         return *this;
       }
 
@@ -308,6 +328,16 @@ private:
        * @brief compares for inequality
        */
       bool operator!=(const Iterator& other) const { return pPosition.index != other.pPosition.index; }
+
+      /*!
+       * @brief increases position until edge is directed from higher to lower index
+       */
+      void makeValid() {
+        const size_t outerIndex = pPosition.index / pPosition.numberOfNodes;
+        if (pPosition.index >= outerIndex * (pPosition.numberOfNodes + 1)) {
+          pPosition.index = (outerIndex + 1) * pPosition.numberOfNodes;
+        }
+      }
 
     private:
       Position pPosition; /**< position of index in graph*/
@@ -324,7 +354,11 @@ private:
      * @brief creates an iterator pointing in front of the first edge
      * @return begin iterator
      */
-    Iterator begin() const { return Iterator(Iterator::Position{0, pNumberOfNodes}); }
+    Iterator begin() const {
+      Iterator it(Iterator::Position{0, pNumberOfNodes});
+      it.makeValid();
+      return it;
+    }
 
     /*!
      * @brief creates an iterator pointing in behind the last edge
@@ -348,7 +382,7 @@ public:
   /*!
    * @brief move constructor from vector of Point2D
    */
-  Euclidean(std::vector<Point2D>&& positions) : pPositions(positions) {}
+  Euclidean(std::vector<Point2D>&& positions) : pPositions(std::move(positions)) {}
 
   /*!
    * @brief number of Edges in graph. Depends only on the number of nodes since it is a complete graph
@@ -370,8 +404,16 @@ public:
   /*!
    * @brief returns euclidean distance between nodes
    * @param e edge for which weight is requested
+   * @return square of distance
    */
   double weight(const Edge& e) const override { return dist(pPositions[e.u], pPositions[e.v]); }
+
+  /*!
+   * @brief returns square of euclidean distance between nodes
+   * @param e edge for which squared weight is requested
+   * @return square of distance
+   */
+  double weightSquared(const Edge& e) const { return distSquared(pPositions[e.u], pPositions[e.v]); }
 
   /*!
    * @brief creates edges object to iterate of the edges
@@ -443,7 +485,7 @@ private:
 
       /*!
        * @brief moves iterator one node forward
-       * @return reference to this iterator after incrementation
+       * @return this iterator after incrementation
        */
       Iterator& operator++() {
         ++pPosition;
@@ -521,9 +563,15 @@ public:
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
   /*!
+   * @brief appends empty entries to adjacency list
+   * @param numberOfNodesToAdd number of isolated nodes that are added to the graph
+   */
+  void addIsolatedNodes(const size_t numberOfNodesToAdd) { pAdjacencyList.resize(numberOfNodes() + numberOfNodesToAdd); }
+
+  /*!
    * @brief gives complete adjacency list
    * @details The i^th entry of the outer vectors contains the indices of all nodes reached with edges outgoing from node i.
-   * @return vector of vector of size_t (indices)
+   * @return read only reference to adjacency list
    */
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
 
@@ -559,8 +607,8 @@ public:
    * @param criteria lambda function implemnting the criteria
    * @return first neighbour not matching the criteria
    */
-  template <typename func>
-  size_t neighbourAnyExcept(const size_t u, func&& criteria) {
+  template <typename Function>
+  size_t neighbourAnyExcept(const size_t u, Function&& criteria) {
     for (const size_t v : pAdjacencyList[u]) {
       if (!criteria(v)) {
         return v;
@@ -576,8 +624,8 @@ public:
    * @param criteria lambda function implemnting the criteria
    * @return first neighbour matching the criteria, if there is no then the fist neigbour
    */
-  template <typename func>
-  size_t neighbourAnyPrefer(const size_t u, func&& criteria) {
+  template <typename Function>
+  size_t neighbourAnyPrefer(const size_t u, Function&& criteria) {
     for (const size_t v : pAdjacencyList[u]) {
       if (criteria(v)) {
         return v;
@@ -656,12 +704,27 @@ private:
        * @brief moves the operator one position forward
        * @details Increases inner index by 1. Repeats that until a valid (outer index, inner index) pair is found, or iterartor is out of
        * bounds. Valid index pair has outer index > inner index and points to an element in adjacencyList
-       * @return reference to passed iterator
+       * @return this iterator after incrementation
        */
       Iterator& operator++() {
         assert(pPosition.outerIndex < pAdjacencyList.size() && "Iterator is already behind end!");
 
         ++pPosition.innerIndex;
+        makeValid();
+        return *this;
+      }
+
+      /*!
+       * @brief compares for inequality
+       */
+      bool operator!=(const Iterator& other) const {
+        return pPosition.outerIndex != other.pPosition.outerIndex || pPosition.innerIndex != other.pPosition.innerIndex;
+      }
+
+      /*!
+       * @brief set iterator to next valid position or to end iterator
+       */
+      void makeValid() {
         while (pPosition.outerIndex < pAdjacencyList.size() && (outOfNeighbours() || !toLowerIndex())) {
           if (outOfNeighbours()) {
             pPosition.innerIndex = 0;
@@ -671,24 +734,18 @@ private:
             ++pPosition.innerIndex;
           }
         }
-        return *this;
       }
-
-      /*!
-       * @brief compares for inequality
-       */
-      bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
-
-      /*!
-       * @brief checks if inner index < outer index
-       */
-      bool toLowerIndex() const { return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex; }
 
     private:
       /*!
        * @brief checks if the inner index is still in the range of neighbours vector
        */
       bool outOfNeighbours() const { return pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size(); }
+
+      /*!
+       * @brief checks if inner index < outer index
+       */
+      bool toLowerIndex() const { return pAdjacencyList[pPosition.outerIndex][pPosition.innerIndex] < pPosition.outerIndex; }
 
       const std::vector<std::vector<size_t>>& pAdjacencyList; /**< reference to graphs adjacency list */
       AdjListPos pPosition;                                   /**< position in the adjacency list */
@@ -705,7 +762,8 @@ private:
      */
     Iterator begin() const {
       Iterator it(pAdjacencyList, Iterator::AdjListPos{1, 0});
-      return it.toLowerIndex() ? it : ++it;
+      it.makeValid();
+      return it;
     }
 
     /*!
@@ -731,6 +789,18 @@ public:
    * @param numberOfNodes number of nodes in constructed graph
    */
   AdjacencyListGraph(const size_t numberOfNodes) { pAdjacencyList.resize(numberOfNodes); }
+
+  /*!
+   * @brief constructor, resizes the internal adjacency list, and reserves space for neighbours
+   * @param numberOfNodes number of nodes in constructed graph
+   * @param reserveNeighbours number of neighbours that can be added without reallocating
+   */
+  AdjacencyListGraph(const size_t numberOfNodes, const size_t reserveNeighbours) {
+    pAdjacencyList.resize(numberOfNodes);
+    for (std::vector<size_t>& vec : pAdjacencyList) {
+      vec.reserve(reserveNeighbours);
+    }
+  }
 
   /*!
    * @brief constructor, sets the internal adjacency list to adjacencyList
@@ -860,14 +930,11 @@ private:
       /*!
        * @brief moves iterator forward by one position
        * @details if at the end of neighbours of a node set Iterator to next nodes neighbours
-       * @return reference to this iterator after incrementation
+       * @return this iterator after incrementation
        */
       Iterator& operator++() {
         ++pPosition.innerIndex;
-        while (pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size() && pPosition.outerIndex < pAdjacencyList.size()) {
-          pPosition.innerIndex = 0;
-          ++pPosition.outerIndex;
-        }
+        makeValid();
         return *this;
       }
 
@@ -876,7 +943,19 @@ private:
        * @param other iterator to compare with
        * @return if the iterators are different
        */
-      bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
+      bool operator!=(const Iterator& other) const {
+        return pPosition.outerIndex != other.pPosition.outerIndex || pPosition.innerIndex != other.pPosition.innerIndex;
+      }
+
+      /*!
+       * @brief if the iterator is not pointing to valid element, set the iterator to next valid element
+       */
+      void makeValid() {
+        while (pPosition.outerIndex < pAdjacencyList.size() && pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size()) {
+          pPosition.innerIndex = 0;
+          ++pPosition.outerIndex;
+        }
+      }
 
     private:
       const std::vector<std::vector<size_t>>& pAdjacencyList; /**< i-th vector contains neighbours of i */
@@ -894,7 +973,11 @@ private:
      * @brief creates an iterator pointing in front of the first edge
      * @return begin iterator
      */
-    Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{0, 0}); }
+    Iterator begin() const {
+      Iterator it(pAdjacencyList, Iterator::AdjListPos{0, 0});
+      it.makeValid();
+      return it;
+    }
 
     /*!
      * \brief end returns the end Iterator for comparison.
@@ -1010,86 +1093,200 @@ public:
 class AdjMatGraph : public Modifyable, public WeightedGraph {
 private:
   /*!
-   * @brief Neighbours is a facade class to iterate over all neighbours of an edge
+   * @brief Neighbours is a facade class to iterate over all neighbours of an node
    */
   class Neighbours {
   private:
+    /*!
+     * @brief Iterator on neighbours of a node of the graph
+     */
     class Iterator {
     public:
+      /*!
+       * @brief creates an iterator from given pointer
+       * @param ptr pointer inner index vector
+       */
       Iterator(const int* ptr) : pInnerIndices(ptr) {}
 
-      size_t operator*() const { return *pInnerIndices; }
+      /*!
+       * @brief dereferences the pointer to the current inner index
+       * @return convert int to size_t
+       */
+      size_t operator*() const { return static_cast<size_t>(*pInnerIndices); }
 
+      /*!
+       * @brief increments the iterator
+       * @return the iterator after incrementation
+       */
       Iterator operator++() {
         ++pInnerIndices;
         return *this;
       }
 
+      /*!
+       * @brief compares iterators for inequality
+       * @param other Iterator to compare with
+       * @return true if iterators are different
+       */
       bool operator!=(const Iterator& other) const { return pInnerIndices != other.pInnerIndices; }
 
     private:
-      const int* pInnerIndices;
-    };  // end Iterator class
+      const int* pInnerIndices; /**< pointer to inner index */
+    };                          // end Iterator class
 
   public:
+    /*!
+     * @brief
+     * @param adjacencyMatrix
+     * @param node
+     */
     Neighbours(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const size_t node) :
       pAdjacencyMatrix(adjacencyMatrix),
       pNode(node) {
       assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
     }
 
+    /*!
+     * @brief creates begin iterator
+     * @return Iterator pointing to the first inner index
+     */
     Iterator begin() const { return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode]); }
 
+    /*!
+     * @brief creates end iterator
+     * @return Iterator pointing behind the last inner index
+     */
     Iterator end() const { return Iterator(pAdjacencyMatrix.innerIndexPtr() + pAdjacencyMatrix.outerIndexPtr()[pNode + 1]); }
 
   private:
-    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
-    const size_t pNode;
-  };  // end Neighbours class
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix; /**< the sparse adjacency matrix */
+    const size_t pNode;                                                       /**< node index, iterate over neighbours of this node */
+  };                                                                          // end Neighbours class
 
 public:
   AdjMatGraph()  = default;
   ~AdjMatGraph() = default;
 
+  /*!
+   * @brief constructs adjacency matrix graph with quadratic adjacency matrix of given size
+   * @param numberOfNodes dimension of adjacency matrix
+   */
   AdjMatGraph(const size_t numberOfNodes) : pAdjacencyMatrix(numberOfNodes, numberOfNodes) {}
-  AdjMatGraph(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& mat) : pAdjacencyMatrix(mat) {}
+
+  /*!
+   * @brief constructs adjacency matrix graph from sparse eigen matrix
+   * @param mat
+   */
+  AdjMatGraph(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& mat) : pAdjacencyMatrix(mat) {
+    assert(mat.rows() == mat.cols() && "Adjacency matrix should be quadratic!");
+  }
+
+  /*!
+   * @brief constructs sparse matrix from triplet list and adjacency matrix graph from that matrix
+   * @param numberOfNodes number of nodes in the graph
+   * @param tripletList list of triplets (row index, column index, entry)
+   */
   AdjMatGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     pAdjacencyMatrix(Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>(numberOfNodes, numberOfNodes)) {
     pAdjacencyMatrix.setFromTriplets(tripletList.begin(), tripletList.end());
   }
 
-  virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) == 0.0; }
-  virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) == 0.0; }
+  /*!
+   * @brief checks if there is an explicit entry for that edge
+   * @param u node at start of edge
+   * @param v node at end of edge
+   * @return true if edge exists
+   */
+  virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) != 0.0; }
 
-  double weight(const Edge& e) const override {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
-    return pAdjacencyMatrix.coeff(e.u, e.v).weight();
-  }
+  /*!
+   * @brief checks if there is an explicit entry for that edge
+   * @param e edge to check
+   * @return true if edge exists
+   */
+  virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) != 0.0; }
+
+  /*!
+   * @brief accesses the weight of an edge
+   * @param u node at start of edge
+   * @param v node at end of edge
+   * @return weight of edge
+   */
   double weight(const size_t u, const size_t v) const override {
     assert(pAdjacencyMatrix.coeff(u, v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
     return pAdjacencyMatrix.coeff(u, v).weight();
   }
 
+  /*!
+   * @brief accesses the weight of an edge
+   * @param e edge whose weight is to check
+   * @return weight of edge
+   */
+  double weight(const Edge& e) const override {
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
+    return pAdjacencyMatrix.coeff(e.u, e.v).weight();
+  }
+
+  /*!
+   * @brief number of edges is number of nonzeros
+   * @return number of edges
+   */
   size_t numberOfEdges() const override { return pAdjacencyMatrix.nonZeros(); }
+
+  /*!
+   * @brief number of nodes is number of columns in matrix which equals number of rows in matrix
+   * @return number of columns in matrix
+   */
   size_t numberOfNodes() const override { return pAdjacencyMatrix.cols(); }
 
+  /*!
+   * @brief calls makeCompressed() on the underlying sparse eigen matrix
+   */
   void compressMatrix() { pAdjacencyMatrix.makeCompressed(); }
 
+  /*!
+   * @brief provides read only accessto the underlying sparse matrix
+   * @return const reference to sparse eigen matrix
+   */
   const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& matrix() const { return pAdjacencyMatrix; }
 
+  /*!
+   * @brief creates neighbours facade object to iterate over all neighbours of this graph
+   * @param node whose neighbours are to iterate over
+   * @return neighbours facade
+   */
   Neighbours neighbours(const size_t node) const { return Neighbours(pAdjacencyMatrix, node); }
 
-  void pruneMatrix() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
+  /*!
+   * @brief makes explicit zeros implicit zeros
+   * @attention eigen and EdgeWeight are not yet sufficiently adjusted to each other to use this function
+   */
+  // void pruneMatrix() { pAdjacencyMatrix.prune(0.0, Eigen::NumTraits<EdgeWeight>::dummy_precision()); }
 
-  void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
+  /*!
+   * @brief computes the square of a graph
+   * @attention eigen and EdgeWeight are not yet sufficiently adjusted to each other to use this function
+   */
+  // void square() { pAdjacencyMatrix = pAdjacencyMatrix * pAdjacencyMatrix; }  // operator*= not provided by Eigen
 
 protected:
-  Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor> pAdjacencyMatrix;
+  Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor> pAdjacencyMatrix; /**< sparse adjacency matrix */
 
+  /*!
+   * @brief adds an egde to the graph by inserting an entry in adjacency matrix
+   * @param out outgoing node
+   * @param in ingoing node
+   * @param edgeWeight weight of the edge
+   */
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     pAdjacencyMatrix.insert(out, in) = edgeWeight;
   }
 
+  /*!
+   * @brief adds an egde to the graph by inserting an entry in adjacency matrix
+   * @param e edge to insert
+   * @param edgeWeight weight of the edge
+   */
   virtual void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { pAdjacencyMatrix.insert(e.u, e.v) = edgeWeight; }
 };
 
@@ -1100,15 +1297,29 @@ protected:
  */
 class AdjacencyMatrixGraph : public AdjMatGraph, public UndirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges of a AdjacencyMatrixGraph
+   */
   class Edges {
   private:
+    /*!
+     * @brief Iterator to iterator of a AdjacencyMatrixGraphs edges
+     */
     class Iterator {
     public:
+      /*!
+       * @brief bundle inner and outer index
+       */
       struct SparseMatrixPos {
-        size_t innerIndex;
-        size_t outerIndex;
+        size_t innerIndex; /**< inner index is column index */
+        size_t outerIndex; /**< outer index is row index */
       };
 
+      /*!
+       * @brief creates an Iterator on the AdjacencyMatrixGraph
+       * @param adjacencyMatrix of the AdjacencyMatrixGraph
+       * @param pos position in sparse matrix
+       */
       Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
         pAdjacencyMatrix(adjacencyMatrix),
         pPosition(pos) {
@@ -1128,7 +1339,7 @@ private:
           if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
-          ++pPosition.outerIndex;                                           // goes to next row
+          ++pPosition.outerIndex;  // goes to next row
         }
         return *this;
       }
@@ -1184,11 +1395,24 @@ public:
   AdjacencyMatrixGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
+  /*!
+   * @brief adds an edge as entry in the adjacency matrix
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param out outgoing node
+   * @param in ingoing node
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override {
     AdjMatGraph::addEdge(out, in, edgeWeight);
     AdjMatGraph::addEdge(in, out, edgeWeight);
   }
 
+  /*!
+   * @brief adds an edge as entry in the adjacency matrix
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param e edge to be added
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { addEdge(e.u, e.v, edgeWeight); }
 
   bool connected() const override;
@@ -1197,10 +1421,15 @@ public:
 
   Edges edges() const { return Edges(pAdjacencyMatrix); }
 
+  /*!
+   * @brief removes an edge from the graph (and the reverse directed copy too)
+   * @param e edge to be removed
+   * @attention sets weight to zero, does not make the entry implicit
+   */
   void removeEdge(const Edge& e) {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edge to be removed does not exist in graph!");
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0.0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
-    assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0 && "Edge to be removed does not exist in graph!");
+    assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0.0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.v, e.u) = 0.0;
   }
 };
@@ -1275,8 +1504,21 @@ public:
   AdjacencyMatrixDigraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
+  /*!
+   * @brief adds an edge to the graph
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param out outgoing node
+   * @param in ingoing node
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) override { AdjMatGraph::addEdge(out, in, edgeWeight); }
 
+  /*!
+   * @brief adds an edge to the graph
+   * @attention In wortst case this takes O(numberOfNonZeros), when ever possible add all needed edges before creating the adjacency matrix
+   * @param e edge to be added
+   * @param edgeWeight weight of edge
+   */
   void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { addEdge(e.u, e.v, edgeWeight); }
 
   bool connected() const override { return undirected().connected(); };
@@ -1289,7 +1531,7 @@ public:
     assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edge to be removed does not exist in graph!");
     pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
   }
-  AdjacencyMatrixDigraph removeUncriticalEdges() const;
+
   AdjacencyMatrixGraph undirected() const;
 };
 
@@ -1297,7 +1539,16 @@ public:
  * \brief The Tree class is an abstract which implements the methods all trees have in common.
  */
 class Tree : public virtual Graph {
+  /*!
+   * @brief trees are always connected and hence the return is always true
+   * @return true
+   */
   bool connected() const override { return true; }
+
+  /*!
+   * @brief a tree has one edge less than nodes
+   * @return number of nodes -1
+   */
   size_t numberOfEdges() const override { return numberOfNodes() - 1; }
 };
 
@@ -1308,20 +1559,40 @@ class Tree : public virtual Graph {
  */
 class DfsTree : public Tree, public DirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges in the DfsTree
+   */
   class Edges {
   private:
+    /*!
+     * @brief iterator on a DfsTrees edges
+     */
     class Iterator {
     public:
+      /*!
+       * @brief creates iterator object
+       * @param adjacencyList the trees adjacency list
+       * @param root index of root node
+       * @param pos iterator position
+       */
       Iterator(const std::vector<size_t>& adjacencyList, const size_t root, const size_t pos) :
         pAdjacencyList(adjacencyList),
         pRoot(root),
         pPosition(pos) {}
 
+      /*!
+       * @brief creates an edge object for the edge of current iteration
+       * @return Edge starting at current position
+       */
       Edge operator*() const {
         assert(pPosition != pRoot && "No outging edge from root node!");
         return Edge{pPosition, pAdjacencyList[pPosition]};
       }
 
+      /*!
+       * @brief increments the iterator, the root is skipped
+       * @return this iterator after incrementation
+       */
       Iterator& operator++() {
         ++pPosition;
         if (pPosition == pRoot) {
@@ -1330,13 +1601,18 @@ private:
         return *this;
       }
 
+      /*!
+       * @brief compares for inequality
+       * @param other Iterator to compare
+       * @return true if iterators are different
+       */
       bool operator!=(const Iterator& other) const { return pPosition != other.pPosition; }
 
     private:
-      const std::vector<size_t>& pAdjacencyList;
-      const size_t pRoot;
-      size_t pPosition;
-    };  // end Iterator class
+      const std::vector<size_t>& pAdjacencyList; /**< the tree's adjacency list */
+      const size_t pRoot;                        /**< root index */
+      size_t pPosition;                          /**< position in adjacenecy list */
+    };                                           // end Iterator class
 
   public:
     Edges(const std::vector<size_t>& adjacencyList, const size_t root) : pAdjacencyList(adjacencyList), pRoot(root) {}

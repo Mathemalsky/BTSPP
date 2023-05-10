@@ -1,3 +1,22 @@
+/*
+ * GRAPH is a library to store and manipulate graphs as adjacency list or
+ * as sparse eigen matrix. Different specialized types of graphs are
+ * supported.
+ * Copyright (C) 2023 Jurek Rostalsky
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 #include <cmath>
@@ -72,6 +91,25 @@ inline double norm2(const Vector2D& v) {
 }
 
 /*!
+ * \brief norm2squared computes the square of the 2 norm
+ * \param x
+ * \param y
+ * \return square of euclidean norm (2 norm) of the vector (x, y)
+ */
+inline double norm2squared(const double x, const double y) {
+  return x * x + y * y;
+}
+
+/*!
+ * \brief norm2squared computes the square of the 2 norm
+ * \param v vector
+ * \return square of euclidean norm (2 norm)
+ */
+inline double norm2squared(const Vector2D& v) {
+  return norm2squared(v.x, v.y);
+}
+
+/*!
  * \brief dist messures the euclidean distance between p and q
  * \param p point
  * \param q point
@@ -79,6 +117,16 @@ inline double norm2(const Vector2D& v) {
  */
 inline double dist(const Point2D& p, const Point2D& q) {
   return norm2(p.x - q.x, p.y - q.y);
+}
+
+/*!
+ * \brief distSquared computes the square of the euclidean distance between p and q
+ * \param p point
+ * \param q point
+ * \return square of euclidean norm (2 norm) of (p - q)
+ */
+inline double distSquared(const Point2D& p, const Point2D& q) {
+  return norm2squared(p.x - q.x, p.y - q.y);
 }
 
 /*!

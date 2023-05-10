@@ -1,6 +1,7 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * GRAPH is a library to store and manipulate graphs as adjacency list or
+ * as sparse eigen matrix. Different specialized types of graphs are
+ * supported.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,26 +19,22 @@
  */
 #pragma once
 
-#include <vector>
+#include <ostream>
 
-#include <solve/definitions.hpp>
-
-// graph library
 #include "graph.hpp"
 
-namespace exactsolver {
+namespace graph {
+inline std::ostream& operator<<(std::ostream& os, const Edge& edge) {
+  return os << "(" << edge.u << ", " << edge.v << ") ";
+}
 
-struct Result {
-  std::vector<size_t> tour;
-  double opt;
-  graph::Edge bottleneckEdge;
-};
-
-/*!
- * @brief solves an instance of BTSP, BTSPP or TSP
- * @param problemType type of instance
- * @param noCrossing if BTSP the solution can be forced to have no crossings
- */
-Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, const bool noCrossing = false);
-
-}  // namespace exactsolver
+template <typename G>
+inline std::ostream& operator<<(std::ostream& os, const G& graph) requires(std::is_base_of_v<Graph, G>) {
+  os << "Number of nodes in graph: " << graph.numberOfNodes() << std::endl;
+  os << "Number of edges in graph: " << graph.numberOfEdges() << std::endl;
+  for (const Edge& e : graph.edges()) {
+    os << e << std::endl;
+  }
+  return os;
+}
+}  // namespace graph

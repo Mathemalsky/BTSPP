@@ -1,3 +1,21 @@
+/*
+ * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
+ * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * Copyright (C) 2023 Jurek Rostalsky
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #include "solve/exactsolver.hpp"
 
 #include <cassert>
@@ -9,9 +27,10 @@
 
 #include <Highs.h>
 
-#include "exception/exceptions.hpp"
+// graph library
+#include "graph.hpp"
 
-#include "graph/graph.hpp"
+#include "exception/exceptions.hpp"
 
 #include "solve/commonfunctions.hpp"
 
@@ -130,7 +149,7 @@ static void setAntiCrossingBounds(HighsModel& model, const size_t numAntiCrossin
   const size_t numberOfPreviousConstraints = model.lp_.row_lower_.size();
   model.lp_.row_lower_.resize(numberOfPreviousConstraints + numAntiCrossingConstraints);
   model.lp_.row_upper_.resize(numberOfPreviousConstraints + numAntiCrossingConstraints);
-  for (unsigned i = numberOfPreviousConstraints; i < numberOfPreviousConstraints + numAntiCrossingConstraints; ++i) {
+  for (size_t i = numberOfPreviousConstraints; i < numberOfPreviousConstraints + numAntiCrossingConstraints; ++i) {
     model.lp_.row_lower_[i] = 0.0;
     model.lp_.row_upper_[i] = 1.0;
   }
@@ -180,13 +199,13 @@ static void setCConstraints(std::vector<Entry>& entries, const Index& index, con
 static size_t setAntiCrossingConstraints(std::vector<Entry>& entries, const Index& index, const graph::Euclidean& euclidean) {
   const size_t numberOfNodes = euclidean.numberOfNodes();
   size_t row                 = index.numConstraints();
-  for (unsigned int i = 0; i < numberOfNodes; ++i) {
-    for (unsigned int j = i + 1; j < numberOfNodes; ++j) {
-      for (unsigned int k = i + 1; k < numberOfNodes; ++k) {
+  for (size_t i = 0; i < numberOfNodes; ++i) {
+    for (size_t j = i + 1; j < numberOfNodes; ++j) {
+      for (size_t k = i + 1; k < numberOfNodes; ++k) {
         if (k == j) {
           continue;
         }
-        for (unsigned int l = k + 1; l < numberOfNodes; ++l) {
+        for (size_t l = k + 1; l < numberOfNodes; ++l) {
           if (l == j) {
             continue;
           }
@@ -259,13 +278,13 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, c
 
   Highs highs;
   highs.setOptionValue("output_flag", false);
-  HighsStatus return_status = highs.passModel(model);
+  [[maybe_unused]] HighsStatus return_status = highs.passModel(model);
   assert(return_status == HighsStatus::kOk);
 
   return_status = highs.run();  // solve instance
   assert(return_status == HighsStatus::kOk);
 
-  const HighsModelStatus& model_status = highs.getModelStatus();
+  [[maybe_unused]] const HighsModelStatus& model_status = highs.getModelStatus();
   assert(model_status == HighsModelStatus::kOptimal);
 
   const HighsInfo& info = highs.getInfo();
@@ -279,9 +298,9 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, c
 
   const HighsSolution& solution = highs.getSolution();  // get variables of optimal solution
 
-  std::vector<unsigned int> tour(numberOfNodes);
+  std::vector<size_t> tour(numberOfNodes);
   tour[0] = 0;  // circle starts by definition with node 0
-  for (unsigned int i = 1; i < numberOfNodes; ++i) {
+  for (size_t i = 1; i < numberOfNodes; ++i) {
     // round because solution might not exactly hit integers
     tour[std::round(solution.col_value[index.variableU(i)]) + 1] = i;
   }

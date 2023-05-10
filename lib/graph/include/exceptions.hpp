@@ -1,6 +1,7 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * GRAPH is a library to store and manipulate graphs as adjacency list or
+ * as sparse eigen matrix. Different specialized types of graphs are
+ * supported.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,26 +19,24 @@
  */
 #pragma once
 
-#include <vector>
+#include <stdexcept>
+#include <string>
 
-#include <solve/definitions.hpp>
+namespace graph {
+class Exception : public std::exception {
+public:
+  explicit Exception(const char* message) : pMessage(message) {}
+  explicit Exception(const std::string& message) : pMessage(message) {}
 
-// graph library
-#include "graph.hpp"
+  virtual ~Exception() noexcept {}
+  virtual const char* what() const noexcept { return pMessage.c_str(); }
 
-namespace exactsolver {
-
-struct Result {
-  std::vector<size_t> tour;
-  double opt;
-  graph::Edge bottleneckEdge;
+protected:
+  std::string pMessage;
 };
 
-/*!
- * @brief solves an instance of BTSP, BTSPP or TSP
- * @param problemType type of instance
- * @param noCrossing if BTSP the solution can be forced to have no crossings
- */
-Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, const bool noCrossing = false);
-
-}  // namespace exactsolver
+class InfesableRequest : public Exception {
+public:
+  InfesableRequest(const std::string& msg) : Exception(msg) {}
+};
+}  // namespace graph

@@ -31,4 +31,8 @@
 !include/exception/*.hpp
 
 # libraries
+!lib/graph/CMakeLists.txt
+!lib/graph/src/*.cpp
+!lib/graph/include/*.hpp
+
 !lib/imgui/*
