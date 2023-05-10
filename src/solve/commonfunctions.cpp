@@ -25,7 +25,7 @@
 
 graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<size_t>& tour, const bool isCycle) {
   size_t bottleneckEdgeEnd = 0;
-  double bottleneckWeight        = euclidean.weight(tour[0], tour[1]);
+  double bottleneckWeight  = euclidean.weight(tour[0], tour[1]);
   for (size_t i = 1; i < euclidean.numberOfNodes() - 1; ++i) {
     if (euclidean.weight(tour[i], tour[i + 1]) > bottleneckWeight) {
       bottleneckEdgeEnd = i;

@@ -19,6 +19,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
@@ -37,6 +38,14 @@ std::ostream& operator<<(std::ostream& os, const std::vector<Type>& vec) {
   const size_t size = vec.size();
   for (size_t i = 0; i < size; ++i) {
     os << vec[i] << (i == size - 1 ? "" : " ");
+  }
+  return os << std::endl;
+}
+
+template <typename Type, size_t N>
+std::ostream& operator<<(std::ostream& os, const std::array<Type, N>& ary) {
+  for (size_t i = 0; i < N; ++i) {
+    os << ary[i] << (i == N - 1 ? "" : " ");
   }
   return os << std::endl;
 }

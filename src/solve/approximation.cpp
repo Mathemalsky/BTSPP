@@ -61,86 +61,6 @@ static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGr
   const graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
   return minimallyBiconnectedSubgraph(fromEars);
 }
-
-/*!
- * @brief prepairs the graphs for finding the euler tour
- * @param graphPair graph and digraph
- */
-static void prepareForEulertour(GraphPair& graphPair) {
-  const size_t numberOfNodes = graphPair.graph.numberOfNodes();
-
-  graph::AdjacencyListDigraph reverseDirgaph(numberOfNodes);
-  for (const graph::Edge& e : graphPair.digraph.edges()) {
-    reverseDirgaph.addEdge(e.reverse());
-  }
-
-  graphPair.graph.addIsolatedNodes(numberOfNodes);
-  graphPair.digraph.addIsolatedNodes(numberOfNodes);
-  for (const size_t u : reverseDirgaph.nodes()) {
-    if (reverseDirgaph.degree(u) == 2) {
-      const size_t v = reverseDirgaph.neighbours(u)[0];
-      const size_t w = reverseDirgaph.neighbours(u)[1];
-      graphPair.graph.removeEdge(v, u);
-      graphPair.graph.removeEdge(w, u);
-      graphPair.digraph.removeEdge(v, u);
-      graphPair.digraph.removeEdge(w, u);
-      graphPair.graph.addEdge(v, u + numberOfNodes);
-      graphPair.graph.addEdge(w, u + numberOfNodes);
-      graphPair.digraph.addEdge(v, u + numberOfNodes);
-      graphPair.digraph.addEdge(w, u + numberOfNodes);
-    }
-  }
-}
-
-/*!
- * @brief finds an euler tour in graph
- * @param graph
- * @param digraph holds information needed to construct an euler tour that can be shortcutted to hamiltonian cycle
- * @return std::vector<size_t> of node indices; first is not repeated as last
- */
-static std::vector<size_t> findEulertour(GraphPair& graphPair) {
-  prepareForEulertour(graphPair);
-  std::vector<size_t> eulertourInGMinus = hierholzer(graphPair.graph);
-  return eulertourInGMinus;
-}
-
-/*!
- * @brief shortcuts euler tour to hamiltonian cycle
- * @param longEulertour euler tour in multigraph
- * @param digraph holds information for shortcutting
- * @return std::vector<size_t> of node indices, first is not repeated as last
- */
-static std::vector<size_t> shortcutToHamiltoncycle(const std::vector<size_t>& longEulertour,
-                                                   graph::AdjacencyListDigraph& digraph,
-                                                   const size_t numberOfNodes) {
-  std::vector<size_t> hamiltoncycle;
-  hamiltoncycle.reserve(numberOfNodes);
-  hamiltoncycle.push_back(longEulertour[0]);
-
-  for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
-    const size_t u = longEulertour[i - 1];
-    const size_t v = longEulertour[i];
-    const size_t w = longEulertour[i + 1];
-    if (digraph.adjacent(v, u) && digraph.adjacent(v, w) && u != w) {
-      hamiltoncycle.push_back(w);
-      digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
-      digraph.removeEdge(v, w);
-      ++i;  // do not consider next node for skipping. It's alredy added.
-    }
-    else {
-      hamiltoncycle.push_back(v);
-    }
-  }
-
-  for (size_t& node : hamiltoncycle) {
-    if (node >= numberOfNodes) {
-      node -= numberOfNodes;
-    }
-  }
-
-  return hamiltoncycle;
-}
-
 /*!
  * @brief doubles and deletes edges to make open ear decomposition eularian
  * @param ears open ear decomposition
@@ -222,14 +142,94 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
   return GraphPair{digraph, graph};
 }
 
+/*!
+ * @brief prepairs the graphs for finding the euler tour
+ * @param graphPair graph and digraph
+ */
+static void prepareForEulertour(GraphPair& graphPair) {
+  const size_t numberOfNodes = graphPair.graph.numberOfNodes();
+
+  graph::AdjacencyListDigraph reverseDigraph(numberOfNodes);
+  for (const graph::Edge& e : graphPair.digraph.edges()) {
+    reverseDigraph.addEdge(e.reverse());
+  }
+
+  graphPair.graph.addIsolatedNodes(numberOfNodes);
+  graphPair.digraph.addIsolatedNodes(numberOfNodes);
+  for (const size_t u : reverseDigraph.nodes()) {
+    if (reverseDigraph.degree(u) == 2 && graphPair.digraph.degree(u) > 0) {
+      const size_t v = reverseDigraph.neighbours(u)[0];
+      const size_t w = reverseDigraph.neighbours(u)[1];
+      graphPair.graph.removeEdge(v, u);
+      graphPair.graph.removeEdge(w, u);
+      graphPair.digraph.removeEdge(v, u);
+      graphPair.digraph.removeEdge(w, u);
+      graphPair.graph.addEdge(v, u + numberOfNodes);
+      graphPair.graph.addEdge(w, u + numberOfNodes);
+      graphPair.digraph.addEdge(v, u + numberOfNodes);
+      graphPair.digraph.addEdge(w, u + numberOfNodes);
+    }
+  }
+}
+
+/*!
+ * @brief finds an euler tour in graph
+ * @param graph
+ * @param digraph holds information needed to construct an euler tour that can be shortcutted to hamiltonian cycle
+ * @return std::vector<size_t> of node indices; first is not repeated as last
+ */
+static std::vector<size_t> findEulertour(GraphPair& graphPair) {
+  prepareForEulertour(graphPair);
+  std::vector<size_t> eulertourInGMinus = hierholzer(graphPair.graph);
+  return eulertourInGMinus;
+}
+
+/*!
+ * @brief shortcuts euler tour to hamiltonian cycle
+ * @param longEulertour euler tour in multigraph
+ * @param digraph holds information for shortcutting
+ * @return std::vector<size_t> of node indices, first is not repeated as last
+ */
+static std::vector<size_t> shortcutToHamiltoncycle(const std::vector<size_t>& longEulertour,
+                                                   graph::AdjacencyListDigraph& digraph,
+                                                   const size_t numberOfNodes) {
+  std::vector<size_t> hamiltoncycle;
+  hamiltoncycle.reserve(numberOfNodes);
+  hamiltoncycle.push_back(longEulertour[0]);
+
+  for (size_t i = 1; i < longEulertour.size() - 1; ++i) {
+    const size_t u = longEulertour[i - 1];
+    const size_t v = longEulertour[i];
+    const size_t w = longEulertour[i + 1];
+    if (digraph.adjacent(v, u) && digraph.adjacent(v, w) && u != w) {
+      hamiltoncycle.push_back(w);
+      digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
+      digraph.removeEdge(v, w);
+      ++i;  // do not consider next node for skipping. It's alredy added.
+    }
+    else {
+      hamiltoncycle.push_back(v);
+    }
+  }
+
+  for (size_t& node : hamiltoncycle) {
+    if (node >= numberOfNodes) {
+      node -= numberOfNodes;
+    }
+  }
+
+  return hamiltoncycle;
+}
+
 static std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars, const size_t numberOfNodes) {
   std::vector<size_t> tour;
   if (openEars.ears.size() == 1) {
     tour = std::vector<size_t>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
   }
   else {
-    GraphPair graphPair = constructGraphPair(openEars, numberOfNodes);
-    tour                = shortcutToHamiltoncycle(findEulertour(graphPair), graphPair.digraph, numberOfNodes);
+    GraphPair graphPair     = constructGraphPair(openEars, numberOfNodes);
+    std::vector<size_t> tmp = findEulertour(graphPair);
+    tour                    = shortcutToHamiltoncycle(tmp, graphPair.digraph, numberOfNodes);
   }
   assert(tour.size() == numberOfNodes && "Missmatching number of nodes in hamilton cycle!");
   return tour;
@@ -276,8 +276,9 @@ static size_t decreaseModulo(const size_t number, const size_t modulus) {
 
 template <typename Type>
 static void reverse(std::vector<Type>& vec) {
-  const size_t sizeMinus1 = vec.size() - 1;
-  for (size_t i = 0; i < sizeMinus1 / 2; ++i) {
+  const size_t size       = vec.size();
+  const size_t sizeMinus1 = size - 1;
+  for (size_t i = 0; i < size / 2; ++i) {
     std::swap(vec[i], vec[sizeMinus1 - i]);
   }
 }
@@ -336,9 +337,6 @@ static std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeT
   const size_t pos_x                   = graph::findPosition(wholeTour, x);
   const size_t pos_y                   = graph::findPosition(wholeTour, y);
 
-  std::vector<size_t> tour;
-  tour.reserve(numberOfNodes);
-
   std::array<bool, 5> graphCopyIsSolution{true, true, true, true, true};
   graphCopyIsSolution[wholeTour[increaseModulo(pos_x, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
   graphCopyIsSolution[wholeTour[decreaseModulo(pos_x, numberOfNodes5FoldGraph)] / numberOfNodes] = false;
@@ -350,12 +348,12 @@ static std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeT
   const size_t pos_t         = graph::findPosition(wholeTour, solutionIndex * numberOfNodes + t);
   const size_t maxPos        = std::max(pos_s, pos_t);
   const size_t minPos        = std::min(pos_s, pos_t);
+
+  std::vector<size_t> tour;
+  tour.reserve(numberOfNodes);
   if (maxPos - minPos == numberOfNodes - 1) {
     for (size_t i = minPos; i <= maxPos; ++i) {
       tour.push_back(wholeTour[i]);
-    }
-    if (pos_t < pos_s) {
-      reverse(tour);
     }
   }
   else {
@@ -363,14 +361,17 @@ static std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeT
       tour.push_back(wholeTour[i]);
     }
     tour.push_back(wholeTour[minPos]);
-    if (pos_s < pos_t) {
-      reverse(tour);
-    }
   }
 
   for (size_t& node : tour) {
     node -= solutionIndex * numberOfNodes;
   }
+
+  if (tour.front() != s) {
+    reverse(tour);
+  }
+  assert(tour.front() == s && "Hamilton path must start with correct node!");
+  assert(tour.back() == t && "Hamilton path must end with correct node!");
 
   return tour;
 }
