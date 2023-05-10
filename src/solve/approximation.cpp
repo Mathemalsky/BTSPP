@@ -107,6 +107,10 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
                            std::unordered_set<size_t>& cuttedNodes,
                            const graph::AdjacencyListDigraph& digraph) {
   eulertourInGMinus.reserve(eulertourInGMinus.size() + cuttedNodes.size());
+
+  // DEBUG
+  std::cerr << "eulertourInGMinus\n" << eulertourInGMinus;
+
   for (size_t i = eulertourInGMinus.size() - 1; i > 0; --i) {
     const size_t v = eulertourInGMinus[i];
     const size_t w = eulertourInGMinus[i - 1];
@@ -116,6 +120,24 @@ static void insertNodecuts(std::vector<size_t>& eulertourInGMinus,
         cuttedNodes.erase(u);
         break;
       }
+    }
+  }
+}
+
+static void (GraphPair& graphPair) {
+  graph::AdjacencyListDigraph reverseDirgaph(graphPair.digraph.numberOfNodes());
+  for (const graph::Edge& e : graphPair.digraph.edges()) {
+    reverseDirgaph.addEdge(e.reverse());
+  }
+
+  for (const size_t u : reverseDirgaph.nodes()) {
+    if (reverseDirgaph.degree(u) == 2) {
+      const size_t v = reverseDirgaph.neighbours(u)[0];
+      const size_t w = reverseDirgaph.neighbours(u)[1];
+      graphPair.graph.removeEdge(u, v);
+      graphPair.graph.removeEdge(u, w);
+      graphPair.graph.addEdge(v, w);
+      graphPair.cuttedNodes.insert(u);
     }
   }
 }
@@ -183,7 +205,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
     const std::vector<size_t>& ear = ears.ears[static_cast<size_t>(j)];
 
     // DEBUG
-    std::cerr << "ear: " << ear;
+    // std::cerr << "ear: " << ear;
 
     const size_t pos_y =
         std::distance(ear.begin(), std::find_if(ear.begin() + 1, ear.end() - 1, [&](size_t u) { return graph.degree(u) == 2; }));
@@ -228,7 +250,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
       const size_t y = ear[pos_y];
 
       // DEBUG
-      std::cerr << "y: " << y << std::endl;
+      // std::cerr << "y: " << y << std::endl;
 
       const size_t y_successor = ear[pos_y + 1];
       if (digraph.adjacent(y, y_successor) && digraph.adjacent(y_successor, y)) {  // edges adjcent to y are doubled
@@ -247,8 +269,8 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
       }
     }
     // DEBUG
-    std::cerr << "multigraph\n" << graph;
-    std::cerr << "digraph\n" << digraph;
+    // std::cerr << "multigraph\n" << graph;
+    // std::cerr << "digraph\n" << digraph;
   }
 
   return GraphPair{digraph, graph};
@@ -257,7 +279,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
 static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars,
                                                                          const size_t numberOfNodes) {
   // DEBUG
-  // std::cerr << "openEars\n" << openEars.ears;
+  std::cerr << "openEars\n" << openEars.ears;
 
   std::vector<unsigned int> tour;
   if (openEars.ears.size() == 1) {
@@ -266,6 +288,10 @@ static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const g
 
   else {
     GraphPair graphpair = constructGraphPair(openEars, numberOfNodes);
+
+    // DEBUG
+    std::cerr << "multigraph\n" << graphpair.graph;
+    std::cerr << "digraph\n" << graphpair.digraph;
 
     const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
 
@@ -381,8 +407,8 @@ static std::vector<unsigned int> extractHamiltonPath(const std::vector<unsigned 
   const size_t y                            = numberOfNodes5FoldGraph - 1;
   const size_t pos_x                        = graph::findPosition(wholeTour, static_cast<unsigned int>(x));
   const size_t pos_y                        = graph::findPosition(wholeTour, static_cast<unsigned int>(y));
-  [[maybe_unused]] const size_t posDistance = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
-  assert((posDistance - 1) % numberOfNodes == 0 && "Distance between index positions does not fit!");
+  //[[maybe_unused]] const size_t posDistance = pos_x < pos_y ? pos_y - pos_x : pos_x - pos_y;
+  //assert((posDistance - 1) % numberOfNodes == 0 && "Distance between index positions does not fit!");
 
   std::vector<unsigned int> tour;
   tour.reserve(numberOfNodes);
@@ -454,18 +480,18 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
 
   // DEBUG
-  std::cerr << "minimal\n" << minimal;
+  // std::cerr << "minimal\n" << minimal;
 
   graph::AdjacencyListGraph fiveFoldGraph = createFiveFoldGraph(euclidean, minimal, s, t);
   const size_t numberOfNodes5FoldGraph    = fiveFoldGraph.numberOfNodes();
 
   // DEBUG
-  std::cerr << "fiveFoldGraph\n" << fiveFoldGraph;
+  // std::cerr << "fiveFoldGraph\n" << fiveFoldGraph;
 
   const graph::EarDecomposition openEars = schmidt(fiveFoldGraph);  // calculate open ear decomposition
 
   // DEBUG
-  std::cerr << "openEars\n" << openEars.ears;
+  // std::cerr << "openEars\n" << openEars.ears;
 
   std::vector<unsigned int> wholeTour  = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
   const std::vector<unsigned int> tour = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution

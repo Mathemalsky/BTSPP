@@ -114,12 +114,19 @@ AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEd
   return addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
 }
 
-AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight) {
+AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, Edge augmentationEdge, double& maxEdgeWeight) {
+  assert(augmentationEdge.u != augmentationEdge.v && "Start node and end node must be different!");
+  if (augmentationEdge.u < augmentationEdge.v) {
+    augmentationEdge.invert();
+  }
   // sort the edges, put the augmentation edge in first position
   const Index index(euclidean.numberOfNodes());
-  std::vector<size_t> edgeIndices    = createEdgeIndeces(euclidean, index);
-  const size_t augmentationEdgeIndex = findPosition(edgeIndices, index.edgeIndex(augmentationEdge));
-  std::swap(edgeIndices.front(), edgeIndices[augmentationEdgeIndex]);
+  std::vector<size_t> edgeIndices            = createEdgeIndeces(euclidean, index);
+  const size_t augmentationEdgeIndexPosition = findPosition(edgeIndices, index.edgeIndex(augmentationEdge));
+
+  assert(augmentationEdgeIndexPosition < edgeIndices.size() && "Augmentation edge must exist in euclidean graph!");
+
+  std::swap(edgeIndices.front(), edgeIndices[augmentationEdgeIndexPosition]);
   std::sort(edgeIndices.begin() + 1, edgeIndices.end(), [&euclidean, &index, &augmentationEdge](const size_t a, const size_t b) {
     return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
   });

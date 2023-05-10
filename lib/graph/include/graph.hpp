@@ -286,6 +286,7 @@ class Euclidean : public CompleteGraph, public WeightedGraph, public UndirectedG
 private:
   /*!
    * @brief Edges is a facade class to iterate over all edges in euclidean graph.
+   * @details
    */
   class Edges {
   private:
@@ -318,10 +319,8 @@ private:
        * @return this iterator after increasing index
        */
       Iterator& operator++() {
-        do {
-          ++pPosition.index;
-        } while (pPosition.index % pPosition.numberOfNodes >= pPosition.index / pPosition.numberOfNodes);
-
+        ++pPosition.index;
+        makeValid();
         return *this;
       }
 
@@ -329,6 +328,15 @@ private:
        * @brief compares for inequality
        */
       bool operator!=(const Iterator& other) const { return pPosition.index != other.pPosition.index; }
+
+      /*!
+       * @brief increases position until edge is directed from higher to lower index
+       */
+      void makeValid() {
+        while (pPosition.index % pPosition.numberOfNodes >= pPosition.index / pPosition.numberOfNodes) {
+          ++pPosition.index;
+        }
+      }
 
     private:
       Position pPosition; /**< position of index in graph*/
@@ -345,7 +353,11 @@ private:
      * @brief creates an iterator pointing in front of the first edge
      * @return begin iterator
      */
-    Iterator begin() const { return Iterator(Iterator::Position{0, pNumberOfNodes}); }
+    Iterator begin() const {
+      Iterator it(Iterator::Position{0, pNumberOfNodes});
+      it.makeValid();
+      return it;
+    }
 
     /*!
      * @brief creates an iterator pointing in behind the last edge
@@ -552,7 +564,7 @@ public:
   /*!
    * @brief gives complete adjacency list
    * @details The i^th entry of the outer vectors contains the indices of all nodes reached with edges outgoing from node i.
-   * @return vector of vector of size_t (indices)
+   * @return read only reference to adjacency list
    */
   const std::vector<std::vector<size_t>>& adjacencyList() const { return pAdjacencyList; }
 
