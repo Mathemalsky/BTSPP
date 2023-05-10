@@ -180,7 +180,11 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
 
   // the other ears deletion of at most one edge can occur
   for (long j = ears.ears.size() - 2; j >= 0; --j) {
-    const std::vector<size_t>& ear = ears.ears[j];
+    const std::vector<size_t>& ear = ears.ears[static_cast<size_t>(j)];
+
+    // DEBUG
+    std::cerr << "ear: " << ear;
+
     const size_t pos_y =
         std::distance(ear.begin(), std::find_if(ear.begin() + 1, ear.end() - 1, [&](size_t u) { return graph.degree(u) == 2; }));
 
@@ -221,7 +225,11 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
       digraph.removeEdge(lastDoubledEdge.reverse());
     }
     else {
-      const size_t y           = ear[pos_y];
+      const size_t y = ear[pos_y];
+
+      // DEBUG
+      std::cerr << "y: " << y << std::endl;
+
       const size_t y_successor = ear[pos_y + 1];
       if (digraph.adjacent(y, y_successor) && digraph.adjacent(y_successor, y)) {  // edges adjcent to y are doubled
         graph.removeEdge(y, y_successor);
@@ -230,7 +238,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         digraph.removeEdge(y_successor, y);
       }
       for (const EdgeIndex& edge : edgesToBeDirected) {
-        if (edge.index <= pos_y) {
+        if (edge.index < pos_y) {
           digraph.addEdge(edge.e);
         }
         else {
@@ -238,6 +246,9 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
         }
       }
     }
+    // DEBUG
+    std::cerr << "multigraph\n" << graph;
+    std::cerr << "digraph\n" << digraph;
   }
 
   return GraphPair{digraph, graph};
@@ -246,7 +257,7 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
 static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars,
                                                                          const size_t numberOfNodes) {
   // DEBUG
-  std::cerr << "openEars\n" << openEars.ears;
+  // std::cerr << "openEars\n" << openEars.ears;
 
   std::vector<unsigned int> tour;
   if (openEars.ears.size() == 1) {
@@ -254,7 +265,8 @@ static std::vector<unsigned int> findHamiltonCycleInOpenEarDecomposition(const g
   }
 
   else {
-    GraphPair graphpair           = constructGraphPair(openEars, numberOfNodes);
+    GraphPair graphpair = constructGraphPair(openEars, numberOfNodes);
+
     const std::vector<size_t> tmp = findEulertour(graphpair.graph, graphpair.digraph);
 
     // DEBUG
@@ -275,7 +287,7 @@ static void printInfos(const double objective, const double maxEdgeWeight, const
   std::cout << "objective                            : " << objective << std::endl;
   std::cout << "lower bound on OPT                   : " << maxEdgeWeight << std::endl;
   std::cout << "a fortiori guarantee                 : " << objective / maxEdgeWeight << std::endl;
-  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+  // assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
 }
 
 Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) {

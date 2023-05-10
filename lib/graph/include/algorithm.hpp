@@ -124,9 +124,10 @@ EarDecomposition schmidt(const G& graph) {
   const size_t numberOfNodes         = graph.numberOfNodes();
 
   // DEBUG
-  std::cerr << "biconnected graph\n" << graph;
-  std::cerr << "backedges\n" << backedges;
-  std::cerr << "explorationorder\n" << tree.explorationOrder();
+  // std::cerr << "biconnected graph\n" << graph;
+  // std::cerr << "explorationorder\n" << tree.explorationOrder();
+  // std::cerr << "tree\n" << tree;
+  // std::cerr << "backedges\n" << backedges;
 
   std::vector<bool> visited(numberOfNodes, false);
   std::vector<std::vector<size_t>> ears;

@@ -692,7 +692,6 @@ private:
 
         ++pPosition.innerIndex;
         makeValid();
-
         return *this;
       }
 
@@ -916,10 +915,7 @@ private:
        */
       Iterator& operator++() {
         ++pPosition.innerIndex;
-        while (pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size() && pPosition.outerIndex < pAdjacencyList.size()) {
-          pPosition.innerIndex = 0;
-          ++pPosition.outerIndex;
-        }
+        makeValid();
         return *this;
       }
 
@@ -928,7 +924,19 @@ private:
        * @param other iterator to compare with
        * @return if the iterators are different
        */
-      bool operator!=(const Iterator& other) const { return pPosition.outerIndex != other.pPosition.outerIndex; }
+      bool operator!=(const Iterator& other) const {
+        return pPosition.outerIndex != other.pPosition.outerIndex || pPosition.innerIndex != other.pPosition.innerIndex;
+      }
+
+      /*!
+       * @brief if the iterator is not pointing to valid element, set the iterator to next valid element
+       */
+      void makeValid() {
+        while (pPosition.outerIndex < pAdjacencyList.size() && pPosition.innerIndex >= pAdjacencyList[pPosition.outerIndex].size()) {
+          pPosition.innerIndex = 0;
+          ++pPosition.outerIndex;
+        }
+      }
 
     private:
       const std::vector<std::vector<size_t>>& pAdjacencyList; /**< i-th vector contains neighbours of i */
@@ -946,7 +954,11 @@ private:
      * @brief creates an iterator pointing in front of the first edge
      * @return begin iterator
      */
-    Iterator begin() const { return Iterator(pAdjacencyList, Iterator::AdjListPos{0, 0}); }
+    Iterator begin() const {
+      Iterator it(pAdjacencyList, Iterator::AdjListPos{0, 0});
+      it.makeValid();
+      return it;
+    }
 
     /*!
      * \brief end returns the end Iterator for comparison.
