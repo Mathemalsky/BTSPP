@@ -1331,11 +1331,19 @@ private:
         assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
       }
 
+      /*!
+       * @brief creates Edge for current edge
+       * @return Edge
+       */
       Edge operator*() const {
         const int* const innerIndices = pAdjacencyMatrix.innerIndexPtr();
         return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndices[pPosition.innerIndex])};
       }
 
+      /*!
+       * @brief increments iterator
+       * @return Iterator after incrementation
+       */
       Iterator& operator++() {
         const int* const outerIndices = pAdjacencyMatrix.outerIndexPtr();
         const int* const innerIndices = pAdjacencyMatrix.innerIndexPtr();
@@ -1349,8 +1357,17 @@ private:
         return *this;
       }
 
+      /*!
+       * @brief compares iterators for inequality
+       * @param other iterator t compare with
+       * @return true if iterators are diffrent
+       */
       bool operator!=(const Iterator& other) const { return pPosition.innerIndex != other.pPosition.innerIndex; }
 
+      /*!
+       * @brief checks if the iterator points to a valid element and this element is in strictly lower left triangle of matrix
+       * @return true if iterator points to fitting entry
+       */
       bool valid() const {
         const int* const outerIndices = pAdjacencyMatrix.outerIndexPtr();
         const int* const innerIndices = pAdjacencyMatrix.innerIndexPtr();
@@ -1359,11 +1376,15 @@ private:
       }
 
     private:
-      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
-      SparseMatrixPos pPosition;
-    };  // end Iterator class
+      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix; /**< seigen sparse matrix as adjacency matrix of graph */
+      SparseMatrixPos pPosition;                                                /**< position of iterator in inner and outer indices */
+    };                                                                          // end Iterator class
 
   public:
+    /*!
+     * @brief constructs facade class from adjacency matrix of this graph
+     * @param adjacencyMatrix
+     */
     Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) : pAdjacencyMatrix(adjacencyMatrix) {}
 
     /*!
@@ -1389,14 +1410,24 @@ private:
     }
 
   private:
-    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
-  };  // end Edges class
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix; /**< adjacency matrix from the asociated graph */
+  };                                                                          // end Edges class
 
 public:
   AdjacencyMatrixGraph()  = default;
   ~AdjacencyMatrixGraph() = default;
 
+  /*!
+   * @brief constructs, AdjacencyMatrixGraph from adjacency matrix
+   * @param mat adjacency matrix
+   */
   AdjacencyMatrixGraph(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& mat) : AdjMatGraph(mat) {}
+
+  /*!
+   * @brief constructs AdjacencyMatrixGraph from triplet list
+   * @param numberOfNodes number of nodes, which is the dimension of the quadratic adjacency matrix
+   * @param tripletList list of triplets (row index, column index, edgeweight)
+   */
   AdjacencyMatrixGraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
@@ -1420,10 +1451,24 @@ public:
    */
   void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { addEdge(e.u, e.v, edgeWeight); }
 
+  /*!
+   * @brief checks if the graph is connected
+   * @details this is accomplished by a dfs
+   * @return true if graph is connected
+   */
   bool connected() const override;
 
+  /*!
+   * @brief checks if the graph is biconnected
+   * @details this is accomplished by schmidts algorithm
+   * @return true if graph is biconnected
+   */
   bool biconnected() const { return checkBiconnectivity(*this); }
 
+  /*!
+   * @brief creates a facade to iterate over the edges in the graph
+   * @return facade class Edges
+   */
   Edges edges() const { return Edges(pAdjacencyMatrix); }
 
   /*!
@@ -1507,7 +1552,17 @@ public:
   AdjacencyMatrixDigraph()  = default;
   ~AdjacencyMatrixDigraph() = default;
 
+  /*!
+   * @brief constructs digraph from sparse eigen row major matrix
+   * @param mat sparse eigen matrix as adjacency matrix
+   */
   AdjacencyMatrixDigraph(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& mat) : AdjMatGraph(mat) {}
+
+  /*!
+   * @brief constructs digraph from triplet list
+   * @param numberOfNodes
+   * @param tripletList list of triplets (row index, column index, edgeweight)
+   */
   AdjacencyMatrixDigraph(const size_t numberOfNodes, const std::vector<Eigen::Triplet<EdgeWeight>>& tripletList) :
     AdjMatGraph(numberOfNodes, tripletList) {}
 
@@ -1528,10 +1583,24 @@ public:
    */
   void addEdge(const Edge& e, const EdgeWeight edgeWeight) override { addEdge(e.u, e.v, edgeWeight); }
 
+  /*!
+   * @brief checks if the graph is weakly connected
+   * @details weakly connected means that the undirected graph obtained by ignoring the edges direction is connected
+   * @return true if graph is weakly connected
+   */
   bool connected() const override { return undirected().connected(); };
 
+  /*!
+   * @brief checks if the graph is weakly  biconnected
+   * @details weakly biconnected means that the undirected graph obtained by ignoring the edges direction is biconnected
+   * @return
+   */
   bool biconnected() const { return checkBiconnectivity(undirected()); }
 
+  /*!
+   * @brief returns instance of edges facade class to iterator over all edges
+   * @return edges facade
+   */
   Edges edges() const { return Edges(pAdjacencyMatrix); }
 
   /*!
@@ -1654,31 +1723,74 @@ public:
     pExplorationOrder.reserve(numberOfNodes);  // just reserve, because dfs performs push_backs
   }
 
+  /*!
+   * @brief checks if node v is the parent of u
+   * @param u
+   * @param v
+   * @return true if v is parent of u
+   */
   bool adjacent(const size_t u, const size_t v) const override { return u != 0 && v == parent(u); }
+
+  /*!
+   * @brief checks if the edge is in the graph
+   * @param e edge
+   * @return true if e is in the graph
+   */
   bool adjacent(const Edge& e) const override { return e.u != 0 && e.v == parent(e.u); }
 
+  /*!
+   * @brief returns number of nodes
+   * @return size of pAdjacencyList
+   */
   size_t numberOfNodes() const override { return pAdjacencyList.size(); }
 
+  /*!
+   * @brief creates iteratable instance of Edges
+   * @return instance of Edges with adjacency list and root of this graph
+   */
   Edges edges() const { return Edges(pAdjacencyList, root()); }
 
-  std::vector<size_t> explorationOrder() const { return pExplorationOrder; }
+  /*!
+   * @brief read only access to exploration order
+   * @return const reference to exploration order
+   */
+  const std::vector<size_t>& explorationOrder() const { return pExplorationOrder; }
+
+  /*!
+   * @brief writable access to exploration order
+   * @return reference to exploration order
+   */
   std::vector<size_t>& explorationOrder() { return pExplorationOrder; }
 
+  /*!
+   * @brief returns the parent of u
+   * @param u node
+   * @return index of u's parent
+   */
   size_t parent(const size_t u) const {
     assert(u != root() && "You are trying to access the root nodes parent, which is uninitialized memory!");
     return pAdjacencyList[u];
   }
 
+  /*!
+   * @brief writableaccess to the parent of u
+   * @param u node
+   * @return reference index of u's parent
+   */
   size_t& parent(const size_t u) {
     assert(u != root() && "You are trying to access the root nodes parent, which is uninitialized memory!");
     return pAdjacencyList[u];
   }
 
-  size_t root() const { return pExplorationOrder[0]; }
+  /*!
+   * @brief returns the root node
+   * @return the first explored node is the root node
+   */
+  size_t root() const { return pExplorationOrder.front(); }
 
 private:
-  std::vector<size_t> pAdjacencyList;
-  std::vector<size_t> pExplorationOrder;
+  std::vector<size_t> pAdjacencyList;    /**< adjancy list, all nodes except root have exatly one parent */
+  std::vector<size_t> pExplorationOrder; /**< order of node exploration, starts with root */
 };
 
 }  // namespace graph
