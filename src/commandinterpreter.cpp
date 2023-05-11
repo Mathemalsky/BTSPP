@@ -38,6 +38,15 @@
  *                                                      general
  **********************************************************************************************************************/
 
+/*!
+ * @brief extracts seed from list of arguments
+ * @details if the keyword <-seed> is found, the following SEED_LENGTH elements from the argument list are read as seed,
+ * the position index is moved forward by SEED_LENGTH positions
+ * @param seed array to write the seed to
+ * @param argv argument list as passed to main
+ * @param i position index in argument list
+ * @return true if a seed was found
+ */
 static bool findSeed(std::array<uint_fast32_t, SEED_LENGTH>& seed, char* argv[], int& i) {
   if (std::string(argv[i]) == "-seed") {
     for (unsigned int j = 0; j < SEED_LENGTH; ++j) {
@@ -124,6 +133,11 @@ static void readArguments(const int argc, char* argv[]) {
   }
   else {
     euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
+  }
+
+  if (arguments.empty()) {
+    printYellow("Warning");
+    std::cout << ": No problem type given. Nothing to do." << std::endl;
   }
 
   if (arguments.contains("-btsp")) {

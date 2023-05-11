@@ -56,11 +56,14 @@ struct GraphPair {
  * @return AdjacencyListGraph: minimally biconnected graph
  */
 template <typename G>
-static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGraph) requires(std::is_base_of_v<graph::Graph, G>) {
+static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGraph)
+  requires(std::is_base_of_v<graph::Graph, G>)
+{
   const graph::EarDecomposition ears       = schmidt(biconnectedGraph);
   const graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
   return minimallyBiconnectedSubgraph(fromEars);
 }
+
 /*!
  * @brief doubles and deletes edges to make open ear decomposition eularian
  * @param ears open ear decomposition
@@ -205,7 +208,7 @@ static std::vector<size_t> shortcutToHamiltoncycle(const std::vector<size_t>& lo
       hamiltoncycle.push_back(w);
       digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
       digraph.removeEdge(v, w);
-      ++i;  // do not consider next node for skipping. It's alredy added.
+      ++i;                       // do not consider next node for skipping. It's alredy added.
     }
     else {
       hamiltoncycle.push_back(v);
@@ -310,8 +313,7 @@ static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euc
 
   const size_t x = 5 * numberOfNodes;
   const size_t y = 5 * numberOfNodes + 1;
-  adjacencyList.emplace_back(std::vector<size_t>{});  // add empty adjacency vector for x
-  adjacencyList.emplace_back(std::vector<size_t>{});  // add empty adjacency vector for y
+  adjacencyList.resize(numberOfNodes5FoldGraph);  // add empty adjacency vector for x and y
   graph::AdjacencyListGraph fiveFoldGraph(adjacencyList);
 
   for (size_t i = 0; i < 5; i++) {
@@ -407,7 +409,7 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
   graph::AdjacencyListGraph fiveFoldGraph          = createFiveFoldGraph(euclidean, minimal, s, t);
   const size_t numberOfNodes5FoldGraph             = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);  // calculate open ear decomposition
+  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);                // calculate open ear decomposition
   std::vector<size_t> wholeTour                    = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
   const std::vector<size_t> tour                   = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
   const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, false);
@@ -415,6 +417,8 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
 
   if (printInfo) {
     printInfos(objective, maxEdgeWeight, ProblemType::BTSPP_approx);
+    std::cout << "edges in biconnected graph           : " << biconnectedGraph.numberOfEdges() << std::endl;
+    std::cout << "edges in minimally biconnected graph : " << minimal.numberOfEdges() << std::endl;
   }
 
   return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
