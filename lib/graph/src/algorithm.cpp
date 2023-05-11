@@ -25,7 +25,48 @@
 #include <Eigen/SparseCore>
 
 namespace graph {
-using Entry = Eigen::Triplet<EdgeWeight>;
+
+/*!
+ * @brief precompute the values to improve performance
+ */
+class ExplicitEdges {
+public:
+  struct EdgeInfo {
+    Edge edge;
+    double weightSquared;
+  };
+
+  ExplicitEdges(const ExplicitEdges&) = delete;  // copying would destroy the pointers
+
+  ExplicitEdges(const Euclidean& euclidean) {
+    pEdges.reserve(euclidean.numberOfEdges());
+    pEdgePointer.reserve(euclidean.numberOfEdges());
+    for (const Edge& edge : euclidean.edges()) {
+      pEdges.emplace_back(edge, euclidean.weightSquared(edge));
+      pEdgePointer.push_back(&pEdges.back());
+    }
+  }
+
+  ExplicitEdges(const Euclidean& euclidean, const Edge& augmentationEdge) {
+    pEdges.reserve(euclidean.numberOfEdges());
+    pEdgePointer.reserve(euclidean.numberOfEdges());
+    pEdges.emplace_back(augmentationEdge, euclidean.weightSquared(augmentationEdge));
+    pEdgePointer.push_back(&pEdges.back());
+
+    for (const Edge& edge : euclidean.edges()) {
+      if (edge != augmentationEdge) {
+        pEdges.emplace_back(edge, euclidean.weightSquared(edge));
+        pEdgePointer.push_back(&pEdges.back());
+      }
+    }
+  }
+
+  std::vector<const EdgeInfo*>& edgePointers() { return pEdgePointer; }
+
+private:
+  std::vector<EdgeInfo> pEdges;
+  std::vector<const EdgeInfo*> pEdgePointer;
+};
 
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes) {
   std::vector<std::vector<size_t>> adjacencyList(numberOfNodes);
@@ -38,43 +79,15 @@ AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDeco
   return AdjacencyListGraph(adjacencyList);
 }
 
-class Index {
-public:
-  Index(const size_t numberOfNodes) : pNumberOfNodes(numberOfNodes) {}
-
-  size_t edgeIndex(const Edge& edge) const { return edge.u * pNumberOfNodes + edge.v; }
-
-  Edge edge(const size_t index) const {
-    const size_t u = index / pNumberOfNodes;
-    const size_t v = index - u * pNumberOfNodes;  // avoiding modulo operation appeared to be faster
-    return Edge{u, v};
-  }
-
-private:
-  const size_t pNumberOfNodes;
-};
-
-static std::vector<size_t> createEdgeIndeces(const Euclidean& euclidean, const Index& index) {
-  std::vector<size_t> edgeIndices;
-  edgeIndices.reserve(euclidean.numberOfEdges());
-  for (const Edge& edge : euclidean.edges()) {
-    edgeIndices.push_back(index.edgeIndex(edge));
-  }
-  return edgeIndices;
-}
-
-static AdjacencyListGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
-                                                   const Index index,
-                                                   const std::vector<size_t>& edgeIndices,
-                                                   double& maxEdgeWeight) {
-  const size_t numberOfNodes = euclidean.numberOfNodes();
-  const size_t numberOfEdges = euclidean.numberOfEdges();
+static AdjacencyListGraph addEdgesUntilBiconnected(const size_t numberOfNodes,
+                                                   double& maxEdgeWeight,
+                                                   const std::vector<const ExplicitEdges::EdgeInfo*>& edges) {
+  const size_t numberOfEdges = edges.size();
 
   // add the first numberOfNodes many edges
   AdjacencyListGraph graph(numberOfNodes);
   for (size_t i = 0; i < numberOfNodes; ++i) {
-    const Edge e = index.edge(edgeIndices[i]);
-    graph.addEdge(e);
+    graph.addEdge(edges[i]->edge);
   }
   AdjacencyListGraph graphCopy = graph;  // and a copy
 
@@ -84,8 +97,7 @@ static AdjacencyListGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
   while (upperbound != lowerbound) {
     size_t middle = (lowerbound + upperbound) / 2;
     for (size_t i = lowerbound; i < middle; ++i) {
-      const Edge e = index.edge(edgeIndices[i]);
-      graphCopy.addEdge(e, euclidean.weight(e));
+      graphCopy.addEdge(edges[i]->edge);
     }
 
     if (graphCopy.biconnected()) {
@@ -93,25 +105,26 @@ static AdjacencyListGraph addEdgesUntilBiconnected(const Euclidean& euclidean,
       graphCopy  = graph;
     }
     else {
-      lowerbound   = middle + 1;
-      const Edge e = index.edge(edgeIndices[middle]);
-      graphCopy.addEdge(e, euclidean.weight(e));
+      lowerbound = middle + 1;
+      graphCopy.addEdge(edges[middle]->edge);
       graph = graphCopy;
     }
   }
-  maxEdgeWeight = euclidean.weight(index.edge(edgeIndices[lowerbound - 1]));  // for lower bound on opt
+  maxEdgeWeight = std::sqrt(edges[lowerbound - 1]->weightSquared);  // for lower bound on opt
   return graph;
 }
 
 AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight) {
+  // precompute the squared edge weights
+  ExplicitEdges explicitEdges(euclidean);
+  std::vector<const ExplicitEdges::EdgeInfo*> edges = explicitEdges.edgePointers();
+
   // sort the edges
-  const Index index(euclidean.numberOfNodes());
-  std::vector<size_t> edgeIndices = createEdgeIndeces(euclidean, index);
-  std::sort(edgeIndices.begin(), edgeIndices.end(), [&euclidean, &index](const size_t a, const size_t b) {
-    return euclidean.weightSquared(index.edge(a)) < euclidean.weightSquared(index.edge(b));
+  std::sort(edges.begin(), edges.end(), [&](const ExplicitEdges::EdgeInfo* a, const ExplicitEdges::EdgeInfo* b) {
+    return a->weightSquared < b->weightSquared;
   });
 
-  return addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
+  return addEdgesUntilBiconnected(euclidean.numberOfNodes(), maxEdgeWeight, edges);
 }
 
 AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, Edge augmentationEdge, double& maxEdgeWeight) {
@@ -119,19 +132,14 @@ AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, 
   if (augmentationEdge.u < augmentationEdge.v) {
     augmentationEdge.invert();
   }
-  // sort the edges, put the augmentation edge in first position
-  const Index index(euclidean.numberOfNodes());
-  std::vector<size_t> edgeIndices            = createEdgeIndeces(euclidean, index);
-  const size_t augmentationEdgeIndexPosition = findPosition(edgeIndices, index.edgeIndex(augmentationEdge));
 
-  assert(augmentationEdgeIndexPosition < edgeIndices.size() && "Augmentation edge must exist in euclidean graph!");
-
-  std::swap(edgeIndices.front(), edgeIndices[augmentationEdgeIndexPosition]);
-  std::sort(edgeIndices.begin() + 1, edgeIndices.end(), [&euclidean, &index, &augmentationEdge](const size_t a, const size_t b) {
-    return euclidean.weight(index.edge(a)) < euclidean.weight(index.edge(b));
+  ExplicitEdges explicitEdges(euclidean, augmentationEdge);
+  std::vector<const ExplicitEdges::EdgeInfo*> edges = explicitEdges.edgePointers();
+  std::sort(edges.begin() + 1, edges.end(), [&](const ExplicitEdges::EdgeInfo* a, const ExplicitEdges::EdgeInfo* b) {
+    return a->weightSquared < b->weightSquared;
   });
 
-  return addEdgesUntilBiconnected(euclidean, index, edgeIndices, maxEdgeWeight);
+  return addEdgesUntilBiconnected(euclidean.numberOfNodes(), maxEdgeWeight, edges);
 }
 
 AdjacencyListGraph minimallyBiconnectedSubgraph(const AdjacencyListGraph& graph) {

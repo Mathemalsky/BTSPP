@@ -176,7 +176,9 @@ bool checkBiconnectivity(const G& graph) {
  * @return index of non isolated node
  */
 template <typename G>
-size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+size_t findNonIsolatedNode(const G& graph)
+  requires(std::is_base_of_v<Graph, G>)
+{
   for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
     if (graph.degree(u) > 0) {
       return u;
@@ -195,7 +197,9 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
  * again.
  */
 template <typename G>
-std::vector<size_t> hierholzer(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+std::vector<size_t> hierholzer(const G& graph)
+  requires(std::is_base_of_v<Graph, G>)
+{
   G workingCopy = graph;
   std::vector<size_t> tour;
   tour.reserve(graph.numberOfEdges() + 1);
@@ -219,6 +223,14 @@ std::vector<size_t> hierholzer(const G& graph) requires(std::is_base_of_v<Graph,
 }
 
 /*!
+ * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
+ * \param earDecomposition open ear decomposition
+ * \param numberOfNodes number of nodes appaering there
+ * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
+ */
+AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+
+/*!
  * @brief biconnectedSpanningGraph computes a bottleneck optimal biconnected subgraph.
  * @details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
  * increasing in their length and successively added until the graph is biconnected.
@@ -238,14 +250,6 @@ AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEd
  * @return undirected AdjacencyMatrixGraph
  */
 AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
-
-/*!
- * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
- * \param earDecomposition open ear decomposition
- * \param numberOfNodes number of nodes appaering there
- * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
- */
-AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
 
 /*!
  * @brief makes graph minimally biconnected
