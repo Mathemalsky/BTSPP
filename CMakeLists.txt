@@ -25,7 +25,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -O1 -g -Wall -Wextra -pedantic")
 
-OPTION(Visualization "Visualisation" ON)
+OPTION(Visualisation "Visualisation" ON)
 message(STATUS "Visualisation=${Visualisation}")
 
 if(${Visualisation} STREQUAL ON)
