@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <limits>
 #include <numeric>
 #include <stdexcept>
 #include <vector>
@@ -100,8 +101,19 @@ public:
 
   /*!
    * @brief constructs EdgeWeight with value weight
+   * @details EdgeWeight(0) sets weight to infinity. This is because Eigen calls EdgeWeight(0) when
+   * implicit entries of adjacency matrix are accessed. By the definition of + and * operator infinity
+   * is the neutral element of + operation and absorbing element of * operation. To set an edge weight
+   * to zero. EdgeWeight(0, true) muss be called.
    */
-  EdgeWeight(const double weight) : pWeight(weight) {}
+  explicit EdgeWeight(const double weight, const bool trueZero = false) {
+    if (trueZero || weight != 0) {
+      pWeight = weight;
+    }
+    else {
+      pWeight = std::numeric_limits<double>::infinity();
+    }
+  }
 
   /*!
    * @brief returns the weight as double
@@ -109,23 +121,20 @@ public:
   double weight() const { return pWeight; }
 
   /*!
-   * @brief assignment operator from double
+   * @brief compares for inquality
    */
-  void operator=(const double weight) { pWeight = weight; }
+  bool operator==(const EdgeWeight compare) { return pWeight == compare.pWeight; }
 
   /*!
-   * @brief compares for inquality with double
+   * @brief compares for inequality
    */
-  bool operator==(const double compare) { return pWeight == compare; }
+  bool operator!=(const EdgeWeight compare) { return pWeight != compare.pWeight; }
 
   /*!
-   * @brief compares for inequality with double
-   */
-  bool operator!=(const double compare) { return pWeight != compare; }
-
-  /*!
-   * @brief compares for \leq with double
+   * @brief compares for \leq
    * @details This function is needed in Eigen.
+   * @attention this function is used for comparison to prune elements in sparse matrix an more.
+   * Not all are well defined for this + and * operator
    */
   bool operator<=(const EdgeWeight other) { return pWeight <= other.pWeight; }
 
@@ -815,7 +824,7 @@ public:
    * @param in node at the edge's end
    * @param edgeWeight not used
    */
-  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = EdgeWeight(1.0)) override {
     pAdjacencyList[out].push_back(in);
     pAdjacencyList[in].push_back(out);
   }
@@ -826,7 +835,7 @@ public:
    * @param e edge to add
    * @param edgeWeight
    */
-  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = EdgeWeight(1.0)) override {
     pAdjacencyList[e.u].push_back(e.v);
     pAdjacencyList[e.v].push_back(e.u);
   }
@@ -1015,7 +1024,7 @@ public:
    * @param in node at the edge is directed to
    * @param edgeWeight not used
    */
-  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override {
+  void addEdge(const size_t out, const size_t in, [[maybe_unused]] const EdgeWeight edgeWeight = EdgeWeight(1.0)) override {
     pAdjacencyList[out].push_back(in);
   }
 
@@ -1024,7 +1033,9 @@ public:
    * @param e edge to be added
    * @param edgeWeight
    */
-  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = 1.0) override { pAdjacencyList[e.u].push_back(e.v); }
+  void addEdge(const Edge& e, [[maybe_unused]] const EdgeWeight edgeWeight = EdgeWeight(1.0)) override {
+    pAdjacencyList[e.u].push_back(e.v);
+  }
 
   /*!
    * \brief AdjacencyListDiGraph::connected checks the graph is connected
@@ -1197,14 +1208,14 @@ public:
    * @param v node at end of edge
    * @return true if edge exists
    */
-  virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) != 0.0; }
+  virtual bool adjacent(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v) != EdgeWeight(0.0); }
 
   /*!
    * @brief checks if there is an explicit entry for that edge
    * @param e edge to check
    * @return true if edge exists
    */
-  virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) != 0.0; }
+  virtual bool adjacent(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v) != EdgeWeight(0.0); }
 
   /*!
    * @brief accesses the weight of an edge
@@ -1212,20 +1223,14 @@ public:
    * @param v node at end of edge
    * @return weight of edge
    */
-  double weight(const size_t u, const size_t v) const override {
-    assert(pAdjacencyMatrix.coeff(u, v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
-    return pAdjacencyMatrix.coeff(u, v).weight();
-  }
+  double weight(const size_t u, const size_t v) const override { return pAdjacencyMatrix.coeff(u, v).weight(); }
 
   /*!
    * @brief accesses the weight of an edge
    * @param e edge whose weight is to check
    * @return weight of edge
    */
-  double weight(const Edge& e) const override {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edgeweight 0 cann also mean the edge does not exist!");
-    return pAdjacencyMatrix.coeff(e.u, e.v).weight();
-  }
+  double weight(const Edge& e) const override { return pAdjacencyMatrix.coeff(e.u, e.v).weight(); }
 
   /*!
    * @brief number of edges is number of nonzeros
@@ -1339,7 +1344,7 @@ private:
           if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
-          ++pPosition.outerIndex;  // goes to next row
+          ++pPosition.outerIndex;                                           // goes to next row
         }
         return *this;
       }
@@ -1425,13 +1430,15 @@ public:
    * @brief removes an edge from the graph (and the reverse directed copy too)
    * @param e edge to be removed
    * @attention sets weight to zero, does not make the entry implicit
+   * @attention eigen and EdgeWeight are not yet sufficiently adjusted to each other to use this function
    */
+  /*
   void removeEdge(const Edge& e) {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0.0 && "Edge to be removed does not exist in graph!");
-    pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
-    assert(pAdjacencyMatrix.coeff(e.v, e.u) != 0.0 && "Edge to be removed does not exist in graph!");
-    pAdjacencyMatrix.coeffRef(e.v, e.u) = 0.0;
-  }
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != EdgeWeight(0.0) && "Edge to be removed does not exist in graph!");
+    pAdjacencyMatrix.coeffRef(e.u, e.v) = EdgeWeight(0.0);
+    assert(pAdjacencyMatrix.coeff(e.v, e.u) != EdgeWeight(0.0) && "Edge to be removed does not exist in graph!");
+    pAdjacencyMatrix.coeffRef(e.v, e.u) = EdgeWeight(0.0);
+  }*/
 };
 
 /*!
@@ -1527,10 +1534,16 @@ public:
 
   Edges edges() const { return Edges(pAdjacencyMatrix); }
 
-  void removeEdge(const Edge& e) {
-    assert(pAdjacencyMatrix.coeff(e.u, e.v) != 0 && "Edge to be removed does not exist in graph!");
-    pAdjacencyMatrix.coeffRef(e.u, e.v) = 0.0;
-  }
+  /*!
+   * @brief removes an edge from the graph (and the reverse directed copy too)
+   * @param e edge to be removed
+   * @attention sets weight to zero, does not make the entry implicit
+   * @attention eigen and EdgeWeight are not yet sufficiently adjusted to each other to use this function
+   */
+  /* void removeEdge(const Edge& e) {
+    assert(pAdjacencyMatrix.coeff(e.u, e.v) != EdgeWeight(0.0) && "Edge to be removed does not exist in graph!");
+    pAdjacencyMatrix.coeffRef(e.u, e.v) = EdgeWeight(0.0);
+  } */
 
   AdjacencyMatrixGraph undirected() const;
 };
