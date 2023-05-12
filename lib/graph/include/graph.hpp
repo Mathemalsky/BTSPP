@@ -1493,26 +1493,48 @@ public:
  */
 class AdjacencyMatrixDigraph : public AdjMatGraph, public DirectedGraph {
 private:
+  /*!
+   * @brief Edges is a facade class to iterate over all edges of a AdjacencyMatrixGraph
+   */
   class Edges {
   private:
+    /*!
+     * @brief Iterator to iterator of a AdjacencyMatrixGraphs edges
+     */
     class Iterator {
     public:
+      /*!
+       * @brief bundle inner and outer index
+       */
       struct SparseMatrixPos {
-        size_t innerIndex;
-        size_t outerIndex;
+        size_t innerIndex; /**< inner index is column index */
+        size_t outerIndex; /**< outer index is row index */
       };
 
+      /*!
+       * @brief creates an Iterator on the AdjacencyMatrixGraph
+       * @param adjacencyMatrix of the AdjacencyMatrixGraph
+       * @param pos position in sparse matrix
+       */
       Iterator(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix, const SparseMatrixPos& pos) :
         pAdjacencyMatrix(adjacencyMatrix),
         pPosition(pos) {
         assert(pAdjacencyMatrix.isCompressed() && "Iterating over uncompressed matrix results in undefined behavior!");
       }
 
+      /*!
+       * @brief creates Edge for current edge
+       * @return Edge
+       */
       Edge operator*() const {
         const int* innerIndices = pAdjacencyMatrix.innerIndexPtr();
         return Edge{pPosition.outerIndex, static_cast<size_t>(innerIndices[pPosition.innerIndex])};
       }
 
+      /*!
+       * @brief increments iterator
+       * @return Iterator after incrementation
+       */
       Iterator& operator++() {
         const int* outerIndices = pAdjacencyMatrix.outerIndexPtr();
         ++pPosition.innerIndex;
@@ -1522,16 +1544,31 @@ private:
         return *this;
       }
 
+      /*!
+       * @brief compares iterators for inequality
+       * @param other iterator t compare with
+       * @return true if iterators are diffrent
+       */
       bool operator!=(const Iterator& other) const { return pPosition.innerIndex != other.pPosition.innerIndex; }
 
     private:
-      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
-      SparseMatrixPos pPosition;
-    };  // end Iterator class
+      const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix; /**< seigen sparse matrix as adjacency matrix of graph */
+      SparseMatrixPos pPosition;                                                /**< position of iterator in inner and outer indices */
+    };                                                                          // end Iterator class
 
   public:
+    /*!
+     * @brief constructs facade class from adjacency matrix of this graph
+     * @param adjacencyMatrix
+     */
     Edges(const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& adjacencyMatrix) : pAdjacencyMatrix(adjacencyMatrix) {}
 
+    /*!
+     * \brief begin returns a an Iterator to the begin of the strictly lower triangle in adjacency matrix.
+     * \details The Iterator starts in second row, because the intersect of first row and strictly lower triangle is
+     * empty.
+     * \return Iterator to the begin of the strictly lower triangle in adjacency matrix
+     */
     Iterator begin() const { return Iterator(pAdjacencyMatrix, Iterator::SparseMatrixPos{0, 0}); }
 
     /*!
@@ -1545,8 +1582,8 @@ private:
     }
 
   private:
-    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix;
-  };  // end Edges class
+    const Eigen::SparseMatrix<EdgeWeight, Eigen::RowMajor>& pAdjacencyMatrix; /**< adjacency matrix from the asociated graph */
+  };                                                                          // end Edges class
 
 public:
   AdjacencyMatrixDigraph()  = default;
@@ -1697,8 +1734,18 @@ private:
     };                                           // end Iterator class
 
   public:
+    /*!
+     * @brief constructs facade class from adjacency list of this graph
+     * @param adjacencyList list of parent nodes
+     * @param root of tree
+     */
     Edges(const std::vector<size_t>& adjacencyList, const size_t root) : pAdjacencyList(adjacencyList), pRoot(root) {}
 
+    /*!
+     * @brief creates iterator to first node
+     * @details if first node is root, set iterator to second
+     * @return begin iterator
+     */
     Iterator begin() const {
       if (pRoot != 0) {
         return Iterator(pAdjacencyList, pRoot, 0);  // skip the root node
@@ -1708,17 +1755,26 @@ private:
       }
     }
 
+    /*!
+     * @brief creates iterator behind last element
+     * @return end iterator
+     */
     Iterator end() const { return Iterator(pAdjacencyList, pRoot, pAdjacencyList.size()); }
 
   private:
-    const std::vector<size_t>& pAdjacencyList;
-    const size_t pRoot;
-  };  // end Edges class
+    const std::vector<size_t>& pAdjacencyList; /**< adjacency list */
+    const size_t pRoot;                        /**< root node index */
+  };                                           // end Edges class
 
 public:
   DfsTree()  = default;
   ~DfsTree() = default;
 
+  /*!
+   * @brief constructs DfsTree from number of nodes
+   * @details resizes the adjacency list to numberOfNodes, reserve numberOfNodes entries in exploration Order
+   * @param numberOfNodes number of nodes in dfsTree
+   */
   DfsTree(const size_t numberOfNodes) : pAdjacencyList(numberOfNodes) {
     pExplorationOrder.reserve(numberOfNodes);  // just reserve, because dfs performs push_backs
   }
