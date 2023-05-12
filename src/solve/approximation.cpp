@@ -36,15 +36,7 @@
 
 #include "solve/commonfunctions.hpp"
 
-// TEST
-#include "ostream.hpp"
-
 namespace approximation {
-
-struct GraphPair {
-  graph::AdjacencyListDigraph digraph;
-  graph::AdjacencyListGraph graph;
-};
 
 /***********************************************************************************************************************
  *                                            algorithms for BTSP
@@ -59,9 +51,7 @@ struct GraphPair {
  * @return AdjacencyListGraph: minimally biconnected graph
  */
 template <typename G>
-static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGraph)
-  requires(std::is_base_of_v<graph::Graph, G>)
-{
+static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGraph) requires(std::is_base_of_v<graph::Graph, G>) {
   const graph::EarDecomposition ears       = schmidt(biconnectedGraph);
   const graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
   return minimallyBiconnectedSubgraph(fromEars);
@@ -72,7 +62,7 @@ static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGr
  * @param ears open ear decomposition
  * @param numberofNodes tells the function the ranges of indices ocurring in ears
  */
-static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const size_t numberOfNodes) {
+static graph::AdjacencyListDigraph constructDigraph(const graph::EarDecomposition& ears, const size_t numberOfNodes) {
   graph::AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
   graph::AdjacencyListDigraph digraph(numberOfNodes);
 
@@ -129,8 +119,6 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
       const size_t y           = ear[pos_y];
       const size_t y_successor = ear[pos_y + 1];
       if (digraph.adjacent(y, y_successor) && digraph.adjacent(y_successor, y)) {  // edges adjcent to y are doubled
-        graph.removeEdge(y, y_successor);
-        graph.removeEdge(y, y_successor);
         digraph.removeEdge(y, y_successor);
         digraph.removeEdge(y_successor, y);
       }
@@ -144,47 +132,32 @@ static GraphPair constructGraphPair(const graph::EarDecomposition& ears, const s
       }
     }
   }
-
-  // TEST
-  std::cout << "graph\n" << graph;
-  std::cout << "digraph\n" << digraph;
-  std::cout << "undirected digraph\n" << digraph.undirected();
-
-  return GraphPair{digraph, graph};
+  return digraph;
 }
 
 /*!
  * @brief prepairs the graphs for finding the euler tour
  * @param graphPair graph and digraph
  */
-static void prepareForEulertour(GraphPair& graphPair) {
-  const size_t numberOfNodes = graphPair.graph.numberOfNodes();
+static void prepareForEulertour(graph::AdjacencyListDigraph& digraph) {
+  const size_t numberOfNodes = digraph.numberOfNodes();
 
   graph::AdjacencyListDigraph reverseDigraph(numberOfNodes);
-  for (const graph::Edge& e : graphPair.digraph.edges()) {
+  for (const graph::Edge& e : digraph.edges()) {
     reverseDigraph.addEdge(e.reverse());
   }
 
-  graphPair.graph.addIsolatedNodes(numberOfNodes);
-  graphPair.digraph.addIsolatedNodes(numberOfNodes);
+  digraph.addIsolatedNodes(numberOfNodes);
   for (const size_t u : reverseDigraph.nodes()) {
-    if (reverseDigraph.degree(u) == 2 && graphPair.digraph.degree(u) > 0) {
+    if (reverseDigraph.degree(u) == 2 && digraph.degree(u) > 0) {
       const size_t v = reverseDigraph.neighbours(u)[0];
       const size_t w = reverseDigraph.neighbours(u)[1];
-      graphPair.graph.removeEdge(v, u);
-      graphPair.graph.removeEdge(w, u);
-      graphPair.digraph.removeEdge(v, u);
-      graphPair.digraph.removeEdge(w, u);
-      graphPair.graph.addEdge(v, u + numberOfNodes);
-      graphPair.graph.addEdge(w, u + numberOfNodes);
-      graphPair.digraph.addEdge(v, u + numberOfNodes);
-      graphPair.digraph.addEdge(w, u + numberOfNodes);
+      digraph.removeEdge(v, u);
+      digraph.removeEdge(w, u);
+      digraph.addEdge(v, u + numberOfNodes);
+      digraph.addEdge(w, u + numberOfNodes);
     }
   }
-
-  // TEST
-  std::cout << "graph\n" << graphPair.graph;
-  std::cout << "undirected digraph\n" << graphPair.digraph.undirected();
 }
 
 /*!
@@ -193,9 +166,9 @@ static void prepareForEulertour(GraphPair& graphPair) {
  * @param digraph holds information needed to construct an euler tour that can be shortcutted to hamiltonian cycle
  * @return std::vector<size_t> of node indices; first is not repeated as last
  */
-static std::vector<size_t> findEulertour(GraphPair& graphPair) {
-  prepareForEulertour(graphPair);
-  std::vector<size_t> eulertourInGMinus = hierholzer(graphPair.graph);
+static std::vector<size_t> findEulertour(graph::AdjacencyListDigraph& digraph) {
+  prepareForEulertour(digraph);
+  std::vector<size_t> eulertourInGMinus = hierholzer(digraph.undirected());
   return eulertourInGMinus;
 }
 
@@ -220,7 +193,7 @@ static std::vector<size_t> shortcutToHamiltoncycle(const std::vector<size_t>& lo
       hamiltoncycle.push_back(w);
       digraph.removeEdge(v, u);  // prevent the node from beeing skipped again between the same 2 nodes
       digraph.removeEdge(v, w);
-      ++i;                       // do not consider next node for skipping. It's alredy added.
+      ++i;  // do not consider next node for skipping. It's alredy added.
     }
     else {
       hamiltoncycle.push_back(v);
@@ -242,9 +215,9 @@ static std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::
     tour = std::vector<size_t>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
   }
   else {
-    GraphPair graphPair     = constructGraphPair(openEars, numberOfNodes);
-    std::vector<size_t> tmp = findEulertour(graphPair);
-    tour                    = shortcutToHamiltoncycle(tmp, graphPair.digraph, numberOfNodes);
+    graph::AdjacencyListDigraph digraph = constructDigraph(openEars, numberOfNodes);
+    std::vector<size_t> tmp             = findEulertour(digraph);
+    tour                                = shortcutToHamiltoncycle(tmp, digraph, numberOfNodes);
   }
   assert(tour.size() == numberOfNodes && "Missmatching number of nodes in hamilton cycle!");
   return tour;
@@ -421,7 +394,7 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
   graph::AdjacencyListGraph fiveFoldGraph          = createFiveFoldGraph(euclidean, minimal, s, t);
   const size_t numberOfNodes5FoldGraph             = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);                // calculate open ear decomposition
+  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);  // calculate open ear decomposition
   std::vector<size_t> wholeTour                    = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
   const std::vector<size_t> tour                   = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
   const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, false);
