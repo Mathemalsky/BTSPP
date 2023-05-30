@@ -19,6 +19,7 @@
 #include "commandinterpreter.hpp"
 
 #include <array>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <unordered_set>
@@ -113,6 +114,21 @@ void interpretCommandLine(const int argc, char* argv[]) {
  **********************************************************************************************************************/
 
 #if not(VISUALISATION)
+static void writeStatsToFile(const approximation::Result& res, const ProblemType type const char* filename) {
+  std::ofstream outputfile;
+  outputfile.open(filename, std::ios::out | std::ios::app);
+  if (!outputfile) {
+    // unable to find write to outputfile
+  }
+  outputfile << std::to_underlying(type) << ",";
+  outputfile << res.biconnectedGraph.numberOfNodes() << ",";
+  outputfile << res.objective << ",";
+  outputfile << res.lowerBoundOnOPT << ",";
+  outputfile << res.objective / res.lowerBoundOnOPT << ",";
+  outputfile << res.biconnectedGraph.numberOfEdges() << ",";
+  outputfile << res.numberOfEdgesInMinimallyBiconectedGraph << std::endl;
+}
+
 static void readArguments(const int argc, char* argv[]) {
   std::unordered_set<std::string> arguments;
   bool seeded = false;

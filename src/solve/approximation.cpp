@@ -247,7 +247,7 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
     std::cout << "edges in minimally biconnected graph : " << minimal.numberOfEdges() << std::endl;
   }
 
-  return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
+  return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
 }
 
 /***********************************************************************************************************************
@@ -406,6 +406,6 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
     std::cout << "edges in minimally biconnected graph : " << minimal.numberOfEdges() << std::endl;
   }
 
-  return Result{biconnectedGraph, openEars, tour, objective, bottleneckEdge};
+  return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
 }
 }  // namespace approximation

@@ -31,8 +31,10 @@ struct Result {
   graph::AdjacencyListGraph biconnectedGraph;
   graph::EarDecomposition openEarDecomposition;
   std::vector<size_t> tour;
-  double opt;
   graph::Edge bottleneckEdge;
+  double objective;
+  double lowerBoundOnOPT;
+  size_t numberOfEdgesInMinimallyBiconectedGraph;
 };
 
 /*!
