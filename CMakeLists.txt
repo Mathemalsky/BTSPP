@@ -23,9 +23,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/build/)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -O1 -g -Wall -Wextra -pedantic")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -O3 -g -Wall -Wextra -pedantic")
 
-OPTION(Visualization "Visualisation" ON)
+OPTION(Visualisation "Visualisation" ON)
 message(STATUS "Visualisation=${Visualisation}")
 
 if(${Visualisation} STREQUAL ON)

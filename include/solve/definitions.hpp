@@ -18,8 +18,13 @@
  */
 #pragma once
 
+/*!
+ * @brief enum class to specify type of instance
+ * @details NUMBER_OF_OPTIONS is the number of normal elements in the enum and is used for defining
+ * the length of arrays, which have entries for each type
+ */
 enum class ProblemType : unsigned int {
-  BTSP_approx,
+  BTSP_approx = 0,
   BTSPP_approx,
   BTSP_exact,
   BTSPP_exact,
@@ -27,4 +32,4 @@ enum class ProblemType : unsigned int {
   NUMBER_OF_OPTIONS
 };
 
-constexpr unsigned int SEED_LENGTH = 2;
+constexpr size_t SEED_LENGTH = 2; /**< number of uint32_t to pass as seed to random graph generation */

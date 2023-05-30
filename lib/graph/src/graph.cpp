@@ -63,16 +63,11 @@ bool AdjacencyListGraph::connected() const {
  **********************************************************************************************************************/
 
 AdjacencyListGraph AdjacencyListDigraph::undirected() const {
-  const size_t numberOfNodes = this->numberOfNodes();
-  AdjacencyListGraph undirected(numberOfNodes);
-  for (size_t i = 0; i < numberOfNodes; ++i) {
-    for (size_t j = 0; j < degree(i); ++j) {
-      if (std::find(undirected.neighbours(i).begin(), undirected.neighbours(i).end(), j) == undirected.neighbours(i).end()) {
-        undirected.addEdge(i, j);  // add reverse directed add if not yet existing
-      }
-    }
+  std::vector<std::vector<size_t>> adjacencyList = pAdjacencyList;
+  for (const Edge& edge : edges()) {
+    adjacencyList[edge.v].push_back(edge.u);
   }
-  return undirected;
+  return AdjacencyListGraph(adjacencyList);
 }
 
 /***********************************************************************************************************************

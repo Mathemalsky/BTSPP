@@ -1,4 +1,4 @@
-# BBSTP
+# BSTPP
 
 ## Using the whole program
 

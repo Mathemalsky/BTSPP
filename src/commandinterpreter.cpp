@@ -38,6 +38,15 @@
  *                                                      general
  **********************************************************************************************************************/
 
+/*!
+ * @brief extracts seed from list of arguments
+ * @details if the keyword <-seed> is found, the following SEED_LENGTH elements from the argument list are read as seed,
+ * the position index is moved forward by SEED_LENGTH positions
+ * @param seed array to write the seed to
+ * @param argv argument list as passed to main
+ * @param i position index in argument list
+ * @return true if a seed was found
+ */
 static bool findSeed(std::array<uint_fast32_t, SEED_LENGTH>& seed, char* argv[], int& i) {
   if (std::string(argv[i]) == "-seed") {
     for (unsigned int j = 0; j < SEED_LENGTH; ++j) {
@@ -126,35 +135,40 @@ static void readArguments(const int argc, char* argv[]) {
     euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
   }
 
+  if (arguments.empty()) {
+    printYellow("Warning");
+    std::cout << ": No problem type given. Nothing to do." << std::endl;
+  }
+
   if (arguments.contains("-btsp")) {
     stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSP(euclidean);
-    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btsp");
   }
   if (arguments.contains("-btspp")) {
     stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSPP(euclidean);
-    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btspp");
   }
   if (arguments.contains("-btsp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains("-no-crossing"));
-    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btsp-e");
     arguments.erase("-no-crossing");
   }
   if (arguments.contains("-btspp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSPP_exact);
-    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-btspp-e");
   }
   if (arguments.contains("-tsp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::TSP_exact);
-    std::cout << "eleapsed time                        : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
     arguments.erase("-tsp-e");
   }
 

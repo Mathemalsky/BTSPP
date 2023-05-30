@@ -219,6 +219,14 @@ std::vector<size_t> hierholzer(const G& graph) requires(std::is_base_of_v<Graph,
 }
 
 /*!
+ * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
+ * \param earDecomposition open ear decomposition
+ * \param numberOfNodes number of nodes appaering there
+ * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
+ */
+AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
+
+/*!
  * @brief biconnectedSpanningGraph computes a bottleneck optimal biconnected subgraph.
  * @details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
  * increasing in their length and successively added until the graph is biconnected.
@@ -238,14 +246,6 @@ AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEd
  * @return undirected AdjacencyMatrixGraph
  */
 AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
-
-/*!
- * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
- * \param earDecomposition open ear decomposition
- * \param numberOfNodes number of nodes appaering there
- * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
- */
-AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
 
 /*!
  * @brief makes graph minimally biconnected
