@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 
 // graph library
@@ -71,6 +72,24 @@ static void printSyntax() {
   std::cout << "./<NameOfExecutable> <NumberOfNodesInGraph> <arg1> <arg2> ...\n";
 }
 
+static void printInfo(const approximation::Result& res, const ProblemType problemType, const double runtime) {
+  std::cout << "-------------------------------------------------------\n";
+  std::cout << "Approximated an instance of " << INSTANCE_TYPES[std::to_underlying(problemType)] << std::endl;
+  std::cout << "objective                            : " << res.objective << std::endl;
+  std::cout << "lower bound on OPT                   : " << res.lowerBoundOnOPT << std::endl;
+  std::cout << "a fortiori guarantee                 : " << res.objective / res.lowerBoundOnOPT << std::endl;
+  std::cout << "edges in biconnected graph           : " << res.biconnectedGraph.numberOfEdges() << std::endl;
+  std::cout << "edges in minimally biconnected graph : " << res.numberOfEdgesInMinimallyBiconectedGraph << std::endl;
+  std::cout << "elapsed time                         : " << runtime << " ms\n";
+}
+
+static void printInfo(const exactsolver::Result& res, const ProblemType problemType, const double runtime) {
+  std::cout << "-------------------------------------------------------\n";
+  std::cout << "Solved an instance of " << INSTANCE_TYPES[std::to_underlying(problemType)] << std::endl;
+  std::cout << "OPT                                  : " << res.opt << std::endl;
+  std::cout << "elapsed time                         : " << runtime << " ms\n";
+}
+
 /***********************************************************************************************************************
  *                                                  visual program
  **********************************************************************************************************************/
@@ -114,7 +133,7 @@ void interpretCommandLine(const int argc, char* argv[]) {
  **********************************************************************************************************************/
 
 #if not(VISUALISATION)
-static void writeStatsToFile(const approximation::Result& res, const ProblemType type const char* filename) {
+static void writeStatsToFile(const approximation::Result& res, const ProblemType type, const char* filename, const double runtime) {
   std::ofstream outputfile;
   outputfile.open(filename, std::ios::out | std::ios::app);
   if (!outputfile) {
@@ -126,16 +145,22 @@ static void writeStatsToFile(const approximation::Result& res, const ProblemType
   outputfile << res.lowerBoundOnOPT << ",";
   outputfile << res.objective / res.lowerBoundOnOPT << ",";
   outputfile << res.biconnectedGraph.numberOfEdges() << ",";
-  outputfile << res.numberOfEdgesInMinimallyBiconectedGraph << std::endl;
+  outputfile << res.numberOfEdgesInMinimallyBiconectedGraph << ",";
+  outputfile << runtime << std::endl;
 }
 
 static void readArguments(const int argc, char* argv[]) {
+  std::string filename = "";
   std::unordered_set<std::string> arguments;
   bool seeded = false;
   std::array<uint_fast32_t, SEED_LENGTH> seed;
   for (int i = 2; i < argc; ++i) {
     if (findSeed(seed, argv, i)) {
       seeded = true;
+      continue;
+    }
+    if (std::string(argv[i]).starts_with(std::string_view("-logfile:="))) {
+      filename = std::string(argv[i]).substr(10, std::string(argv[i]).length()-10)
       continue;
     }
     arguments.insert(std::string(argv[i]));
@@ -159,32 +184,37 @@ static void readArguments(const int argc, char* argv[]) {
   if (arguments.contains("-btsp")) {
     stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSP(euclidean);
-    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    const double runtime            = stopWatch.elapsedTimeInMilliseconds();
+    printInfo(res, ProblemType::BTSP_approx, runtime);
     arguments.erase("-btsp");
   }
   if (arguments.contains("-btspp")) {
     stopWatch.reset();
     const approximation::Result res = approximation::approximateBTSPP(euclidean);
-    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    const double runtime            = stopWatch.elapsedTimeInMilliseconds();
+    printInfo(res, ProblemType::BTSPP_approx, runtime);
     arguments.erase("-btspp");
   }
   if (arguments.contains("-btsp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains("-no-crossing"));
-    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    const double runtime          = stopWatch.elapsedTimeInMilliseconds();
+    printInfo(res, ProblemType::BTSP_exact, runtime);
     arguments.erase("-btsp-e");
     arguments.erase("-no-crossing");
   }
   if (arguments.contains("-btspp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSPP_exact);
-    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    const double runtime          = stopWatch.elapsedTimeInMilliseconds();
+    printInfo(res, ProblemType::BTSPP_exact, runtime);
     arguments.erase("-btspp-e");
   }
   if (arguments.contains("-tsp-e")) {
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::TSP_exact);
-    std::cout << "elapsed time                         : " << stopWatch.elapsedTimeInMilliseconds() << " ms\n";
+    const double runtime          = stopWatch.elapsedTimeInMilliseconds();
+    printInfo(res, ProblemType::TSP_exact, runtime);
     arguments.erase("-tsp-e");
   }
 

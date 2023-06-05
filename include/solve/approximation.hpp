@@ -43,7 +43,7 @@ struct Result {
  * \param printInfo controls if objective, lower bound on OPT and a fortiori guarantee are printed to console
  * \return Result
  */
-Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo = true);
+Result approximateBTSP(const graph::Euclidean& euclidean);
 
 /*!
  * @brief approximates the BTSPP
@@ -53,5 +53,5 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo =
  * @param printInfo controls if objective, lower bound on OPT and a fortiori guarantee are printed to console
  * @return Result
  */
-Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s = 0, const size_t t = 1, const bool printInfo = true);
+Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s = 0, const size_t t = 1);
 }  // namespace approximation

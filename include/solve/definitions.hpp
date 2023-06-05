@@ -18,6 +18,10 @@
  */
 #pragma once
 
+#include <string>
+#include <string_view>
+#include <unordered_map>
+
 /*!
  * @brief enum class to specify type of instance
  * @details NUMBER_OF_OPTIONS is the number of normal elements in the enum and is used for defining
@@ -31,5 +35,7 @@ enum class ProblemType : unsigned int {
   TSP_exact,
   NUMBER_OF_OPTIONS
 };
+
+constexpr std::string_view INSTANCE_TYPES[] = {"BTSP", "BTSPP", "BTSP", "BTSPP", "TSP"};
 
 constexpr size_t SEED_LENGTH = 2; /**< number of uint32_t to pass as seed to random graph generation */

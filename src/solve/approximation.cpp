@@ -223,16 +223,7 @@ static std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::
   return tour;
 }
 
-static void printInfos(const double objective, const double maxEdgeWeight, const ProblemType problemType) {
-  std::cout << "-------------------------------------------------------\n";
-  std::cout << "Approximated an instance of " << problemType << std::endl;
-  std::cout << "objective                            : " << objective << std::endl;
-  std::cout << "lower bound on OPT                   : " << maxEdgeWeight << std::endl;
-  std::cout << "a fortiori guarantee                 : " << objective / maxEdgeWeight << std::endl;
-  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
-}
-
-Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) {
+Result approximateBTSP(const graph::Euclidean& euclidean) {
   double maxEdgeWeight;
   const graph::AdjacencyListGraph biconnectedGraph = biconnectedSubgraph(euclidean, maxEdgeWeight);
   const graph::AdjacencyListGraph minimal          = makeMinimallyBiconnected(biconnectedGraph);
@@ -241,12 +232,7 @@ Result approximateBTSP(const graph::Euclidean& euclidean, const bool printInfo) 
   const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, true);
   const double objective                           = euclidean.weight(bottleneckEdge);
 
-  if (printInfo) {
-    printInfos(objective, maxEdgeWeight, ProblemType::BTSP_approx);
-    std::cout << "edges in biconnected graph           : " << biconnectedGraph.numberOfEdges() << std::endl;
-    std::cout << "edges in minimally biconnected graph : " << minimal.numberOfEdges() << std::endl;
-  }
-
+  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
 }
 
@@ -386,7 +372,7 @@ static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const gra
   return minimal;
 }
 
-Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t, const bool printInfo) {
+Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t) {
   double maxEdgeWeight;
 
   // find graph s.t. G = (V,E) + (s,t) is biconnected
@@ -400,12 +386,7 @@ Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const
   const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, false);
   const double objective                           = euclidean.weight(bottleneckEdge);
 
-  if (printInfo) {
-    printInfos(objective, maxEdgeWeight, ProblemType::BTSPP_approx);
-    std::cout << "edges in biconnected graph           : " << biconnectedGraph.numberOfEdges() << std::endl;
-    std::cout << "edges in minimally biconnected graph : " << minimal.numberOfEdges() << std::endl;
-  }
-
+  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
 }
 }  // namespace approximation
