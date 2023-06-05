@@ -67,12 +67,20 @@ static void printNoCrossingAdvice() {
   std::cout << "<-no-crossing> if <-btsp-e> is set, to find a solution without crossing\n";
 }
 
+static void printLogfileAdvice() {
+  std::cout << "<-logfile:=<filename>> to write infos to <filename>\n";
+}
+
+static void printRepetitionAdvice() {
+  std::cout << "<-repetitions:=<numberOfRepetitions>> to compute several instances serial in one execution.\n";
+}
+
 static void printSyntax() {
   std::cout << "Syntax\n";
   std::cout << "./<NameOfExecutable> <NumberOfNodesInGraph> <arg1> <arg2> ...\n";
 }
 
-static void printInfo(const approximation::Result& res, const ProblemType problemType, const double runtime) {
+[[maybe_unused]] static void printInfo(const approximation::Result& res, const ProblemType problemType, const double runtime) {
   std::cout << "-------------------------------------------------------\n";
   std::cout << "Approximated an instance of " << INSTANCE_TYPES[std::to_underlying(problemType)] << std::endl;
   std::cout << "objective                            : " << res.objective << std::endl;
@@ -83,7 +91,7 @@ static void printInfo(const approximation::Result& res, const ProblemType proble
   std::cout << "elapsed time                         : " << runtime << " ms\n";
 }
 
-static void printInfo(const exactsolver::Result& res, const ProblemType problemType, const double runtime) {
+[[maybe_unused]] static void printInfo(const exactsolver::Result& res, const ProblemType problemType, const double runtime) {
   std::cout << "-------------------------------------------------------\n";
   std::cout << "Solved an instance of " << INSTANCE_TYPES[std::to_underlying(problemType)] << std::endl;
   std::cout << "OPT                                  : " << res.opt << std::endl;
@@ -133,11 +141,14 @@ void interpretCommandLine(const int argc, char* argv[]) {
  **********************************************************************************************************************/
 
 #if not(VISUALISATION)
-static void writeStatsToFile(const approximation::Result& res, const ProblemType type, const char* filename, const double runtime) {
+constexpr std::string_view LOG_FILE_IDENTIFIER   = "-logfile:=";
+constexpr std::string_view REPETITION_IDENTIFIER = "-repetitions:=";
+
+static void writeStatsToFile(const approximation::Result& res, const ProblemType type, const std::string& filename, const double runtime) {
   std::ofstream outputfile;
   outputfile.open(filename, std::ios::out | std::ios::app);
   if (!outputfile) {
-    // unable to find write to outputfile
+    throw InvalidFileOperation("Failed to open <" + filename + ">!");
   }
   outputfile << std::to_underlying(type) << ",";
   outputfile << res.biconnectedGraph.numberOfNodes() << ",";
@@ -149,8 +160,30 @@ static void writeStatsToFile(const approximation::Result& res, const ProblemType
   outputfile << runtime << std::endl;
 }
 
+static void handleApproxOutput(const approximation::Result& res,
+                               const ProblemType type,
+                               const std::string& filename,
+                               const double runtime) {
+  printInfo(res, type, runtime);
+  if (filename.length() > 0) {
+    writeStatsToFile(res, type, filename, runtime);
+  }
+}
+
+static graph::Euclidean adaptSeededGeneration(const size_t numberOfNodes,
+                                              const std::array<uint_fast32_t, SEED_LENGTH>& seed,
+                                              const bool seeded) {
+  if (seeded) {
+    return generateEuclideanDistanceGraph(numberOfNodes, seed);
+  }
+  else {
+    return generateEuclideanDistanceGraph(numberOfNodes);
+  }
+}
+
 static void readArguments(const int argc, char* argv[]) {
   std::string filename = "";
+  size_t repetitions   = 1;
   std::unordered_set<std::string> arguments;
   bool seeded = false;
   std::array<uint_fast32_t, SEED_LENGTH> seed;
@@ -159,21 +192,16 @@ static void readArguments(const int argc, char* argv[]) {
       seeded = true;
       continue;
     }
-    if (std::string(argv[i]).starts_with(std::string_view("-logfile:="))) {
-      filename = std::string(argv[i]).substr(10, std::string(argv[i]).length()-10)
+    if (std::string(argv[i]).starts_with(LOG_FILE_IDENTIFIER)) {
+      filename = std::string(argv[i]).substr(LOG_FILE_IDENTIFIER.length(), std::string(argv[i]).length() - LOG_FILE_IDENTIFIER.length());
+      continue;
+    }
+    if (std::string(argv[i]).starts_with(REPETITION_IDENTIFIER)) {
+      repetitions = std::stoul(
+          std::string(argv[i]).substr(REPETITION_IDENTIFIER.length(), std::string(argv[i]).length() - REPETITION_IDENTIFIER.length()));
       continue;
     }
     arguments.insert(std::string(argv[i]));
-  }
-
-  Stopwatch stopWatch;
-
-  graph::Euclidean euclidean;
-  if (seeded) {
-    euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]), seed);
-  }
-  else {
-    euclidean = generateEuclideanDistanceGraph(std::atoi(argv[1]));
   }
 
   if (arguments.empty()) {
@@ -181,21 +209,30 @@ static void readArguments(const int argc, char* argv[]) {
     std::cout << ": No problem type given. Nothing to do." << std::endl;
   }
 
+  Stopwatch stopWatch;  // create stop watch
+
   if (arguments.contains("-btsp")) {
-    stopWatch.reset();
-    const approximation::Result res = approximation::approximateBTSP(euclidean);
-    const double runtime            = stopWatch.elapsedTimeInMilliseconds();
-    printInfo(res, ProblemType::BTSP_approx, runtime);
+    for (size_t i = 0; i < repetitions; ++i) {
+      graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded);
+      stopWatch.reset();
+      const approximation::Result res = approximation::approximateBTSP(euclidean);
+      const double runtime            = stopWatch.elapsedTimeInMilliseconds();
+      handleApproxOutput(res, ProblemType::BTSP_approx, filename, runtime);
+    }
     arguments.erase("-btsp");
   }
   if (arguments.contains("-btspp")) {
-    stopWatch.reset();
-    const approximation::Result res = approximation::approximateBTSPP(euclidean);
-    const double runtime            = stopWatch.elapsedTimeInMilliseconds();
-    printInfo(res, ProblemType::BTSPP_approx, runtime);
+    for (size_t i = 0; i < repetitions; ++i) {
+      graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded);
+      stopWatch.reset();
+      const approximation::Result res = approximation::approximateBTSPP(euclidean);
+      const double runtime            = stopWatch.elapsedTimeInMilliseconds();
+      handleApproxOutput(res, ProblemType::BTSPP_approx, filename, runtime);
+    }
     arguments.erase("-btspp");
   }
   if (arguments.contains("-btsp-e")) {
+    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded);
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains("-no-crossing"));
     const double runtime          = stopWatch.elapsedTimeInMilliseconds();
@@ -204,6 +241,7 @@ static void readArguments(const int argc, char* argv[]) {
     arguments.erase("-no-crossing");
   }
   if (arguments.contains("-btspp-e")) {
+    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded);
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSPP_exact);
     const double runtime          = stopWatch.elapsedTimeInMilliseconds();
@@ -211,6 +249,7 @@ static void readArguments(const int argc, char* argv[]) {
     arguments.erase("-btspp-e");
   }
   if (arguments.contains("-tsp-e")) {
+    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded);
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::TSP_exact);
     const double runtime          = stopWatch.elapsedTimeInMilliseconds();
@@ -218,6 +257,10 @@ static void readArguments(const int argc, char* argv[]) {
     arguments.erase("-tsp-e");
   }
 
+  if (filename.length() > 0) {
+    printLightgreen("Info");
+    std::cout << ": Output has been written to <" << filename << ">.\n";
+  }
   for (const std::string& str : arguments) {
     printYellow("Warning");
     std::cout << ": Unknown argument <" << str << ">!" << std::endl;
@@ -239,6 +282,8 @@ void interpretCommandLine(const int argc, char* argv[]) {
     printArgumentList();
     printSeedAdvice();
     printNoCrossingAdvice();
+    printLogfileAdvice();
+    printRepetitionAdvice();
     return;
   }
   if (argc < 3) {
