@@ -24,6 +24,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_set>
+#include <utility>
 
 // graph library
 #include "graph.hpp"
@@ -67,11 +68,11 @@ static void printNoCrossingAdvice() {
   std::cout << "<-no-crossing> if <-btsp-e> is set, to find a solution without crossing\n";
 }
 
-static void printLogfileAdvice() {
+[[maybe_unused]] static void printLogfileAdvice() {
   std::cout << "<-logfile:=<filename>> to write infos to <filename>\n";
 }
 
-static void printRepetitionAdvice() {
+[[maybe_unused]] static void printRepetitionAdvice() {
   std::cout << "<-repetitions:=<numberOfRepetitions>> to compute several instances serial in one execution.\n";
 }
 
