@@ -51,9 +51,8 @@ namespace approximation {
  * @return AdjacencyListGraph: minimally biconnected graph
  */
 template <typename G>
-static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGraph)
   requires(std::is_base_of_v<graph::Graph, G>)
-{
+static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGraph) {
   const graph::EarDecomposition ears       = schmidt(biconnectedGraph);
   const graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
   return minimallyBiconnectedSubgraph(fromEars);
@@ -225,7 +224,7 @@ static std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::
 
 Result approximateBTSP(const graph::Euclidean& euclidean) {
   double maxEdgeWeight;
-  const graph::AdjacencyListGraph biconnectedGraph = biconnectedSubgraph(euclidean, maxEdgeWeight);
+  const graph::AdjacencyListGraph biconnectedGraph = bottleneckOptimalBiconnectedSubgraph(euclidean, maxEdgeWeight);
   const graph::AdjacencyListGraph minimal          = makeMinimallyBiconnected(biconnectedGraph);
   const graph::EarDecomposition openEars           = schmidt(minimal);  // calculate proper ear decomposition
   const std::vector<size_t> tour                   = findHamiltonCycleInOpenEarDecomposition(openEars, euclidean.numberOfNodes());

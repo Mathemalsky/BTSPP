@@ -274,6 +274,14 @@ public:
    * @brief returns true because it's a complete graph and every node is connected to every node
    */
   bool connected() const override { return true; }
+
+  /*!
+   * @brief fastWeight is a cheap function monotone in the weight of the edge
+   * @details fastWeight is often cheaper than weight and it's monotone (for fixed subclass of graph) in the weight. So ist can be used for
+   * faster sorting a graphs edges by weigth.
+   * @return fast weight
+   */
+  virtual double fastWeight(const Edge&) const = 0;
 };
 
 /*!
@@ -419,10 +427,11 @@ public:
 
   /*!
    * @brief returns square of euclidean distance between nodes
-   * @param e edge for which squared weight is requested
+   * @details this is cheaper, because no root needs to be compted
+   * @param e edge for which fast weight is requested
    * @return square of distance
    */
-  double weightSquared(const Edge& e) const { return distSquared(pPositions[e.u], pPositions[e.v]); }
+  double fastWeight(const Edge& e) const override { return distSquared(pPositions[e.u], pPositions[e.v]); }
 
   /*!
    * @brief creates edges object to iterate of the edges
@@ -1352,7 +1361,7 @@ private:
           if (static_cast<size_t>(innerIndices[pPosition.innerIndex]) >= pPosition.outerIndex) {
             pPosition.innerIndex = outerIndices[pPosition.outerIndex + 1];  // skip rest of the row
           }
-          ++pPosition.outerIndex;  // goes to next row
+          ++pPosition.outerIndex;                                           // goes to next row
         }
         return *this;
       }
