@@ -52,7 +52,8 @@ struct EarDecomposition {
  * @param rootNode root node index
  * @return DfsTree providing the order the nodes are explored and the parent of each node
  */
-template <typename G>  requires(std::is_base_of_v<Graph, G>)
+template <typename G>
+  requires(std::is_base_of_v<Graph, G>)
 DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
 
@@ -269,9 +270,11 @@ private:
 };
 
 template <typename G>
-AdjacencyListGraph addEdgesUntilBiconnected(const size_t numberOfNodes,
-                                                   double& maxEdgeWeight,
-                                                   const std::vector<const ExplicitEdges<G>::EdgeInfo*>& edges) {
+  requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
+AdjacencyListGraph addEdgesUntilBiconnected(const G& completeGraph,
+                                            double& maxEdgeWeight,
+                                            const std::vector<const typename ExplicitEdges<G>::EdgeInfo*>& edges) {
+  const size_t numberOfNodes = completeGraph.numberOfNodes();
   const size_t numberOfEdges = edges.size();
 
   // add the first numberOfNodes many edges
@@ -305,33 +308,37 @@ AdjacencyListGraph addEdgesUntilBiconnected(const size_t numberOfNodes,
 }
 
 template <typename G>
-AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const G& euclidean, double& maxEdgeWeight) {
+  requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
+AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const G& completeGraph, double& maxEdgeWeight) {
   // precompute the squared edge weights
-  ExplicitEdges<G> explicitEdges(euclidean);
-  std::vector<const ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
+  ExplicitEdges<G> explicitEdges(completeGraph);
+  std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
 
   // sort the edges
-  std::sort(edges.begin(), edges.end(), [&](const ExplicitEdges<G>::EdgeInfo* a, const ExplicitEdges<G>::EdgeInfo* b) {
+  std::sort(edges.begin(), edges.end(), [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
     return a->fastWeight < b->fastWeight;
   });
 
-  return addEdgesUntilBiconnected(euclidean.numberOfNodes(), maxEdgeWeight, edges);
+  return addEdgesUntilBiconnected(completeGraph, maxEdgeWeight, edges);
 }
 
 template <typename G>
-AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const G& euclidean, Edge augmentationEdge, double& maxEdgeWeight) {
+  requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
+AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const G& completeGraph, Edge augmentationEdge, double& maxEdgeWeight) {
   assert(augmentationEdge.u != augmentationEdge.v && "Start node and end node must be different!");
   if (augmentationEdge.u < augmentationEdge.v) {
     augmentationEdge.invert();
   }
 
-  ExplicitEdges explicitEdges(euclidean, augmentationEdge);
-  std::vector<const ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
-  std::sort(edges.begin() + 1, edges.end(), [&](const ExplicitEdges<G>::EdgeInfo* a, const ExplicitEdges<G>::EdgeInfo* b) {
-    return a->fastWeight < b->fastWeight;
-  });
+  ExplicitEdges explicitEdges(completeGraph, augmentationEdge);
+  std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
+  std::sort(edges.begin() + 1,
+            edges.end(),
+            [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
+              return a->fastWeight < b->fastWeight;
+            });
 
-  return addEdgesUntilBiconnected(euclidean.numberOfNodes(), maxEdgeWeight, edges);
+  return addEdgesUntilBiconnected(completeGraph, maxEdgeWeight, edges);
 }
 
 /*!
@@ -350,7 +357,7 @@ AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDeco
  * @param maxEdgeWeight
  * @return undirected AdjacencyListGraph
  */
-AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
+// AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
 
 /*!
  * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
@@ -361,7 +368,7 @@ AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const Euclidean& euclide
  * @param maxEdgeWeight
  * @return undirected AdjacencyMatrixGraph
  */
-AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
+// AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
 
 /*!
  * @brief makes graph minimally biconnected
