@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "draw/definitions.hpp"
@@ -39,25 +40,25 @@
 namespace approximation {
 
 /***********************************************************************************************************************
- *                                            algorithms for BTSP
+ *                                                  output function
  **********************************************************************************************************************/
 
-/*!
- * @brief remove all edges whcih are not 2-essential
- * @details The ear decomposition is computed to cheaply get rid of many edges at once. The removal has roughly the same computaional costs
- * as every check (using schmidt algorithm) for biconnectivity after removal of a single edge.
- * @tparam G type of graph
- * @param biconnectedGraph a biconnected graph as input
- * @return AdjacencyListGraph: minimally biconnected graph
- */
-template <typename G>
-static graph::AdjacencyListGraph makeMinimallyBiconnected(const G& biconnectedGraph)
-  requires(std::is_base_of_v<graph::Graph, G>)
-{
-  const graph::EarDecomposition ears       = schmidt(biconnectedGraph);
-  const graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
-  return minimallyBiconnectedSubgraph(fromEars);
+void printInfo(const approximation::Result& res, const ProblemType problemType, const double runtime) {
+  std::cout << "-------------------------------------------------------\n";
+  std::cout << "Approximated an instance of " << problemType << "." << std::endl;
+  std::cout << "objective                            : " << res.objective << std::endl;
+  std::cout << "lower bound on OPT                   : " << res.lowerBoundOnOPT << std::endl;
+  std::cout << "a fortiori guarantee                 : " << res.objective / res.lowerBoundOnOPT << std::endl;
+  std::cout << "edges in biconnected graph           : " << res.biconnectedGraph.numberOfEdges() << std::endl;
+  std::cout << "edges in minimally biconnected graph : " << res.numberOfEdgesInMinimallyBiconectedGraph << std::endl;
+  if (runtime != -1.0) {
+    std::cout << "elapsed time                         : " << runtime << " ms\n";
+  }
 }
+
+/***********************************************************************************************************************
+ *                                               algorithms for BTSP
+ **********************************************************************************************************************/
 
 /*!
  * @brief doubles and deletes edges to make open ear decomposition eularian
@@ -209,7 +210,7 @@ static std::vector<size_t> shortcutToHamiltoncycle(const std::vector<size_t>& lo
   return hamiltoncycle;
 }
 
-static std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars, const size_t numberOfNodes) {
+std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::EarDecomposition& openEars, const size_t numberOfNodes) {
   std::vector<size_t> tour;
   if (openEars.ears.size() == 1) {
     tour = std::vector<size_t>(openEars.ears[0].begin(), openEars.ears[0].end() - 1);  // do not repeat first node
@@ -223,21 +224,8 @@ static std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::
   return tour;
 }
 
-Result approximateBTSP(const graph::Euclidean& euclidean) {
-  double maxEdgeWeight;
-  const graph::AdjacencyListGraph biconnectedGraph = biconnectedSubgraph(euclidean, maxEdgeWeight);
-  const graph::AdjacencyListGraph minimal          = makeMinimallyBiconnected(biconnectedGraph);
-  const graph::EarDecomposition openEars           = schmidt(minimal);  // calculate proper ear decomposition
-  const std::vector<size_t> tour                   = findHamiltonCycleInOpenEarDecomposition(openEars, euclidean.numberOfNodes());
-  const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, true);
-  const double objective                           = euclidean.weight(bottleneckEdge);
-
-  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
-  return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
-}
-
 /***********************************************************************************************************************
- *                                            algorithms for BTSPP
+ *                                               algorithms for BTSPP
  **********************************************************************************************************************/
 
 static size_t increaseModulo(const size_t number, const size_t modulus) {
@@ -257,21 +245,18 @@ static void reverse(std::vector<Type>& vec) {
   }
 }
 
-/*!
- * @brief creates graph consisting of 5 copies of the original graph
- * @details Copies original graph, adds 2 nodes x and y and connects x to all copies of s and y to all copies of t
+/*
+ * creates graph consisting of 5 copies of the original graph
+ * copies original graph, adds 2 nodes x and y and connects x to all copies of s and y to all copies of t
  */
-static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euclidean,
-                                                     const graph::AdjacencyListGraph& minimalBiconnected,
-                                                     const size_t s,
-                                                     const size_t t) {
-  const size_t numberOfNodes           = euclidean.numberOfNodes();
+graph::AdjacencyListGraph createFiveFoldGraph(const graph::AdjacencyListGraph& minimallyBiconnected, const size_t s, const size_t t) {
+  const size_t numberOfNodes           = minimallyBiconnected.numberOfNodes();
   const size_t numberOfNodes5FoldGraph = 5 * numberOfNodes + 2;
   std::vector<std::vector<size_t>> adjacencyList;
   adjacencyList.reserve(numberOfNodes5FoldGraph);
 
   for (size_t i = 0; i < 5; ++i) {
-    adjacencyList.insert(adjacencyList.end(), minimalBiconnected.adjacencyList().begin(), minimalBiconnected.adjacencyList().end());
+    adjacencyList.insert(adjacencyList.end(), minimallyBiconnected.adjacencyList().begin(), minimallyBiconnected.adjacencyList().end());
   }
 
   for (size_t i = 1; i < 5; ++i) {
@@ -295,14 +280,7 @@ static graph::AdjacencyListGraph createFiveFoldGraph(const graph::Euclidean& euc
   return fiveFoldGraph;
 }
 
-/*!
- * @brief extracts hamiton path from hamilton cycle in fivefold graph
- * @param wholeTour hamilton cycle in fivefold graph
- * @param s start node
- * @param t end node
- * @return std::vector<size_t> hamiltonian s-t path in original graph
- */
-static std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeTour, const size_t s, const size_t t) {
+std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeTour, const size_t s, const size_t t) {
   const size_t numberOfNodes5FoldGraph = wholeTour.size();
   const size_t numberOfNodes           = (numberOfNodes5FoldGraph - 2) / 5;
   const size_t x                       = numberOfNodes5FoldGraph - 2;
@@ -357,9 +335,9 @@ static std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeT
  * @param t end node
  * @return AdjacencyListGraph minimal with desired property
  */
-static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyListGraph& biconnectedGraph,
-                                                                       const size_t s,
-                                                                       const size_t t) {
+graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyListGraph& biconnectedGraph,
+                                                                const size_t s,
+                                                                const size_t t) {
   const graph::Edge st_Edge{s, t};
   const graph::EarDecomposition ears = schmidt(biconnectedGraph);
   graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
@@ -370,23 +348,5 @@ static graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const gra
   minimal.removeEdge(st_Edge);
 
   return minimal;
-}
-
-Result approximateBTSPP(const graph::Euclidean& euclidean, const size_t s, const size_t t) {
-  double maxEdgeWeight;
-
-  // find graph s.t. G = (V,E) + (s,t) is biconnected
-  const graph::AdjacencyListGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(euclidean, graph::Edge{s, t}, maxEdgeWeight);
-  const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
-  graph::AdjacencyListGraph fiveFoldGraph          = createFiveFoldGraph(euclidean, minimal, s, t);
-  const size_t numberOfNodes5FoldGraph             = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);                // calculate open ear decomposition
-  std::vector<size_t> wholeTour                    = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
-  const std::vector<size_t> tour                   = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
-  const graph::Edge bottleneckEdge                 = findBottleneck(euclidean, tour, false);
-  const double objective                           = euclidean.weight(bottleneckEdge);
-
-  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
-  return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
 }
 }  // namespace approximation
