@@ -58,7 +58,7 @@ For installation advices see prerequisites for the whole program.
 ### Building the software
 ```
 mkdir build && cd build
-cmake -DVisualization=Off ..
+cmake -DVisualisation=Off ..
 make
 ```
 
@@ -67,10 +67,14 @@ To run the application type:
 `./<NameOfTheExecutable> <NumberOfNodesInTheGraph> <arg1> <arg2> ...`
 Possible arguments are:
 
-argument  | effect
-----------|------------------
-`-btsp`   | approximates BTSP
-`-btspp`  | approximates BTSPP
-`-btsp-e` | solves exact BTSP
-`-btspp-e`| solves exact BTSPP
-`-tsp-e`  | solves exact TSP
+argument                              | effect
+--------------------------------------|------------------
+`-btsp`                               | approximates BTSP
+`-btspp`                              | approximates BTSPP
+`-btsp-e`                             | solves exact BTSP
+`-btspp-e`                            | solves exact BTSPP
+`-tsp-e`                              | solves exact TSP
+`-seed> <int1> ... `                  | set a seed for random generation of graph
+`-no-crossing`                        | only if `btsp-e` is set: set extra constraint, that solutions cannot contain crossings
+`-logfile:=<filename>`                | specifies a file to write stats to
+`-repetitions:=<numberOfRepetitions>` | specifies the number of repetitions
