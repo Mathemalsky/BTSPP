@@ -26,6 +26,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "draw/definitions.hpp"
@@ -39,7 +40,24 @@
 namespace approximation {
 
 /***********************************************************************************************************************
- *                                            algorithms for BTSP
+ *                                                  output function
+ **********************************************************************************************************************/
+
+void printInfo(const approximation::Result& res, const ProblemType problemType, const double runtime) {
+  std::cout << "-------------------------------------------------------\n";
+  std::cout << "Approximated an instance of " << problemType << "." << std::endl;
+  std::cout << "objective                            : " << res.objective << std::endl;
+  std::cout << "lower bound on OPT                   : " << res.lowerBoundOnOPT << std::endl;
+  std::cout << "a fortiori guarantee                 : " << res.objective / res.lowerBoundOnOPT << std::endl;
+  std::cout << "edges in biconnected graph           : " << res.biconnectedGraph.numberOfEdges() << std::endl;
+  std::cout << "edges in minimally biconnected graph : " << res.numberOfEdgesInMinimallyBiconectedGraph << std::endl;
+  if (runtime != -1.0) {
+    std::cout << "elapsed time                         : " << runtime << " ms\n";
+  }
+}
+
+/***********************************************************************************************************************
+ *                                               algorithms for BTSP
  **********************************************************************************************************************/
 
 /*!
@@ -236,7 +254,7 @@ Result approximateBTSP(const graph::Euclidean& euclidean) {
 }
 
 /***********************************************************************************************************************
- *                                            algorithms for BTSPP
+ *                                               algorithms for BTSPP
  **********************************************************************************************************************/
 
 static size_t increaseModulo(const size_t number, const size_t modulus) {

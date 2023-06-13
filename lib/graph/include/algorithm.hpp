@@ -83,7 +83,6 @@ DfsTree dfs(const G& graph, const size_t rootNode = 0) {
  * \return AdjacencyListGraph with same nodes as dfs tree and complement of edges
  */
 template <typename G>
-
 AdjacencyListGraph findBackedges(const G& graph, const DfsTree& tree) {
   AdjacencyListGraph backedges(graph.numberOfNodes());
   for (Edge e : graph.edges()) {
@@ -227,7 +226,7 @@ std::vector<size_t> hierholzer(const G& graph) {
 }
 
 /*!
- * @brief precompute the values to improve performance
+ * @brief precompute the values to improve sorting performance
  */
 template <typename G>
 class ExplicitEdges {
@@ -269,6 +268,14 @@ private:
   std::vector<const EdgeInfo*> pEdgePointer;
 };
 
+/*!
+ * @brief addEdgesUntilBiconnected adds edges from a ordered list of edges until the graph is biconnected.
+ * @details The set of required edges is found by binary search and checking for biconnectivity using schmidts algorithm.
+ * @tparam G complete weighted graph
+ * @param completeGraph
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyListGraph
+ */
 template <typename G>
   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
 AdjacencyListGraph addEdgesUntilBiconnected(const G& completeGraph,
@@ -303,10 +310,19 @@ AdjacencyListGraph addEdgesUntilBiconnected(const G& completeGraph,
       graph = graphCopy;
     }
   }
-  maxEdgeWeight = std::sqrt(edges[lowerbound - 1]->fastWeight);  // for lower bound on opt
+  maxEdgeWeight = completeGraph.weight(edges[lowerbound - 1]->edge);  // for lower bound on opt
   return graph;
 }
 
+/*!
+ * @brief bottleneckOptimalBiconnectedSubgraph computes a bottle neck optimal subgraph.
+ * @details The edges are sorted ascending in their edge weight. This ordered list is handed to addEdgesUntilBiconnected.
+ * @tparam G complete weighted graph
+ * @param completeGraph
+ * @param augmentationEdge
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyListGraph
+ */
 template <typename G>
   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
 AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const G& completeGraph, double& maxEdgeWeight) {
@@ -322,6 +338,16 @@ AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const G& completeGraph, 
   return addEdgesUntilBiconnected(completeGraph, maxEdgeWeight, edges);
 }
 
+/*!
+ * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
+ * @details The edges are sorted with the augmentation edge first and then all other edges ascending in their edge weight. This ordered list
+ * is handed to addEdgesUntilBiconnected.
+ * @tparam G complete weighted graph
+ * @param completeGraph
+ * @param augmentationEdge
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyListGraph
+ */
 template <typename G>
   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
 AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const G& completeGraph, Edge augmentationEdge, double& maxEdgeWeight) {
@@ -348,27 +374,6 @@ AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const G& completeGraph, Edge
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
-
-/*!
- * @brief bottleneckOptimalBiconnectedSubgraph computes a bottleneck optimal biconnected subgraph.
- * @details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
- * increasing in their length and successively added until the graph is biconnected.
- * @param euclidean complete graph, providing distances between nodes
- * @param maxEdgeWeight
- * @return undirected AdjacencyListGraph
- */
-// AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
-
-/*!
- * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
- * @details First the augmentation edge is added then some edges definitely not increasing the bottleneck are added. Then the other edges
- * are sortet increasing in their length and successively added until the graph is biconnected. Then the augmentation edge is removed.
- * @param euclidean complete graph, providing distances between nodes
- * @param augmentationEdge
- * @param maxEdgeWeight
- * @return undirected AdjacencyMatrixGraph
- */
-// AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
 
 /*!
  * @brief makes graph minimally biconnected

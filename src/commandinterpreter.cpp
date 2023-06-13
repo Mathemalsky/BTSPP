@@ -81,24 +81,6 @@ static void printSyntax() {
   std::cout << "./<NameOfExecutable> <NumberOfNodesInGraph> <arg1> <arg2> ...\n";
 }
 
-[[maybe_unused]] static void printInfo(const approximation::Result& res, const ProblemType problemType, const double runtime) {
-  std::cout << "-------------------------------------------------------\n";
-  std::cout << "Approximated an instance of " << INSTANCE_TYPES[std::to_underlying(problemType)] << std::endl;
-  std::cout << "objective                            : " << res.objective << std::endl;
-  std::cout << "lower bound on OPT                   : " << res.lowerBoundOnOPT << std::endl;
-  std::cout << "a fortiori guarantee                 : " << res.objective / res.lowerBoundOnOPT << std::endl;
-  std::cout << "edges in biconnected graph           : " << res.biconnectedGraph.numberOfEdges() << std::endl;
-  std::cout << "edges in minimally biconnected graph : " << res.numberOfEdgesInMinimallyBiconectedGraph << std::endl;
-  std::cout << "elapsed time                         : " << runtime << " ms\n";
-}
-
-[[maybe_unused]] static void printInfo(const exactsolver::Result& res, const ProblemType problemType, const double runtime) {
-  std::cout << "-------------------------------------------------------\n";
-  std::cout << "Solved an instance of " << INSTANCE_TYPES[std::to_underlying(problemType)] << std::endl;
-  std::cout << "OPT                                  : " << res.opt << std::endl;
-  std::cout << "elapsed time                         : " << runtime << " ms\n";
-}
-
 /***********************************************************************************************************************
  *                                                  visual program
  **********************************************************************************************************************/

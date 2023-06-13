@@ -21,6 +21,7 @@
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 #include <Eigen/SparseCore>
@@ -39,6 +40,23 @@ namespace exactsolver {
 using Entry = Eigen::Triplet<double>;
 
 static constexpr double M_INFINITY = 1e32;
+
+/***********************************************************************************************************************
+ *                                                  output function
+ **********************************************************************************************************************/
+
+void printInfo(const exactsolver::Result& res, const ProblemType problemType, const double runtime) {
+  std::cout << "-------------------------------------------------------\n";
+  std::cout << "Solved an instance of " << problemType << " using HiGHS library." << std::endl;
+  std::cout << "OPT                                  : " << res.opt << std::endl;
+  if (runtime != -1.0) {
+    std::cout << "elapsed time                         : " << runtime << " ms\n";
+  }
+}
+
+/***********************************************************************************************************************
+ *                                            algorithms for BTSP & BTSPP
+ **********************************************************************************************************************/
 
 class Index {
 public:
@@ -287,15 +305,7 @@ Result solve(const graph::Euclidean& euclidean, const ProblemType problemType, c
   [[maybe_unused]] const HighsModelStatus& model_status = highs.getModelStatus();
   assert(model_status == HighsModelStatus::kOptimal);
 
-  const HighsInfo& info = highs.getInfo();
-  std::cout << "-------------------------------------------------------\n";
-  std::cout << "Solved an instance of " << problemType << " using HiGHS library" << std::endl;
-  std::cout << "Objective function value : " << info.objective_function_value << std::endl;
-  // std::cout << "Simplex iteration count  : " << info.simplex_iteration_count << std::endl;
-  // std::cout << "Primal  solution status  : " << highs.solutionStatusToString(info.primal_solution_status) << std::endl;
-  // std::cout << "Dual    solution status  : " << highs.solutionStatusToString(info.dual_solution_status) << std::endl;
-  // std::cout << "Basis                    : " << highs.basisValidityToString(info.basis_validity) << std::endl;
-
+  const HighsInfo& info         = highs.getInfo();
   const HighsSolution& solution = highs.getSolution();  // get variables of optimal solution
 
   std::vector<size_t> tour(numberOfNodes);

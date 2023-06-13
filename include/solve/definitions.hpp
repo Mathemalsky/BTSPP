@@ -36,6 +36,4 @@ enum class ProblemType : unsigned int {
   NUMBER_OF_OPTIONS
 };
 
-constexpr std::string_view INSTANCE_TYPES[] = {"BTSP", "BTSPP", "BTSP", "BTSPP", "TSP"};
-
 constexpr size_t SEED_LENGTH = 2; /**< number of uint32_t to pass as seed to random graph generation */

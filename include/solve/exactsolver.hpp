@@ -34,6 +34,14 @@ struct Result {
 };
 
 /*!
+ * @brief lists all important information from solving in the terminal
+ * @param res result
+ * @param problemType type of instance
+ * @param runtime elapsed time during solving, -1.0 is default as invalid value
+ */
+void printInfo(const exactsolver::Result& res, const ProblemType problemType, const double runtime = -1.0);
+
+/*!
  * @brief solves an instance of BTSP, BTSPP or TSP
  * @param problemType type of instance
  * @param noCrossing if BTSP the solution can be forced to have no crossings

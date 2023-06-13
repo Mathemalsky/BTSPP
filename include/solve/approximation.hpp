@@ -38,6 +38,14 @@ struct Result {
 };
 
 /*!
+ * @brief lists all important information from solving in the terminal
+ * @param res result
+ * @param problemType type of instance
+ * @param runtime elapsed time during approximation, -1.0 is default as invalid value
+ */
+void printInfo(const approximation::Result& res, const ProblemType problemType, const double runtime = -1.0);
+
+/*!
  * \brief approximates the BTSP
  * \param euclidean complete graph, providing distances between nodes
  * \param printInfo controls if objective, lower bound on OPT and a fortiori guarantee are printed to console
