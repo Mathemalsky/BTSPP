@@ -22,20 +22,3 @@
 
 // graph library
 #include "graph.hpp"
-
-graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<size_t>& tour, const bool isCycle) {
-  size_t bottleneckEdgeEnd = 0;
-  double bottleneckWeight  = euclidean.weight(tour[0], tour[1]);
-  for (size_t i = 1; i < euclidean.numberOfNodes() - 1; ++i) {
-    if (euclidean.weight(tour[i], tour[i + 1]) > bottleneckWeight) {
-      bottleneckEdgeEnd = i;
-      bottleneckWeight  = euclidean.weight(tour[i], tour[i + 1]);
-    }
-  }
-  if (isCycle && euclidean.weight(tour.back(), tour[0]) > bottleneckWeight) {
-    return graph::Edge{tour.back(), 0};
-  }
-  else {
-    return graph::Edge{tour[bottleneckEdgeEnd], tour[bottleneckEdgeEnd + 1]};
-  }
-}
