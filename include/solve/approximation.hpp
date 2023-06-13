@@ -28,14 +28,17 @@
 #include "solve/definitions.hpp"
 
 namespace approximation {
+/*!
+ * @brief Result bundles all important measures from the approximation
+ */
 struct Result {
-  graph::AdjacencyListGraph biconnectedGraph;
-  graph::EarDecomposition openEarDecomposition;
-  std::vector<size_t> tour;
-  graph::Edge bottleneckEdge;
-  double objective;
-  double lowerBoundOnOPT;
-  size_t numberOfEdgesInMinimallyBiconectedGraph;
+  graph::AdjacencyListGraph biconnectedGraph;     /**< bottleneck optimal biconnected subgraph */
+  graph::EarDecomposition openEarDecomposition;   /**< open ear decomposition */
+  std::vector<size_t> tour;                       /**< hamilton cycle in square of original graph */
+  graph::Edge bottleneckEdge;                     /**< a longest edge in the tour */
+  double objective;                               /**< length of the longest edge */
+  double lowerBoundOnOPT;                         /**< lower bound on opt */
+  size_t numberOfEdgesInMinimallyBiconectedGraph; /**< number of edges in th minimally biconnected subgraph */
 };
 
 /*!
@@ -101,11 +104,11 @@ Result approximateBTSP(const G& completeGraph) {
 std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeTour, const size_t s, const size_t t);
 
 /*!
- * @brief
+ * @brief removes edges that are not 2-essential if the egde (s,t) is added to the graph
  * @param biconnectedGraph
  * @param s start node
  * @param t end node
- * @return
+ * @return graph that is biconnected when (s,t) is added
  */
 graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyListGraph& biconnectedGraph,
                                                                 const size_t s,
