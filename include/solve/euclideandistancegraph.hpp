@@ -25,5 +25,7 @@
 
 #include "solve/definitions.hpp"
 
-graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes);
-graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes, const std::array<uint_fast32_t, SEED_LENGTH>& randomData);
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes, bool surpressSeed);
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes,
+                                                const std::array<uint_fast32_t, SEED_LENGTH>& randomData,
+                                                bool surpressSeed);
