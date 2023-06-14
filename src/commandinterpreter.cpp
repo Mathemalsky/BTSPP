@@ -103,7 +103,7 @@ void interpretCommandLine(const int argc, char* argv[]) {
       throw InvalidArgument("[COMMAND INTERPRETER] Invalid argument, expected a seed!");
     }
   }
-  visualize(euclidean);
+  visualise(euclidean);
 }
 #endif
 /***********************************************************************************************************************
