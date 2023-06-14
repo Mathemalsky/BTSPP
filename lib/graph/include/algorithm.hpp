@@ -291,11 +291,11 @@ AdjacencyListGraph addEdgesUntilBiconnected(const G& completeGraph,
   }
   AdjacencyListGraph graphCopy = graph;  // and a copy
 
-  // use bisection search to find bottleneck optimal biconnected subgraph
+  // use binary search to find bottleneck optimal biconnected subgraph
   size_t upperbound = numberOfEdges;
   size_t lowerbound = numberOfNodes;
+  size_t middle     = numberOfNodes * 10;  // heuristic: experiments show that euclidean graphs have ususally less than 10 edges per node
   while (upperbound != lowerbound) {
-    size_t middle = (lowerbound + upperbound) / 2;
     for (size_t i = lowerbound; i < middle; ++i) {
       graphCopy.addEdge(edges[i]->edge);
     }
@@ -309,6 +309,7 @@ AdjacencyListGraph addEdgesUntilBiconnected(const G& completeGraph,
       graphCopy.addEdge(edges[middle]->edge);
       graph = graphCopy;
     }
+    middle = (2 * lowerbound + upperbound) / 3;  // heuristic: tend to underestimated bounds, because adding less edges is cheaper
   }
   maxEdgeWeight = completeGraph.weight(edges[lowerbound - 1]->edge);  // for lower bound on opt
   return graph;
