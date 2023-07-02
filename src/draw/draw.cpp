@@ -88,9 +88,13 @@ static void drawEdge(const ShaderProgram& drawLine,
 }
 
 template <typename G>
-static void drawGraph(const ShaderProgram& drawLine, const FloatVertices& floatVertices, const G& graph, const RGBA_COLOUR& colour) {
+static void drawGraph(const ShaderProgram& drawLine,
+                      const FloatVertices& floatVertices,
+                      const G& graph,
+                      const float thickness,
+                      const RGBA_COLOUR& colour) {
   for (const graph::Edge& e : graph.edges()) {
-    drawEdge(drawLine, floatVertices, e, 5.0f, colour);
+    drawEdge(drawLine, floatVertices, e, thickness, colour);
   }
 }
 
@@ -102,7 +106,11 @@ static void drawOpenEarDecomposition(const ShaderProgram& drawLine,
     RGBA_COLOUR colour =
         drawData->appearance.colour[std::to_underlying(ProblemType::BTSP_approx)] * ((float) i / (openEarDecomp.ears.size() - 1));
     for (size_t j = chain.size() - 1; j > 0; --j) {
-      drawEdge(drawLine, drawData->floatVertices, graph::Edge{chain[j], chain[j - 1]}, 5.0f, colour);
+      drawEdge(drawLine,
+               drawData->floatVertices,
+               graph::Edge{chain[j], chain[j - 1]},
+               drawData->appearance.thickness[std::to_underlying(ProblemType::BTSP_approx)],
+               colour);
     }
   }
 }
@@ -116,6 +124,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
     drawGraph(programs.drawLine,
               drawData->floatVertices,
               drawData->results.BTSP_APPROX_RESULT.biconnectedGraph,
+              drawData->appearance.thickness[typeInt],
               drawData->appearance.colour[typeInt]);
   }
   if (BTSP_DRAW_OPEN_EAR_DECOMPOSITION && ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSP_approx)) {
@@ -138,6 +147,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
     drawGraph(programs.drawLine,
               drawData->floatVertices,
               drawData->results.BTSPP_APPROX_RESULT.biconnectedGraph,
+              drawData->appearance.thickness[typeInt],
               drawData->appearance.colour[typeInt]);
   }
   if (BTSPP_DRAW_HAMILTON_PATH && ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSPP_approx)) {
