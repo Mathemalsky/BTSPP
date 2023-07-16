@@ -30,21 +30,25 @@
 
 #include "solve/definitions.hpp"
 
-graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes) {
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes, bool surpressSeed) {
   std::array<uint_fast32_t, SEED_LENGTH> randomData;
   std::random_device src;
   std::generate(randomData.begin(), randomData.end(), std::ref(src));
-  return generateEuclideanDistanceGraph(numOfNodes, randomData);
+  return generateEuclideanDistanceGraph(numOfNodes, randomData, surpressSeed);
 }
 
-graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes, const std::array<uint_fast32_t, SEED_LENGTH>& randomData) {
+graph::Euclidean generateEuclideanDistanceGraph(unsigned int numOfNodes,
+                                                const std::array<uint_fast32_t, SEED_LENGTH>& randomData,
+                                                bool surpressSeed) {
   std::seed_seq seed(randomData.begin(), randomData.end());
   std::default_random_engine generator;
   generator.seed(seed);
 
-  std::cerr << "seed: ";
-  seed.param(std::ostream_iterator<uint_fast32_t>(std::cerr, " "));
-  std::cerr << "\n";
+  if (!surpressSeed) {
+    std::cerr << "seed: ";
+    seed.param(std::ostream_iterator<uint_fast32_t>(std::cerr, " "));
+    std::cerr << "\n";
+  }
 
   std::vector<graph::Point2D> positions(numOfNodes);
   std::uniform_real_distribution<double> distribution(-0.95, 0.95);

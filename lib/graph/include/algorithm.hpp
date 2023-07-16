@@ -53,6 +53,7 @@ struct EarDecomposition {
  * @return DfsTree providing the order the nodes are explored and the parent of each node
  */
 template <typename G>
+  requires(std::is_base_of_v<Graph, G>)
 DfsTree dfs(const G& graph, const size_t rootNode = 0) {
   const size_t numberOfNodes = graph.numberOfNodes();
 
@@ -101,6 +102,7 @@ AdjacencyListGraph findBackedges(const G& graph, const DfsTree& tree) {
  * \return Open Ear decomposition as std::vector of ears which are std::vector<size_t>.
  */
 template <typename G>
+  requires(std::is_base_of_v<Graph, G>)
 EarDecomposition schmidt(const G& graph) {
   assert(checkBiconnectivity(graph) && "The graph is assumed to be biconnected!");
 
@@ -130,10 +132,13 @@ EarDecomposition schmidt(const G& graph) {
 /*!
  * \brief checkBiconnectivity checks a graph is biconnected
  * \details This function works similar to schmidt() but does not track the ears and beforms checks for biconnectivity
- * instead. \param graph The graph object should provide the neighbours() function \return true if the graph is
+ * instead.
+ * \param graph The graph object should provide the neighbours() function
+ * \return true if the graph is
  * biconnected, false otherwise.
  */
 template <typename G>
+  requires(std::is_base_of_v<Graph, G>)
 bool checkBiconnectivity(const G& graph) {
   const DfsTree tree                 = dfs(graph);
   const AdjacencyListGraph backedges = findBackedges(graph, tree);
@@ -176,7 +181,8 @@ bool checkBiconnectivity(const G& graph) {
  * @return index of non isolated node
  */
 template <typename G>
-size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+  requires(std::is_base_of_v<Graph, G>)
+size_t findNonIsolatedNode(const G& graph) {
   for (size_t u = 0; u < graph.numberOfNodes(); ++u) {
     if (graph.degree(u) > 0) {
       return u;
@@ -195,7 +201,8 @@ size_t findNonIsolatedNode(const G& graph) requires(std::is_base_of_v<Graph, G>)
  * again.
  */
 template <typename G>
-std::vector<size_t> hierholzer(const G& graph) requires(std::is_base_of_v<Graph, G>) {
+  requires(std::is_base_of_v<Graph, G>)
+std::vector<size_t> hierholzer(const G& graph) {
   G workingCopy = graph;
   std::vector<size_t> tour;
   tour.reserve(graph.numberOfEdges() + 1);
@@ -219,33 +226,158 @@ std::vector<size_t> hierholzer(const G& graph) requires(std::is_base_of_v<Graph,
 }
 
 /*!
+ * @brief precompute the values to improve sorting performance
+ */
+template <typename G>
+class ExplicitEdges {
+public:
+  struct EdgeInfo {
+    Edge edge;
+    double fastWeight;
+  };
+
+  ExplicitEdges(const ExplicitEdges&) = delete;  // copying would destroy the pointers
+
+  ExplicitEdges(const G& completeGraph) {
+    pEdges.reserve(completeGraph.numberOfEdges());
+    pEdgePointer.reserve(completeGraph.numberOfEdges());
+    for (const Edge& edge : completeGraph.edges()) {
+      pEdges.emplace_back(edge, completeGraph.fastWeight(edge));
+      pEdgePointer.push_back(&pEdges.back());
+    }
+  }
+
+  ExplicitEdges(const G& completeGraph, const Edge& augmentationEdge) {
+    pEdges.reserve(completeGraph.numberOfEdges());
+    pEdgePointer.reserve(completeGraph.numberOfEdges());
+    pEdges.emplace_back(augmentationEdge, completeGraph.fastWeight(augmentationEdge));
+    pEdgePointer.push_back(&pEdges.back());
+
+    for (const Edge& edge : completeGraph.edges()) {
+      if (edge != augmentationEdge) {
+        pEdges.emplace_back(edge, completeGraph.fastWeight(edge));
+        pEdgePointer.push_back(&pEdges.back());
+      }
+    }
+  }
+
+  std::vector<const EdgeInfo*>& edgePointers() { return pEdgePointer; }
+
+private:
+  std::vector<EdgeInfo> pEdges;
+  std::vector<const EdgeInfo*> pEdgePointer;
+};
+
+/*!
+ * @brief addEdgesUntilBiconnected adds edges from a ordered list of edges until the graph is biconnected.
+ * @details The set of required edges is found by binary search and checking for biconnectivity using schmidts algorithm.
+ * @tparam G complete weighted graph
+ * @param completeGraph
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyListGraph
+ */
+template <typename G>
+  requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
+AdjacencyListGraph addEdgesUntilBiconnected(const G& completeGraph,
+                                            double& maxEdgeWeight,
+                                            const std::vector<const typename ExplicitEdges<G>::EdgeInfo*>& edges) {
+  const size_t numberOfNodes = completeGraph.numberOfNodes();
+  const size_t numberOfEdges = edges.size();
+
+  // add the first numberOfNodes many edges
+  AdjacencyListGraph graph(numberOfNodes);
+  for (size_t i = 0; i < numberOfNodes; ++i) {
+    graph.addEdge(edges[i]->edge);
+  }
+  AdjacencyListGraph graphCopy = graph;  // and a copy
+
+  // use binary search to find bottleneck optimal biconnected subgraph
+  size_t upperbound = numberOfEdges;
+  size_t lowerbound = numberOfNodes;
+
+  // heuristic: experiments show that euclidean graphs have ususally less than 10 edges per node
+  size_t middle = std::min(numberOfNodes * 10, (lowerbound + upperbound) / 2);
+
+  while (upperbound != lowerbound) {
+    for (size_t i = lowerbound; i < middle; ++i) {
+      graphCopy.addEdge(edges[i]->edge);
+    }
+
+    if (graphCopy.biconnected()) {
+      upperbound = middle;
+      graphCopy  = graph;
+    }
+    else {
+      lowerbound = middle + 1;
+      graphCopy.addEdge(edges[middle]->edge);
+      graph = graphCopy;
+    }
+    middle = (2 * lowerbound + upperbound) / 3;  // heuristic: tend to underestimated bounds, because adding less edges is cheaper
+  }
+  maxEdgeWeight = completeGraph.weight(edges[lowerbound - 1]->edge);  // for lower bound on opt
+  return graph;
+}
+
+/*!
+ * @brief bottleneckOptimalBiconnectedSubgraph computes a bottle neck optimal subgraph.
+ * @details The edges are sorted ascending in their edge weight. This ordered list is handed to addEdgesUntilBiconnected.
+ * @tparam G complete weighted graph
+ * @param completeGraph
+ * @param augmentationEdge
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyListGraph
+ */
+template <typename G>
+  requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
+AdjacencyListGraph bottleneckOptimalBiconnectedSubgraph(const G& completeGraph, double& maxEdgeWeight) {
+  // precompute the squared edge weights
+  ExplicitEdges<G> explicitEdges(completeGraph);
+  std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
+
+  // sort the edges
+  std::sort(edges.begin(), edges.end(), [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
+    return a->fastWeight < b->fastWeight;
+  });
+
+  return addEdgesUntilBiconnected(completeGraph, maxEdgeWeight, edges);
+}
+
+/*!
+ * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
+ * @details The edges are sorted with the augmentation edge first and then all other edges ascending in their edge weight. This ordered list
+ * is handed to addEdgesUntilBiconnected.
+ * @tparam G complete weighted graph
+ * @param completeGraph
+ * @param augmentationEdge
+ * @param maxEdgeWeight
+ * @return undirected AdjacencyListGraph
+ */
+template <typename G>
+  requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
+AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const G& completeGraph, Edge augmentationEdge, double& maxEdgeWeight) {
+  assert(augmentationEdge.u != augmentationEdge.v && "Start node and end node must be different!");
+  if (augmentationEdge.u < augmentationEdge.v) {
+    augmentationEdge.invert();
+  }
+
+  ExplicitEdges explicitEdges(completeGraph, augmentationEdge);
+  std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
+  std::sort(edges.begin() + 1,
+            edges.end(),
+            [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
+              return a->fastWeight < b->fastWeight;
+            });
+
+  return addEdgesUntilBiconnected(completeGraph, maxEdgeWeight, edges);
+}
+
+/*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph
  * \param earDecomposition open ear decomposition
  * \param numberOfNodes number of nodes appaering there
  * \return undirected AdjacencyListGraph containing numberOfNodes + number of ears - 1 edges.
  */
 AdjacencyListGraph earDecompToAdjacencyListGraph(const EarDecomposition& earDecomposition, const size_t numberOfNodes);
-
-/*!
- * @brief biconnectedSpanningGraph computes a bottleneck optimal biconnected subgraph.
- * @details First some edges definitely not increasing the bottleneck are added. Then the other edges are sortet
- * increasing in their length and successively added until the graph is biconnected.
- * @param euclidean complete graph, providing distances between nodes
- * @param maxEdgeWeight
- * @return undirected AdjacencyListGraph
- */
-AdjacencyListGraph biconnectedSubgraph(const Euclidean& euclidean, double& maxEdgeWeight);
-
-/*!
- * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
- * @details First the augmentation edge is added then some edges definitely not increasing the bottleneck are added. Then the other edges
- * are sortet increasing in their length and successively added until the graph is biconnected. Then the augmentation edge is removed.
- * @param euclidean complete graph, providing distances between nodes
- * @param augmentationEdge
- * @param maxEdgeWeight
- * @return undirected AdjacencyMatrixGraph
- */
-AdjacencyListGraph edgeAugmentedBiconnectedSubgraph(const Euclidean& euclidean, const Edge augmentationEdge, double& maxEdgeWeight);
 
 /*!
  * @brief makes graph minimally biconnected

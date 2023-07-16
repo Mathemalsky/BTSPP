@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#include "draw/visualization.hpp"
+#include "draw/visualisation.hpp"
 
 #include <cstdio>
 #include <iostream>
@@ -66,7 +66,7 @@ static DrawData setUpBufferMemory(const graph::Euclidean& euclidean) {
 
   std::shared_ptr<VertexBuffer> coordinates = std::make_shared<VertexBuffer>(floatVertices.read(), 2);  // components per vertex
   std::shared_ptr<ShaderBuffer> tourCoordinates =
-      std::make_shared<ShaderBuffer>(floatVertices.read());  // copy vertex coords to shader buffer
+      std::make_shared<ShaderBuffer>(floatVertices.read());                                  // copy vertex coords to shader buffer
   std::shared_ptr<ShaderBuffer> tour =
       std::make_shared<ShaderBuffer>(std::vector<uint32_t>(euclidean.numberOfNodes() + 3));  // just allocate memory
 
@@ -83,7 +83,7 @@ static std::unique_ptr<VertexArray> bindBufferMemory(const Buffers& buffers, con
   return vao;
 }
 
-void visualize(const graph::Euclidean& euclidean) {
+void visualise(const graph::Euclidean& euclidean) {
   // set error colback function
   glfwSetErrorCallback(glfw_error_callback);
   if (!glfwInit()) {

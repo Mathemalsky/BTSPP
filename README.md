@@ -19,19 +19,6 @@ sudo make install
 - [doxygen](https://www.doxygen.nl/) This is optional for generating documentation.
 - [Eigen3](https://eigen.tuxfamily.org/) Used as implementation for sparse matrices. (I'm using Eigen 3.4)
 - [HiGHS](https://www.maths.ed.ac.uk/hall/HiGHS/#top)
-Here you probably need to slightly differ from the standard installation described on their website.
-```
-git clone https://github.com/ERGO-Code/HiGHS.git
-cd HiGhS
-mkdir build && cd build
-cmake -DFAST_BUILD=ON -DCMAKE_INSTALL_PREFIX=/usr/local/ -DCMAKE_TARGETS=ON -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -O3 -march=native -fPIC" -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -O3 -march=native -fPIC" ..
-cmake --build .
-ctest
-sudo cmake --install .
-```
-`-fPIC` is necessary, `-O3` and `-march=native` are recommended
-
-Of course `/usr/local/` can be replaced by any other path contained in `CMAKE_SYSTEM_PREFIX_PATH` variable.
 
 ### Building the software
 ```
@@ -71,7 +58,7 @@ For installation advices see prerequisites for the whole program.
 ### Building the software
 ```
 mkdir build && cd build
-cmake -DVisualization=Off ..
+cmake -DVisualisation=Off ..
 make
 ```
 
@@ -80,10 +67,14 @@ To run the application type:
 `./<NameOfTheExecutable> <NumberOfNodesInTheGraph> <arg1> <arg2> ...`
 Possible arguments are:
 
-argument  | effect
-----------|------------------
-`-btsp`   | approximates BTSP
-`-btspp`  | approximates BTSPP
-`-btsp-e` | solves exact BTSP
-`-btspp-e`| solves exact BTSPP
-`-tsp-e`  | solves exact TSP
+argument                              | effect
+--------------------------------------|------------------
+`-btsp`                               | approximates BTSP
+`-btspp`                              | approximates BTSPP
+`-btsp-e`                             | solves exact BTSP
+`-btspp-e`                            | solves exact BTSPP
+`-tsp-e`                              | solves exact TSP
+`-seed> <int1> ... `                  | set a seed for random generation of graph
+`-no-crossing`                        | only if `btsp-e` is set: set extra constraint, that solutions cannot contain crossings
+`-logfile:=<filename>`                | specifies a file to write stats to
+`-repetitions:=<numberOfRepetitions>` | specifies the number of repetitions

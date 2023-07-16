@@ -51,10 +51,20 @@ std::ostream& operator<<(std::ostream& os, const std::array<Type, N>& ary) {
 }
 
 /*!
+ * @brief prints the word in green
+ * @param word string to be printed
+ */
+inline void printLightgreen(const std::string& word) noexcept {
+  std::cout << "\033[1;32m";
+  std::cout << word;
+  std::cout << "\033[0m";
+}
+
+/*!
  * @brief prints the word in red
  * @param word string to be printed
  */
-inline void printLightred(std::string word) noexcept {
+inline void printLightred(const std::string& word) noexcept {
   std::cout << "\033[1;31m";
   std::cout << word;
   std::cout << "\033[0m";
@@ -64,7 +74,7 @@ inline void printLightred(std::string word) noexcept {
  * @brief prints the word in yellow
  * @param word string to be printed
  */
-inline void printYellow(std::string word) noexcept {
+inline void printYellow(const std::string& word) noexcept {
   std::cout << "\033[1;33m";
   std::cout << word;
   std::cout << "\033[0m";

@@ -21,4 +21,4 @@
 // graph library
 #include "graph.hpp"
 
-void visualize(const graph::Euclidean& euclidean);
+void visualise(const graph::Euclidean& euclidean);

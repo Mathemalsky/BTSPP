@@ -28,6 +28,7 @@
 #include "draw/drawdata.hpp"
 #include "draw/variables.hpp"
 
+#include "solve/approximation.hpp"
 #include "solve/exactsolver.hpp"
 
 using namespace drawing;
@@ -65,21 +66,25 @@ static void handleSlowEvents(std::shared_ptr<DrawData> drawData) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSP_approx)] = false;
     drawData->results.BTSP_APPROX_RESULT                       = approximation::approximateBTSP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSP_APPROX_RESULT.tour, ProblemType::BTSP_approx);
+    approximation::printInfo(drawData->results.BTSP_APPROX_RESULT, ProblemType::BTSP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSPP_approx)] = false;
     drawData->results.BTSPP_APPROX_RESULT                       = approximation::approximateBTSPP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
+    approximation::printInfo(drawData->results.BTSPP_APPROX_RESULT, ProblemType::BTSPP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
     drawData->results.BTSP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSP_exact, solve::BTSP_FORBID_CROSSING);
     drawData->vertexOrder.updateOrder(drawData->results.BTSP_EXACT_RESULT.tour, ProblemType::BTSP_exact);
+    exactsolver::printInfo(drawData->results.BTSP_EXACT_RESULT, ProblemType::BTSP_exact);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSPP_exact)] = false;
     drawData->results.BTSPP_EXACT_RESULT = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::BTSPP_exact, solve::BTSP_FORBID_CROSSING);
     drawData->vertexOrder.updateOrder(drawData->results.BTSPP_EXACT_RESULT.tour, ProblemType::BTSPP_exact);
+    exactsolver::printInfo(drawData->results.BTSPP_EXACT_RESULT, ProblemType::BTSPP_exact);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::TSP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::TSP_exact)] = false;

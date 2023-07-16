@@ -18,6 +18,10 @@
  */
 #pragma once
 
+#include <string>
+#include <string_view>
+#include <unordered_map>
+
 /*!
  * @brief enum class to specify type of instance
  * @details NUMBER_OF_OPTIONS is the number of normal elements in the enum and is used for defining

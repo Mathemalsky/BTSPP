@@ -26,24 +26,23 @@
 
 #include "solve/definitions.hpp"
 
-graph::Edge findBottleneck(const graph::Euclidean& euclidean, const std::vector<size_t>& tour, const bool cycle);
-
-template <typename Type>
-Type previousInCycle(const std::vector<Type>& vec, const size_t position) {
-  return (position != 0 ? vec[position - 1] : vec.back());
-}
-
-template <typename Type>
-Type successiveInCycle(const std::vector<Type>& vec, const size_t position) {
-  return (position != vec.size() - 1 ? vec[position + 1] : vec.front());
-}
-
-inline size_t previousModulo(const size_t number, const size_t modulus) {
-  return (number == 0 ? modulus - 1 : number - 1);
-}
-
-inline size_t successiveModulo(const size_t number, const size_t modulus) {
-  return (number == modulus - 1 ? 0 : number + 1);
+template <typename G>
+  requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
+graph::Edge findBottleneck(const G& completeGraph, const std::vector<size_t>& tour, const bool isCycle) {
+  size_t bottleneckEdgeEnd = 0;
+  double bottleneckWeight  = completeGraph.weight(tour[0], tour[1]);
+  for (size_t i = 1; i < completeGraph.numberOfNodes() - 1; ++i) {
+    if (completeGraph.weight(tour[i], tour[i + 1]) > bottleneckWeight) {
+      bottleneckEdgeEnd = i;
+      bottleneckWeight  = completeGraph.weight(tour[i], tour[i + 1]);
+    }
+  }
+  if (isCycle && completeGraph.weight(tour.back(), tour[0]) > bottleneckWeight) {
+    return graph::Edge{tour.back(), 0};
+  }
+  else {
+    return graph::Edge{tour[bottleneckEdgeEnd], tour[bottleneckEdgeEnd + 1]};
+  }
 }
 
 inline std::ostream& operator<<(std::ostream& os, const ProblemType type) {

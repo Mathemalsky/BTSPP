@@ -38,6 +38,11 @@ public:
   InvalidArgument(const std::string& msg) : Exception(msg) {}
 };
 
+class InvalidFileOperation : public Exception {
+public:
+  InvalidFileOperation(const std::string& msg) : Exception(msg) {}
+};
+
 class UnknownType : public Exception {
 public:
   UnknownType(const std::string& msg) : Exception(msg) {}
