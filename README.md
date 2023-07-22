@@ -78,3 +78,5 @@ argument                              | effect
 `-no-crossing`                        | only if `btsp-e` is set: set extra constraint, that solutions cannot contain crossings
 `-logfile:=<filename>`                | specifies a file to write stats to
 `-repetitions:=<numberOfRepetitions>` | specifies the number of repetitions
+`-no-info`                            | suppress output of calculation information to console
+`-no-seed`                            | suppress output of seed to console

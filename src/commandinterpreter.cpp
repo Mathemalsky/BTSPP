@@ -113,8 +113,8 @@ void interpretCommandLine(const int argc, char* argv[]) {
 #if not(VISUALISATION)
 constexpr std::string_view LOG_FILE_IDENTIFIER   = "-logfile:=";
 constexpr std::string_view REPETITION_IDENTIFIER = "-repetitions:=";
-constexpr std::string_view SURPRESS_INFO_TAG     = "-no-info";
-constexpr std::string_view SURPRESS_SEED_TAG     = "-no-seed";
+constexpr std::string_view SUPPRESS_INFO_TAG     = "-no-info";
+constexpr std::string_view SUPPRESS_SEED_TAG     = "-no-seed";
 constexpr std::string_view NO_CROSSING_TAG       = "-no-crossing";
 constexpr std::string_view BTSP_APPROX_TAG       = "-btsp";
 constexpr std::string_view BTSPP_APPROX_TAG      = "-btspp";
@@ -126,8 +126,8 @@ static void printAdvices() {
   std::cout << "<" << NO_CROSSING_TAG << "> if <-btsp-e> is set, to find a solution without crossing.\n";
   std::cout << "<" << LOG_FILE_IDENTIFIER << "<filename>> to write infos to <filename>.\n";
   std::cout << "<" << REPETITION_IDENTIFIER << "<numberOfRepetitions>> to compute several instances serial in one execution.\n";
-  std::cout << "<" << SURPRESS_INFO_TAG << "to surpress detailed terminal output.\n";
-  std::cout << "<" << SURPRESS_SEED_TAG << "to surpress seed output in terminal.\n";
+  std::cout << "<" << SUPPRESS_INFO_TAG << "to suppress detailed terminal output.\n";
+  std::cout << "<" << SUPPRESS_SEED_TAG << "to suppress seed output in terminal.\n";
 }
 static void writeStatsToFile(const approximation::Result& res, const ProblemType type, const std::string& filename, const double runtime) {
   std::ofstream outputfile;
@@ -149,8 +149,8 @@ static void handleApproxOutput(const approximation::Result& res,
                                const ProblemType type,
                                const std::string& filename,
                                const double runtime,
-                               const bool surpressInfo) {
-  if (!surpressInfo) {
+                               const bool suppressInfo) {
+  if (!suppressInfo) {
     printInfo(res, type, runtime);
   }
   if (filename.length() > 0) {
@@ -161,19 +161,19 @@ static void handleApproxOutput(const approximation::Result& res,
 static graph::Euclidean adaptSeededGeneration(const size_t numberOfNodes,
                                               const std::array<uint_fast32_t, SEED_LENGTH>& seed,
                                               const bool seeded,
-                                              bool surpressSeed) {
+                                              bool suppressSeed) {
   if (seeded) {
-    return generateEuclideanDistanceGraph(numberOfNodes, seed, surpressSeed);
+    return generateEuclideanDistanceGraph(numberOfNodes, seed, suppressSeed);
   }
   else {
-    return generateEuclideanDistanceGraph(numberOfNodes, surpressSeed);
+    return generateEuclideanDistanceGraph(numberOfNodes, suppressSeed);
   }
 }
 
 static void readArguments(const int argc, char* argv[]) {
   std::string filename = "";
   size_t repetitions   = 1;
-  bool surpressInfo    = false, surpressSeed = false;
+  bool suppressInfo = false, suppressSeed = false;
   std::unordered_set<std::string> arguments;
   bool seeded = false;
   std::array<uint_fast32_t, SEED_LENGTH> seed;
@@ -191,12 +191,12 @@ static void readArguments(const int argc, char* argv[]) {
           std::string(argv[i]).substr(REPETITION_IDENTIFIER.length(), std::string(argv[i]).length() - REPETITION_IDENTIFIER.length()));
       continue;
     }
-    if (std::string(argv[i]) == SURPRESS_INFO_TAG) {
-      surpressInfo = true;
+    if (std::string(argv[i]) == SUPPRESS_INFO_TAG) {
+      suppressInfo = true;
       continue;
     }
-    if (std::string(argv[i]) == SURPRESS_SEED_TAG) {
-      surpressSeed = true;
+    if (std::string(argv[i]) == SUPPRESS_SEED_TAG) {
+      suppressSeed = true;
       continue;
     }
     arguments.insert(std::string(argv[i]));
@@ -211,35 +211,36 @@ static void readArguments(const int argc, char* argv[]) {
 
   if (arguments.contains(std::string(BTSP_APPROX_TAG))) {
     for (size_t i = 0; i < repetitions; ++i) {
-      graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, surpressSeed);
+      graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, suppressSeed);
       stopWatch.reset();
       const approximation::Result res = approximation::approximateBTSP(euclidean);
       const double runtime            = stopWatch.elapsedTimeInMilliseconds();
-      handleApproxOutput(res, ProblemType::BTSP_approx, filename, runtime, surpressInfo);
+      handleApproxOutput(res, ProblemType::BTSP_approx, filename, runtime, suppressInfo);
     }
     arguments.erase(std::string(BTSP_APPROX_TAG));
   }
   if (arguments.contains(std::string(BTSPP_APPROX_TAG))) {
     for (size_t i = 0; i < repetitions; ++i) {
-      graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, surpressSeed);
+      graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, suppressSeed);
       stopWatch.reset();
       const approximation::Result res = approximation::approximateBTSPP(euclidean);
       const double runtime            = stopWatch.elapsedTimeInMilliseconds();
-      handleApproxOutput(res, ProblemType::BTSPP_approx, filename, runtime, surpressInfo);
+      handleApproxOutput(res, ProblemType::BTSPP_approx, filename, runtime, suppressInfo);
     }
     arguments.erase(std::string(BTSPP_APPROX_TAG));
   }
   if (arguments.contains(std::string(BTSP_EXACT_TAG))) {
-    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, surpressSeed);
+    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, suppressSeed);
     stopWatch.reset();
-    const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains(std::string(NO_CROSSING_TAG)));
-    const double runtime          = stopWatch.elapsedTimeInMilliseconds();
+    const exactsolver::Result res =
+        exactsolver::solve(euclidean, ProblemType::BTSP_exact, arguments.contains(std::string(NO_CROSSING_TAG)));
+    const double runtime = stopWatch.elapsedTimeInMilliseconds();
     printInfo(res, ProblemType::BTSP_exact, runtime);
     arguments.erase(std::string(BTSP_EXACT_TAG));
     arguments.erase(std::string(NO_CROSSING_TAG));
   }
   if (arguments.contains(std::string(BTSPP_EXACT_TAG))) {
-    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, surpressSeed);
+    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, suppressSeed);
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::BTSPP_exact);
     const double runtime          = stopWatch.elapsedTimeInMilliseconds();
@@ -247,7 +248,7 @@ static void readArguments(const int argc, char* argv[]) {
     arguments.erase(std::string(BTSPP_EXACT_TAG));
   }
   if (arguments.contains(std::string(TSP_EXACT_TAG))) {
-    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, surpressSeed);
+    graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, suppressSeed);
     stopWatch.reset();
     const exactsolver::Result res = exactsolver::solve(euclidean, ProblemType::TSP_exact);
     const double runtime          = stopWatch.elapsedTimeInMilliseconds();
