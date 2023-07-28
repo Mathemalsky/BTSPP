@@ -295,8 +295,8 @@ AdjacencyListGraph addEdgesUntilBiconnected(const G& completeGraph,
   size_t upperbound = numberOfEdges;
   size_t lowerbound = numberOfNodes;
 
-  // heuristic: experiments show that euclidean graphs have ususally less than 10 edges per node
-  size_t middle = std::min(numberOfNodes * 10, (lowerbound + upperbound) / 2);
+  // heuristic: experiments show that euclidean graphs have ususally less than 11 edges per node
+  size_t middle = std::min(numberOfNodes * 11, (lowerbound + upperbound) / 2);
 
   while (upperbound != lowerbound) {
     for (size_t i = lowerbound; i < middle; ++i) {

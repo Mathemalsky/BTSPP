@@ -747,7 +747,7 @@ private:
       }
 
       /*!
-       * @brief set iterator to next valid position or to end iterator
+       * @brief if invalid, set iterator to next valid position or to end iterator
        */
       void makeValid() {
         while (pPosition.outerIndex < pAdjacencyList.size() && (outOfNeighbours() || !toLowerIndex())) {
