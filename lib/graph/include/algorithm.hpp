@@ -194,7 +194,7 @@ size_t findNonIsolatedNode(const G& graph) {
 /*!
  * @brief finds an euler tour in graph using Hierholzers algorithm
  * @tparam G type of graph
- * @param graph an instance of a simple graph, all nodes are required to have even degree, all nodes with nonzero degree
+ * @param graph must be an instance of a simple graph, all nodes are required to have even degree, all nodes with nonzero degree
  * must be connected (in fact 2-edge-connected)
  * @attention no check if input graph is indeed eulerian is performed
  * @return vector containing the nodes in the order they appear in the tour. The first node isn't added as last node
