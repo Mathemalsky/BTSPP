@@ -36,6 +36,12 @@
 namespace graph {
 
 /***********************************************************************************************************************
+ *                                            forward declare graph class
+ **********************************************************************************************************************/
+
+class Graph;
+
+/***********************************************************************************************************************
  *                                  forward declare functions from algorithm header
  **********************************************************************************************************************/
 
@@ -46,6 +52,7 @@ namespace graph {
  * @return true if the graph is biconnected
  */
 template <typename G>
+  requires(std::is_base_of_v<Graph, G>)
 bool checkBiconnectivity(const G& graph);
 
 /***********************************************************************************************************************
@@ -740,7 +747,7 @@ private:
       }
 
       /*!
-       * @brief set iterator to next valid position or to end iterator
+       * @brief if invalid, set iterator to next valid position or to end iterator
        */
       void makeValid() {
         while (pPosition.outerIndex < pAdjacencyList.size() && (outOfNeighbours() || !toLowerIndex())) {

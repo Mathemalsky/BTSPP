@@ -126,8 +126,8 @@ static void printAdvices() {
   std::cout << "<" << NO_CROSSING_TAG << "> if <-btsp-e> is set, to find a solution without crossing.\n";
   std::cout << "<" << LOG_FILE_IDENTIFIER << "<filename>> to write infos to <filename>.\n";
   std::cout << "<" << REPETITION_IDENTIFIER << "<numberOfRepetitions>> to compute several instances serial in one execution.\n";
-  std::cout << "<" << SUPPRESS_INFO_TAG << "to suppress detailed terminal output.\n";
-  std::cout << "<" << SUPPRESS_SEED_TAG << "to suppress seed output in terminal.\n";
+  std::cout << "<" << SUPPRESS_INFO_TAG << " to suppress detailed terminal output.\n";
+  std::cout << "<" << SUPPRESS_SEED_TAG << " to suppress seed output in terminal.\n";
 }
 static void writeStatsToFile(const approximation::Result& res, const ProblemType type, const std::string& filename, const double runtime) {
   std::ofstream outputfile;

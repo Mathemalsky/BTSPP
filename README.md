@@ -17,7 +17,7 @@ sudo make install
 ```
 - [glew](https://github.com/nigels-com/glew) (can be installed by `sudo apt-get install libglew-dev`)
 - [doxygen](https://www.doxygen.nl/) This is optional for generating documentation.
-- [Eigen3](https://eigen.tuxfamily.org/) Used as implementation for sparse matrices. (I'm using Eigen 3.4)
+- [Eigen3](https://eigen.tuxfamily.org/) Is used as an implementation for sparse matrices. (I'm using Eigen 3.4)
 - [HiGHS](https://www.maths.ed.ac.uk/hall/HiGHS/#top)
 
 ### Building the software
@@ -50,10 +50,10 @@ key   | function
 ### Prerequisites
 - [cmake](https://cmake.org/) version 3.20 or higher is required for compiling
 - [doxygen](https://www.doxygen.nl/) This is optional for generating documentation.
-- [Eigen3](https://eigen.tuxfamily.org/) Used as implementation for sparse matrices. (I'm using Eigen 3.4)
+- [Eigen3](https://eigen.tuxfamily.org/) is used as an implementation for sparse matrices. (I'm using Eigen 3.4)
 - [HiGHS](https://www.maths.ed.ac.uk/hall/HiGHS/#top)
 
-For installation advices see prerequisites for the whole program.
+For installation advice see prerequisites for the whole program.
 
 ### Building the software
 ```
