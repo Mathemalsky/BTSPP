@@ -105,14 +105,26 @@ std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeTour, co
 
 /*!
  * @brief removes edges that are not 2-essential if the egde (s,t) is added to the graph
+ * @details The graph is minimally biconnected when adding the edge (s,t).
  * @param biconnectedGraph
  * @param s start node
  * @param t end node
  * @return graph that is biconnected when (s,t) is added
  */
-graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyListGraph& biconnectedGraph,
-                                                                const size_t s,
-                                                                const size_t t);
+template <typename G>
+  requires(std::is_base_of_v<graph::Graph, G>)
+graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const G& biconnectedGraph, const size_t s, const size_t t) {
+  const graph::Edge st_Edge{s, t};
+  const graph::EarDecomposition ears = schmidt(biconnectedGraph);
+  graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+  if (!fromEars.adjacent(s, t)) {  // if the s-t edge is one of the removed ones,
+    fromEars.addEdge(st_Edge);     // add it again.
+  }
+  graph::AdjacencyListGraph minimal = edgeKeepingMinimallyBiconectedSubgraph(fromEars, st_Edge);
+  minimal.removeEdge(st_Edge);
+
+  return minimal;
+}
 
 /*!
  * @brief creates graph consisting of 5 copies of the original graph
