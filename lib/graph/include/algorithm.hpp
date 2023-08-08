@@ -315,7 +315,7 @@ std::tuple<AdjacencyListGraph, double> addEdgesUntilBiconnected(const G& complet
     middle = (2 * lowerbound + upperbound) / 3;  // heuristic: tend to underestimated bounds, because adding less edges is cheaper
   }
   const double maxEdgeWeight = completeGraph.weight(edges[lowerbound - 1]->edge);  // for lower bound on opt
-  return {graph, maxEdgeWeight};
+  return std::make_tuple(graph, maxEdgeWeight);
 }
 
 /*!
@@ -325,7 +325,7 @@ std::tuple<AdjacencyListGraph, double> addEdgesUntilBiconnected(const G& complet
  * @param completeGraph
  * @param augmentationEdge
  * @param maxEdgeWeight
- * @return undirected AdjacencyListGraph
+ * @return undirected AdjacencyListGraph, weight of longest edge in the graph
  */
 template <typename G>
   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
@@ -350,7 +350,7 @@ std::tuple<AdjacencyListGraph, double> bottleneckOptimalBiconnectedSubgraph(cons
  * @param completeGraph
  * @param augmentationEdge
  * @param maxEdgeWeight
- * @return undirected AdjacencyListGraph
+ * @return undirected AdjacencyListGraph, maximum edge weight
  */
 template <typename G>
   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
@@ -371,18 +371,43 @@ std::tuple<AdjacencyListGraph, double> edgeAugmentedBiconnectedSubgraph(const G&
   return addEdgesUntilBiconnected(completeGraph, edges);
 }
 
-// template <typename G>
-//   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
-// AdjacencyListGraph almostBiconnectedSubgraph(const G& completeGraph, double& maxEdgeWeight) {
-//   // precompute the squared edge weights
-//   ExplicitEdges<G> explicitEdges(completeGraph);
-//   std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
+/*!
+ * @brief
+ * @tparam G
+ * @param completeGraph
+ * @return
+ */
+template <typename G>
+  requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
+std::tuple<AdjacencyListGraph, double, Edge> almostBiconnectedSubgraph(const G& completeGraph) {
+  // precompute the squared edge weights
+  ExplicitEdges<G> explicitEdges(completeGraph);
+  std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
 
-//   // sort the edges
-//   std::sort(edges.begin(), edges.end(), [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
-//     return a->fastWeight < b->fastWeight;
-//   });
-// }
+  // sort the edges
+  std::sort(edges.begin(), edges.end(), [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
+    return a->fastWeight < b->fastWeight;
+  });
+
+  const auto [biconnectedGraph, maxEdgeWeight] = addEdgesUntilBiconnected(completeGraph, edges);
+  const size_t numberOfEdges                   = biconnectedGraph.numberOfEdges();
+
+  biconnectedGraph.addEdge(edges.back()->edge());
+  size_t i = biconnectedGraph.numberOfEdges() - 1;
+  size_t j = completeGraph.numberOfEdges() - 1;
+  while (j >= numberOfEdges) {
+    do {  // remove edges until the graph is not biconnected anymore
+      biconnectedGraph.removeEdge(edges[--i]->edge());
+    } while (biconnectedGraph.biconnected());
+
+    do {  // test if graph becomes biconnected again upon switching augemntation edge
+      biconnectedGraph.removeEdge(edges[j]->edge());
+      biconnectedGraph.addEdge(edges[--j]->edge());
+    } while (!biconnectedGraph.biconnected() && j >= numberOfEdges);  // überarbeiten
+  }
+
+  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i + 1]->edge()), edges[i + 1]->edge());
+}
 
 /*!
  * \brief earDecompToAdjacencyListGraph puts all edges from ears into an undirected AdjacencyListGraph

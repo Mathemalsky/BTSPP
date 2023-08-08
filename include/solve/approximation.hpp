@@ -83,12 +83,12 @@ std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::EarDeco
 template <typename G>
   requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
 Result approximateBTSP(const G& completeGraph) {
-  const auto [biconnectedGraph, maxEdgeWeight]     = bottleneckOptimalBiconnectedSubgraph(completeGraph);
-  const graph::AdjacencyListGraph minimal          = makeMinimallyBiconnected(biconnectedGraph);
-  const graph::EarDecomposition openEars           = schmidt(minimal);  // calculate proper ear decomposition
-  const std::vector<size_t> tour                   = findHamiltonCycleInOpenEarDecomposition(openEars, completeGraph.numberOfNodes());
-  const graph::Edge bottleneckEdge                 = findBottleneck(completeGraph, tour, true);
-  const double objective                           = completeGraph.weight(bottleneckEdge);
+  const auto [biconnectedGraph, maxEdgeWeight] = bottleneckOptimalBiconnectedSubgraph(completeGraph);
+  const graph::AdjacencyListGraph minimal      = makeMinimallyBiconnected(biconnectedGraph);
+  const graph::EarDecomposition openEars       = schmidt(minimal);  // calculate proper ear decomposition
+  const std::vector<size_t> tour               = findHamiltonCycleInOpenEarDecomposition(openEars, completeGraph.numberOfNodes());
+  const graph::Edge bottleneckEdge             = findBottleneck(completeGraph, tour, true);
+  const double objective                       = completeGraph.weight(bottleneckEdge);
 
   assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
@@ -148,15 +148,15 @@ template <typename G>
   requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
 Result approximateBTSPP(const G& completeGraph, const size_t s = 0, const size_t t = 1) {
   // find graph s.t. G = (V,E) + (s,t) is biconnected
-  const auto [biconnectedGraph, maxEdgeWeight]     = edgeAugmentedBiconnectedSubgraph(completeGraph, graph::Edge{s, t});
-  const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
-  graph::AdjacencyListGraph fiveFoldGraph          = createFiveFoldGraph(minimal, s, t);
-  const size_t numberOfNodes5FoldGraph             = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);                // calculate open ear decomposition
-  std::vector<size_t> wholeTour                    = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
-  const std::vector<size_t> tour                   = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
-  const graph::Edge bottleneckEdge                 = findBottleneck(completeGraph, tour, false);
-  const double objective                           = completeGraph.weight(bottleneckEdge);
+  const auto [biconnectedGraph, maxEdgeWeight] = edgeAugmentedBiconnectedSubgraph(completeGraph, graph::Edge{s, t});
+  const graph::AdjacencyListGraph minimal      = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
+  graph::AdjacencyListGraph fiveFoldGraph      = createFiveFoldGraph(minimal, s, t);
+  const size_t numberOfNodes5FoldGraph         = fiveFoldGraph.numberOfNodes();
+  const graph::EarDecomposition openEars       = schmidt(fiveFoldGraph);                // calculate open ear decomposition
+  std::vector<size_t> wholeTour                = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
+  const std::vector<size_t> tour               = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
+  const graph::Edge bottleneckEdge             = findBottleneck(completeGraph, tour, false);
+  const double objective                       = completeGraph.weight(bottleneckEdge);
 
   assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
