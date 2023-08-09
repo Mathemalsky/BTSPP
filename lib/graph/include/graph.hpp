@@ -263,6 +263,7 @@ public:
    * @brief fastWeight is a cheap function monotone in the weight of the edge
    * @details fastWeight is often cheaper than weight and it's monotone (for fixed subclass of graph) in the weight. So ist can be used for
    * faster sorting a graphs edges by weigth.
+   * If no fastweight function is provided fall back to weight function.
    * @return fast weight
    */
   virtual double fastWeight(const Edge& e) const { return weight(e); };
