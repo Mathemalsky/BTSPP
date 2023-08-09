@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -195,6 +195,10 @@ template <typename G>
   requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
 Result approximateBTSVPP(const G& completeGraph) {
   const auto [biconnectedGraph, maxEdgeWeight, augmentationEdge] = almostBiconnectedSubgraph(completeGraph);
-  return findHamiltonPathInBottleneckOptimalBiconnectedSubgraph(completeGraph, biconnectedGraph, augmentationEdge.u, augmentationEdge.v);
+  return findHamiltonPathInBottleneckOptimalBiconnectedSubgraph(completeGraph,
+                                                                biconnectedGraph,
+                                                                maxEdgeWeight,
+                                                                augmentationEdge.u,
+                                                                augmentationEdge.v);
 }
 }  // namespace approximation

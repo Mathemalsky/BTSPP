@@ -392,21 +392,21 @@ std::tuple<AdjacencyListGraph, double, Edge> almostBiconnectedSubgraph(const G& 
   auto [biconnectedGraph, maxEdgeWeight] = addEdgesUntilBiconnected(completeGraph, edges);
   const size_t numberOfEdges             = biconnectedGraph.numberOfEdges();
 
-  biconnectedGraph.addEdge(edges.back()->edge());
+  biconnectedGraph.addEdge(edges.back()->edge);
   size_t i = biconnectedGraph.numberOfEdges() - 1;
   size_t j = completeGraph.numberOfEdges() - 1;
   while (j >= numberOfEdges - 1) {
     do {  // remove edges until the graph is not biconnected anymore
-      biconnectedGraph.removeEdge(edges[--i]->edge());
+      biconnectedGraph.removeEdge(edges[--i]->edge);
     } while (biconnectedGraph.biconnected());
 
     do {  // test if graph becomes biconnected again upon switching augemntation edge
-      biconnectedGraph.removeEdge(edges[j]->edge());
-      biconnectedGraph.addEdge(edges[--j]->edge());
+      biconnectedGraph.removeEdge(edges[j]->edge);
+      biconnectedGraph.addEdge(edges[--j]->edge);
     } while (!biconnectedGraph.biconnected() && j >= numberOfEdges - 1);
   }
 
-  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i + 1]->edge()), edges[i + 1]->edge());
+  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i + 1]->edge), edges[i + 1]->edge);
 }
 
 /*!

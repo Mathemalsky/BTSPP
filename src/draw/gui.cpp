@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -93,7 +93,20 @@ void drawImgui(Appearance& appearance) {
 
     ImGui::Checkbox("biconnectd graph##BTSPP approx", &drawing::BTSPP_DRAW_BICONNECTED_GRAPH);
     ImGui::SameLine();
-    ImGui::Checkbox("hamilton path", &drawing::BTSPP_DRAW_HAMILTON_PATH);
+    ImGui::Checkbox("hamilton path##BTSPP approx", &drawing::BTSPP_DRAW_HAMILTON_PATH);
+    ImGui::Separator();
+
+    ImGui::Checkbox("BTSVPP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSVPP_approx)]);
+    ImGui::ColorEdit3("##BTSVPP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSVPP_approx)]);
+    ImGui::SliderFloat("thickness##BTSVPP approx",
+                       &appearance.thickness[std::to_underlying(ProblemType::BTSVPP_approx)],
+                       0.0f,
+                       30.0f,
+                       "%.1f");
+
+    ImGui::Checkbox("biconnectd graph##BTSVPP approx", &drawing::BTSVPP_DRAW_BICONNECTED_GRAPH);
+    ImGui::SameLine();
+    ImGui::Checkbox("hamilton path##BTSVPP approx", &drawing::BTSVPP_DRAW_HAMILTON_PATH);
     ImGui::Separator();
 
     ImGui::Checkbox("BTSP exact", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);

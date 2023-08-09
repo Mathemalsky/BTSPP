@@ -41,9 +41,10 @@ key   | function
 `T`   | switch display of approximation to next mode
 `1`   | toggle drawing of BTSP approximation
 `2`   | toggle drawing of BTSPP approximation
-`3`   | toggle drawing of BTSP exact solution
-`4`   | toggle drawing of BTSPP exact solution
-`5`   | toggle drawing of TSP exact solution
+`3`   | toggle drawing of BTSVPP approximation
+`4`   | toggle drawing of BTSP exact solution
+`5`   | toggle drawing of BTSPP exact solution
+`6`   | toggle drawing of TSP exact solution
 
 ## Using only the command line program
 
