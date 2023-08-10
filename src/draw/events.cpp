@@ -78,7 +78,7 @@ static void handleSlowEvents(std::shared_ptr<DrawData> drawData) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSVPP_approx)] = false;
     drawData->results.BTSVPP_APPROX_RESULT                       = approximation::approximateBTSVPP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSVPP_APPROX_RESULT.tour, ProblemType::BTSVPP_approx);
-    approximation::printInfo(drawData->results.BTSVPP_APPROX_RESULT, ProblemType::BTSPP_approx);
+    approximation::printInfo(drawData->results.BTSVPP_APPROX_RESULT, ProblemType::BTSVPP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
@@ -202,7 +202,7 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
   }
   if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSVPP_exact)]);
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSVPP_approx)]);
   }
   if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);

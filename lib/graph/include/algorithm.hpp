@@ -321,8 +321,8 @@ std::tuple<AdjacencyListGraph, double> addEdgesUntilBiconnected(const G& complet
 /*!
  * @brief bottleneckOptimalBiconnectedSubgraph computes a bottle neck optimal subgraph.
  * @details The edges are sorted ascending in their edge weight. This ordered list is handed to addEdgesUntilBiconnected.
- * @tparam G complete weighted graph
- * @param completeGraph
+ * @tparam G graph type
+ * @param completeGraph complete weighted graph
  * @param augmentationEdge
  * @param maxEdgeWeight
  * @return undirected AdjacencyListGraph, weight of longest edge in the graph
@@ -346,8 +346,8 @@ std::tuple<AdjacencyListGraph, double> bottleneckOptimalBiconnectedSubgraph(cons
  * @brief edgeAugmentedBiconnectedSubGraph computes a bottle neck optimal subgraph, that is biconnected when adding the augemtation edge.
  * @details The edges are sorted with the augmentation edge first and then all other edges ascending in their edge weight. This ordered list
  * is handed to addEdgesUntilBiconnected.
- * @tparam G complete weighted graph
- * @param completeGraph
+ * @tparam G graph type
+ * @param completeGraph complete weighted graph
  * @param augmentationEdge
  * @param maxEdgeWeight
  * @return undirected AdjacencyListGraph, maximum edge weight
@@ -372,9 +372,10 @@ std::tuple<AdjacencyListGraph, double> edgeAugmentedBiconnectedSubgraph(const G&
 }
 
 /*!
- * @brief
- * @tparam G
- * @param completeGraph
+ * @brief computes an bottleneck optimal almost biconnected sugraph + augmentation edge
+ * @details Computes an bottleneck optimal almost biconnected sugraph joind with the edge that augments it to a biconnected graph.
+ * @tparam G graph type
+ * @param completeGraph complete weighted graph
  * @return
  */
 template <typename G>
@@ -393,8 +394,9 @@ std::tuple<AdjacencyListGraph, double, Edge> almostBiconnectedSubgraph(const G& 
   const size_t numberOfEdges             = biconnectedGraph.numberOfEdges();
 
   biconnectedGraph.addEdge(edges.back()->edge);
-  size_t i = biconnectedGraph.numberOfEdges() - 1;
-  size_t j = completeGraph.numberOfEdges() - 1;
+  size_t i             = biconnectedGraph.numberOfEdges() - 1;
+  size_t j             = completeGraph.numberOfEdges() - 1;
+  size_t lastWorking_j = j;
   while (j >= numberOfEdges - 1) {
     do {  // remove edges until the graph is not biconnected anymore
       biconnectedGraph.removeEdge(edges[--i]->edge);
@@ -404,9 +406,17 @@ std::tuple<AdjacencyListGraph, double, Edge> almostBiconnectedSubgraph(const G& 
       biconnectedGraph.removeEdge(edges[j]->edge);
       biconnectedGraph.addEdge(edges[--j]->edge);
     } while (!biconnectedGraph.biconnected() && j >= numberOfEdges - 1);
+    if (j >= numberOfEdges - 1) {  // the while loop must have stopped because the graph was biconnected
+      lastWorking_j = j;
+    }
   }
 
-  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i + 1]->edge), edges[i + 1]->edge);
+  biconnectedGraph.removeEdge(edges[j]->edge);
+  biconnectedGraph.addEdge(edges[lastWorking_j]->edge);
+  biconnectedGraph.addEdge(edges[i]->edge);
+  assert(biconnectedGraph.biconnected() && "biconnectedGraph must be biconnected!");
+
+  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i]->edge), edges[i]->edge);
 }
 
 /*!

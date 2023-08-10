@@ -52,6 +52,9 @@ inline std::ostream& operator<<(std::ostream& os, const ProblemType type) {
   else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
     os << "BTSPP";
   }
+  else if (type == ProblemType::BTSVPP_approx) {
+    os << "BTSVPP";
+  }
   else if (type == ProblemType::TSP_exact) {
     os << "TSP";
   }

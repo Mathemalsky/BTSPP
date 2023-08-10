@@ -62,7 +62,7 @@ constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTI
 constexpr std::array<RGBA_COLOUR, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_COLOUR{
     RGBA_COLOUR{0.0f, 1.0f, 0.0f, 1.0f}, // BTSP_approx
     RGBA_COLOUR{1.0f, 0.0f, 1.0f, 1.0f}, // BTSPP_approx
-    RGBA_COLOUR{1.0f, 0.5f, 0.5f, 1.0f}, // BTSVPP_approx
+    RGBA_COLOUR{1.0f, 0.5f, 0.0f, 1.0f}, // BTSVPP_approx
     RGBA_COLOUR{1.0f, 1.0f, 0.0f, 1.0f}, // BTSP_exact
     RGBA_COLOUR{0.3f, 0.7f, 0.2f, 1.0f}, // BTSPP_exact
     RGBA_COLOUR{1.0f, 0.0f, 0.0f, 1.0f}  // TSP_exact

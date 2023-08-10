@@ -178,7 +178,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
              drawData->appearance.colour[typeInt]);
     drawEdge(programs.drawLine,
              drawData->floatVertices,
-             drawData->results.BTSPP_APPROX_RESULT.bottleneckEdge,
+             drawData->results.BTSVPP_APPROX_RESULT.bottleneckEdge,
              drawData->appearance.thickness[typeInt] * 1.75f,
              drawData->appearance.colour[typeInt]);
   }
