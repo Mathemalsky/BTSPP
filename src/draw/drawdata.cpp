@@ -25,6 +25,8 @@
 
 #include "draw/definitions.hpp"
 
+#include "exception/exceptions.hpp"
+
 #include "solve/definitions.hpp"
 
 namespace drawing {
@@ -35,11 +37,14 @@ void VertexOrder::updateOrder(const std::vector<size_t>& order, const ProblemTyp
     std::memcpy(pVertexOrder[std::to_underlying(type)].data(), order32bit.data(), bytes_of(order32bit));
     std::memcpy(pVertexOrder[std::to_underlying(type)].data() + order32bit.size(), order32bit.data(), PATH_OVERHEAD * sizeof(uint32_t));
   }
-  else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
+  else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact || type == ProblemType::BTSVPP_approx) {
     pVertexOrder[std::to_underlying(type)].resize(order32bit.size() + PATH_OVERHEAD - 1);  // n-1 path segments to draw
     pVertexOrder[std::to_underlying(type)][0] = order32bit[1];
     std::memcpy(pVertexOrder[std::to_underlying(type)].data() + 1, order32bit.data(), bytes_of(order32bit));
     pVertexOrder[std::to_underlying(type)].back() = order32bit[order32bit.size() - 2];
+  }
+  else {
+    throw UnknownType("Unknown problem type " + std::to_string(std::to_underlying(type)) + "in function <updateOrder>!");
   }
   pInitialized[std::to_underlying(type)] = true;
 }

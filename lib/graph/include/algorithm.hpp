@@ -371,6 +371,10 @@ std::tuple<AdjacencyListGraph, double> edgeAugmentedBiconnectedSubgraph(const G&
   return addEdgesUntilBiconnected(completeGraph, edges);
 }
 
+// // DBEUG
+// #include <iostream>
+// #include "ostream.hpp"
+
 /*!
  * @brief computes an bottleneck optimal almost biconnected sugraph + augmentation edge
  * @details Computes an bottleneck optimal almost biconnected sugraph joind with the edge that augments it to a biconnected graph.
@@ -381,6 +385,9 @@ std::tuple<AdjacencyListGraph, double> edgeAugmentedBiconnectedSubgraph(const G&
 template <typename G>
   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
 std::tuple<AdjacencyListGraph, double, Edge> almostBiconnectedSubgraph(const G& completeGraph) {
+  // DEBUG
+  //std::cerr << "-------------------------- begin algorithm\n";
+
   // precompute the squared edge weights
   ExplicitEdges<G> explicitEdges(completeGraph);
   std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
@@ -416,7 +423,9 @@ std::tuple<AdjacencyListGraph, double, Edge> almostBiconnectedSubgraph(const G& 
   biconnectedGraph.addEdge(edges[i]->edge);
   assert(biconnectedGraph.biconnected() && "biconnectedGraph must be biconnected!");
 
-  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i]->edge), edges[i]->edge);
+  // DEBUG
+  // std::cerr << "-------------------------- end algorithm\n";
+  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i]->edge), edges[lastWorking_j]->edge);
 }
 
 /*!

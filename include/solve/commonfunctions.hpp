@@ -24,6 +24,8 @@
 // graph library
 #include "graph.hpp"
 
+#include "exception/exceptions.hpp"
+
 #include "solve/definitions.hpp"
 
 template <typename G>
@@ -57,6 +59,9 @@ inline std::ostream& operator<<(std::ostream& os, const ProblemType type) {
   }
   else if (type == ProblemType::TSP_exact) {
     os << "TSP";
+  }
+  else {
+    throw UnknownType("Unknown problem type " + std::to_string(std::to_underlying(type)) + "!");
   }
   return os;
 }
