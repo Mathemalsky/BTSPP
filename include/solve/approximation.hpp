@@ -168,10 +168,10 @@ Result findHamiltonPathInBottleneckOptimalBiconnectedSubgraph(const G& completeG
   const double objective                  = completeGraph.weight(bottleneckEdge);
 
   // DBEUG
-  std::cerr << "(s,t) = (" << s << "," << t << ")\n";
-  std::cerr << "minimal\n" << minimal;
-  std::cerr << "path: " << tour;
-  std::cerr << "bottleneck edge: " << bottleneckEdge << "\n";
+  // std::cerr << "(s,t) = (" << s << "," << t << ")\n";
+  // std::cerr << "minimal\n" << minimal;
+  // std::cerr << "path: " << tour;
+  // std::cerr << "bottleneck edge: " << bottleneckEdge << "\n";
 
   assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};

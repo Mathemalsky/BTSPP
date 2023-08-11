@@ -1,6 +1,10 @@
 # BSTPP
 
+This software contains the implementation of approximation algorithms for 3 variants of the bottleneck travelling salesman problem. Those are BTSP, BTSPP and BTSVPP.
+
 ## Using the whole program
+
+The whole program includes the visualisation for examples on euclidean graphs.
 
 ### Prerequisites
 - [cmake](https://cmake.org/) version 3.20 or higher is required for compiling
@@ -72,6 +76,7 @@ argument                              | effect
 --------------------------------------|------------------
 `-btsp`                               | approximates BTSP
 `-btspp`                              | approximates BTSPP
+`-btsvpp`                             | approximates BTSVPP
 `-btsp-e`                             | solves exact BTSP
 `-btspp-e`                            | solves exact BTSPP
 `-tsp-e`                              | solves exact TSP
