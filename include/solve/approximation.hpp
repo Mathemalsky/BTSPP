@@ -28,11 +28,6 @@
 #include "solve/commonfunctions.hpp"
 #include "solve/definitions.hpp"
 
-// DEBUG
-#include "iostream"
-#include "ostream.hpp"
-#include "utility/utils.hpp"
-
 namespace approximation {
 /*!
  * @brief Result bundles all important measures from the approximation
@@ -166,12 +161,6 @@ Result findHamiltonPathInBottleneckOptimalBiconnectedSubgraph(const G& completeG
   const std::vector<size_t> tour          = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
   const graph::Edge bottleneckEdge        = findBottleneck(completeGraph, tour, false);
   const double objective                  = completeGraph.weight(bottleneckEdge);
-
-  // DBEUG
-  // std::cerr << "(s,t) = (" << s << "," << t << ")\n";
-  // std::cerr << "minimal\n" << minimal;
-  // std::cerr << "path: " << tour;
-  // std::cerr << "bottleneck edge: " << bottleneckEdge << "\n";
 
   assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};

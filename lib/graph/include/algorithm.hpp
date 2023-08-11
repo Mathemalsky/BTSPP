@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 #include <stack>
 #include <stdexcept>
 #include <tuple>
@@ -371,61 +372,60 @@ std::tuple<AdjacencyListGraph, double> edgeAugmentedBiconnectedSubgraph(const G&
   return addEdgesUntilBiconnected(completeGraph, edges);
 }
 
-// // DBEUG
-// #include <iostream>
-// #include "ostream.hpp"
-
 /*!
  * @brief computes an bottleneck optimal almost biconnected sugraph + augmentation edge
  * @details Computes an bottleneck optimal almost biconnected sugraph joind with the edge that augments it to a biconnected graph.
  * @tparam G graph type
  * @param completeGraph complete weighted graph
- * @return
+ * @returnalmost biconnected graph, maximum edge weight and the aumentation egde
  */
 template <typename G>
   requires(std::is_base_of_v<CompleteGraph, G> && std::is_base_of_v<WeightedGraph, G>)
 std::tuple<AdjacencyListGraph, double, Edge> almostBiconnectedSubgraph(const G& completeGraph) {
-  // DEBUG
-  //std::cerr << "-------------------------- begin algorithm\n";
-
   // precompute the squared edge weights
   ExplicitEdges<G> explicitEdges(completeGraph);
-  std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges = explicitEdges.edgePointers();
+  std::vector<const typename ExplicitEdges<G>::EdgeInfo*> edges;
+  edges.reserve(completeGraph.numberOfEdges() + 1);
+  edges.resize(1);
+  const auto tmp = explicitEdges.edgePointers();
+  std::move(tmp.begin(), tmp.end(), std::back_inserter(edges));
 
   // sort the edges
-  std::sort(edges.begin(), edges.end(), [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
-    return a->fastWeight < b->fastWeight;
-  });
+  std::sort(edges.begin() + 1,
+            edges.end(),
+            [&](const typename ExplicitEdges<G>::EdgeInfo* a, const typename ExplicitEdges<G>::EdgeInfo* b) {
+              return a->fastWeight < b->fastWeight;
+            });
+  edges.front() = edges.back();  // add the longest edge also as first edge
 
   auto [biconnectedGraph, maxEdgeWeight] = addEdgesUntilBiconnected(completeGraph, edges);
   const size_t numberOfEdges             = biconnectedGraph.numberOfEdges();
 
-  biconnectedGraph.addEdge(edges.back()->edge);
-  size_t i             = biconnectedGraph.numberOfEdges() - 1;
-  size_t j             = completeGraph.numberOfEdges() - 1;
-  size_t lastWorking_j = j;
-  while (j >= numberOfEdges - 1) {
-    do {  // remove edges until the graph is not biconnected anymore
-      biconnectedGraph.removeEdge(edges[--i]->edge);
-    } while (biconnectedGraph.biconnected());
+  size_t longestNonAugmentationEdgeIndex  = biconnectedGraph.numberOfEdges() - 1;
+  size_t augmentationEdgeIndex            = completeGraph.numberOfEdges();
+  size_t lastWorkingAugmentationEdgeIndex = augmentationEdgeIndex;
+  biconnectedGraph.removeEdge(edges[longestNonAugmentationEdgeIndex]->edge);  // next augmentation edge must be strictly better
 
+  while (augmentationEdgeIndex > numberOfEdges) {
     do {  // test if graph becomes biconnected again upon switching augemntation edge
-      biconnectedGraph.removeEdge(edges[j]->edge);
-      biconnectedGraph.addEdge(edges[--j]->edge);
-    } while (!biconnectedGraph.biconnected() && j >= numberOfEdges - 1);
-    if (j >= numberOfEdges - 1) {  // the while loop must have stopped because the graph was biconnected
-      lastWorking_j = j;
+      biconnectedGraph.removeEdge(edges[augmentationEdgeIndex]->edge);
+      biconnectedGraph.addEdge(edges[--augmentationEdgeIndex]->edge);
+    } while (!biconnectedGraph.biconnected() && augmentationEdgeIndex > numberOfEdges);
+    if (augmentationEdgeIndex > numberOfEdges) {  // the while loop must have stopped because the graph was biconnected
+      lastWorkingAugmentationEdgeIndex = augmentationEdgeIndex;
+      do {                                        // remove edges until the graph is not biconnected anymore
+        biconnectedGraph.removeEdge(edges[--longestNonAugmentationEdgeIndex]->edge);
+      } while (biconnectedGraph.biconnected());
     }
   }
 
-  biconnectedGraph.removeEdge(edges[j]->edge);
-  biconnectedGraph.addEdge(edges[lastWorking_j]->edge);
-  biconnectedGraph.addEdge(edges[i]->edge);
+  biconnectedGraph.removeEdge(edges[augmentationEdgeIndex]->edge);
+  biconnectedGraph.addEdge(edges[lastWorkingAugmentationEdgeIndex]->edge);
+  biconnectedGraph.addEdge(edges[longestNonAugmentationEdgeIndex]->edge);
   assert(biconnectedGraph.biconnected() && "biconnectedGraph must be biconnected!");
-
-  // DEBUG
-  // std::cerr << "-------------------------- end algorithm\n";
-  return std::make_tuple(biconnectedGraph, completeGraph.weight(edges[i]->edge), edges[lastWorking_j]->edge);
+  return std::make_tuple(biconnectedGraph,
+                         completeGraph.weight(edges[longestNonAugmentationEdgeIndex]->edge),
+                         edges[lastWorkingAugmentationEdgeIndex]->edge);
 }
 
 /*!
