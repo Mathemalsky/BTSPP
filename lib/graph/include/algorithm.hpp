@@ -293,8 +293,8 @@ std::tuple<AdjacencyListGraph, double> addEdgesUntilBiconnected(const G& complet
   AdjacencyListGraph graphCopy = graph;  // and a copy
 
   // use binary search to find bottleneck optimal biconnected subgraph
-  size_t upperbound = numberOfEdges;
-  size_t lowerbound = numberOfNodes;
+  size_t upperbound = numberOfEdges - numberOfNodes + 2;  // in case all but one node form a complete subgraph
+  size_t lowerbound = numberOfNodes;                      // in case the graph is a cycle
 
   // heuristic: experiments show that euclidean graphs have ususally less than 11 edges per node
   size_t middle = std::min(numberOfNodes * 11, (lowerbound + upperbound) / 2);
