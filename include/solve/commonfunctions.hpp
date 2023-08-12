@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 
 // graph library
 #include "graph.hpp"
+
+#include "exception/exceptions.hpp"
 
 #include "solve/definitions.hpp"
 
@@ -52,8 +54,14 @@ inline std::ostream& operator<<(std::ostream& os, const ProblemType type) {
   else if (type == ProblemType::BTSPP_approx || type == ProblemType::BTSPP_exact) {
     os << "BTSPP";
   }
+  else if (type == ProblemType::BTSVPP_approx) {
+    os << "BTSVPP";
+  }
   else if (type == ProblemType::TSP_exact) {
     os << "TSP";
+  }
+  else {
+    throw UnknownType("Unknown problem type " + std::to_string(std::to_underlying(type)) + "!");
   }
   return os;
 }

@@ -1,5 +1,5 @@
-# pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
-# BTSP and TSP. Drawing is limited to euclidean graphs.
+# BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+# BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
 # Copyright (C) 2023 Jurek Rostalsky
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,6 +25,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_HOME_DIRECTORY}/bin)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23 -O3 -g -march=native -Wall -Wextra -pedantic -flto=auto")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+
+message(STATUS "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}")
 
 OPTION(Visualisation "Visualisation" ON)
 message(STATUS "Visualisation=${Visualisation}")

@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -118,6 +118,7 @@ constexpr std::string_view SUPPRESS_SEED_TAG     = "-no-seed";
 constexpr std::string_view NO_CROSSING_TAG       = "-no-crossing";
 constexpr std::string_view BTSP_APPROX_TAG       = "-btsp";
 constexpr std::string_view BTSPP_APPROX_TAG      = "-btspp";
+constexpr std::string_view BTSVPP_APPROX_TAG     = "-btsvpp";
 constexpr std::string_view BTSP_EXACT_TAG        = "-btsp-e";
 constexpr std::string_view BTSPP_EXACT_TAG       = "-btspp-e";
 constexpr std::string_view TSP_EXACT_TAG         = "-tsp-e";
@@ -229,6 +230,16 @@ static void readArguments(const int argc, char* argv[]) {
     }
     arguments.erase(std::string(BTSPP_APPROX_TAG));
   }
+  if (arguments.contains(std::string(BTSVPP_APPROX_TAG))) {
+    for (size_t i = 0; i < repetitions; ++i) {
+      graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, suppressSeed);
+      stopWatch.reset();
+      const approximation::Result res = approximation::approximateBTSVPP(euclidean);
+      const double runtime            = stopWatch.elapsedTimeInMilliseconds();
+      handleApproxOutput(res, ProblemType::BTSVPP_approx, filename, runtime, suppressInfo);
+    }
+    arguments.erase(std::string(BTSVPP_APPROX_TAG));
+  }
   if (arguments.contains(std::string(BTSP_EXACT_TAG))) {
     graph::Euclidean euclidean = adaptSeededGeneration(std::atoi(argv[1]), seed, seeded, suppressSeed);
     stopWatch.reset();
@@ -270,6 +281,7 @@ static void printArgumentList() {
   std::cout << "Valid command line arguments are: \n";
   std::cout << "<" << BTSP_APPROX_TAG << "> to approximate BTSP\n";
   std::cout << "<" << BTSPP_APPROX_TAG << "> to approximate BTSP\n";
+  std::cout << "<" << BTSVPP_APPROX_TAG << "> to approximate BTSVPP\n";
   std::cout << "<" << BTSP_EXACT_TAG << "> to solve exact BTSP\n";
   std::cout << "<" << BTSPP_EXACT_TAG << "> to solve exact BTSPP\n";
   std::cout << "<" << TSP_EXACT_TAG << "> to solve exact TSP\n";

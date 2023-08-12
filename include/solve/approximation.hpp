@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 #pragma once
 
+#include <tuple>
 #include <vector>
 
 // graph library
@@ -82,13 +83,12 @@ std::vector<size_t> findHamiltonCycleInOpenEarDecomposition(const graph::EarDeco
 template <typename G>
   requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
 Result approximateBTSP(const G& completeGraph) {
-  double maxEdgeWeight;
-  const graph::AdjacencyListGraph biconnectedGraph = bottleneckOptimalBiconnectedSubgraph(completeGraph, maxEdgeWeight);
-  const graph::AdjacencyListGraph minimal          = makeMinimallyBiconnected(biconnectedGraph);
-  const graph::EarDecomposition openEars           = schmidt(minimal);  // calculate proper ear decomposition
-  const std::vector<size_t> tour                   = findHamiltonCycleInOpenEarDecomposition(openEars, completeGraph.numberOfNodes());
-  const graph::Edge bottleneckEdge                 = findBottleneck(completeGraph, tour, true);
-  const double objective                           = completeGraph.weight(bottleneckEdge);
+  const auto [biconnectedGraph, maxEdgeWeight] = bottleneckOptimalBiconnectedSubgraph(completeGraph);
+  const graph::AdjacencyListGraph minimal      = makeMinimallyBiconnected(biconnectedGraph);
+  const graph::EarDecomposition openEars       = schmidt(minimal);  // calculate proper ear decomposition
+  const std::vector<size_t> tour               = findHamiltonCycleInOpenEarDecomposition(openEars, completeGraph.numberOfNodes());
+  const graph::Edge bottleneckEdge             = findBottleneck(completeGraph, tour, true);
+  const double objective                       = completeGraph.weight(bottleneckEdge);
 
   assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
   return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
@@ -105,18 +105,30 @@ std::vector<size_t> extractHamiltonPath(const std::vector<size_t>& wholeTour, co
 
 /*!
  * @brief removes edges that are not 2-essential if the egde (s,t) is added to the graph
+ * @details The graph is minimally biconnected when adding the edge (s,t).
  * @param biconnectedGraph
  * @param s start node
  * @param t end node
  * @return graph that is biconnected when (s,t) is added
  */
-graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::AdjacencyListGraph& biconnectedGraph,
-                                                                const size_t s,
-                                                                const size_t t);
+template <typename G>
+  requires(std::is_base_of_v<graph::Graph, G>)
+graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const G& biconnectedGraph, const size_t s, const size_t t) {
+  const graph::Edge st_Edge{s, t};
+  const graph::EarDecomposition ears = schmidt(biconnectedGraph);
+  graph::AdjacencyListGraph fromEars = earDecompToAdjacencyListGraph(ears, biconnectedGraph.numberOfNodes());
+  if (!fromEars.adjacent(s, t)) {  // if the s-t edge is one of the removed ones,
+    fromEars.addEdge(st_Edge);     // add it again.
+  }
+  graph::AdjacencyListGraph minimal = edgeKeepingMinimallyBiconectedSubgraph(fromEars, st_Edge);
+  minimal.removeEdge(st_Edge);
+
+  return minimal;
+}
 
 /*!
  * @brief creates graph consisting of 5 copies of the original graph
- * @details Copies original graph, adds 2 nodes x and y and connects x to all copies of s and y to all copies of t
+ * @details Copies original graph, adds 2 nodes x and y and connects x to all copies of s and y to all copies of t.
  * @param minimallyBiconnected
  * @param s start node
  * @param t end node
@@ -125,30 +137,68 @@ graph::AdjacencyListGraph makeEdgeAugmentedMinimallyBiconnected(const graph::Adj
 graph::AdjacencyListGraph createFiveFoldGraph(const graph::AdjacencyListGraph& minimallyBiconnected, const size_t s, const size_t t);
 
 /*!
- * @brief approximates the BTSPP
- * @param euclidean complete graph, providing distances between nodes
+ * @brief approximates a BTSPP
+ * @tparam G type of complete graph
+ * @param completeGraph complete weighted graph provinding the distances between nodes
+ * @param biconnectedGraph
+ * @param maxEdgeWeight
  * @param s start node
  * @param t end node
- * @param printInfo controls if objective, lower bound on OPT and a fortiori guarantee are printed to console
+ * @return Result
+ */
+template <typename G>
+  requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
+Result findHamiltonPathInBottleneckOptimalBiconnectedSubgraph(const G& completeGraph,
+                                                              const graph::AdjacencyListGraph& biconnectedGraph,
+                                                              const double maxEdgeWeight,
+                                                              const size_t s,
+                                                              const size_t t) {
+  const graph::AdjacencyListGraph minimal = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
+  graph::AdjacencyListGraph fiveFoldGraph = createFiveFoldGraph(minimal, s, t);
+  const size_t numberOfNodes5FoldGraph    = fiveFoldGraph.numberOfNodes();
+  const graph::EarDecomposition openEars  = schmidt(fiveFoldGraph);                // calculate open ear decomposition
+  std::vector<size_t> wholeTour           = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
+  const std::vector<size_t> tour          = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
+  const graph::Edge bottleneckEdge        = findBottleneck(completeGraph, tour, false);
+  const double objective                  = completeGraph.weight(bottleneckEdge);
+
+  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
+  return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
+}
+
+/*!
+ * @brief approximates an instance of BTSPP
+ * @details Computes the bottleneck optimal almost biconnected subgraph that is biconnected when augmented with the edge (s,t).
+ * @tparam G type of complete graph
+ * @param completeGraph complete weighted graph provinding the distances between nodes
+ * @param s start node
+ * @param t end node
  * @return Result
  */
 template <typename G>
   requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
 Result approximateBTSPP(const G& completeGraph, const size_t s = 0, const size_t t = 1) {
-  double maxEdgeWeight;
-
   // find graph s.t. G = (V,E) + (s,t) is biconnected
-  const graph::AdjacencyListGraph biconnectedGraph = edgeAugmentedBiconnectedSubgraph(completeGraph, graph::Edge{s, t}, maxEdgeWeight);
-  const graph::AdjacencyListGraph minimal          = makeEdgeAugmentedMinimallyBiconnected(biconnectedGraph, s, t);
-  graph::AdjacencyListGraph fiveFoldGraph          = createFiveFoldGraph(minimal, s, t);
-  const size_t numberOfNodes5FoldGraph             = fiveFoldGraph.numberOfNodes();
-  const graph::EarDecomposition openEars           = schmidt(fiveFoldGraph);                // calculate open ear decomposition
-  std::vector<size_t> wholeTour                    = findHamiltonCycleInOpenEarDecomposition(openEars, numberOfNodes5FoldGraph);
-  const std::vector<size_t> tour                   = extractHamiltonPath(wholeTour, s, t);  // extract s-t-path from solution
-  const graph::Edge bottleneckEdge                 = findBottleneck(completeGraph, tour, false);
-  const double objective                           = completeGraph.weight(bottleneckEdge);
+  const auto [biconnectedGraph, maxEdgeWeight] = edgeAugmentedBiconnectedSubgraph(completeGraph, graph::Edge{s, t});
+  return findHamiltonPathInBottleneckOptimalBiconnectedSubgraph(completeGraph, biconnectedGraph, maxEdgeWeight, s, t);
+}
 
-  assert(objective / maxEdgeWeight <= 2 && objective / maxEdgeWeight >= 1 && "A fortiori guarantee is nonsense!");
-  return Result{biconnectedGraph, openEars, tour, bottleneckEdge, objective, maxEdgeWeight, minimal.numberOfEdges()};
+/*!
+ * @brief approximates an instance of BTSVPP
+ * @details Computes the bottleneck optimal almost biconnected subgraph such that there is an edge, which augemnts it to a biconnected
+ * graph.
+ * @tparam G type of complete graph
+ * @param completeGraph complete weighted graph provinding the distances between nodes
+ * @return Result
+ */
+template <typename G>
+  requires(std::is_base_of_v<graph::CompleteGraph, G> && std::is_base_of_v<graph::WeightedGraph, G>)
+Result approximateBTSVPP(const G& completeGraph) {
+  const auto [biconnectedGraph, maxEdgeWeight, augmentationEdge] = almostBiconnectedSubgraph(completeGraph);
+  return findHamiltonPathInBottleneckOptimalBiconnectedSubgraph(completeGraph,
+                                                                biconnectedGraph,
+                                                                maxEdgeWeight,
+                                                                augmentationEdge.u,
+                                                                augmentationEdge.v);
 }
 }  // namespace approximation

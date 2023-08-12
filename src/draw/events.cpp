@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -73,6 +73,12 @@ static void handleSlowEvents(std::shared_ptr<DrawData> drawData) {
     drawData->results.BTSPP_APPROX_RESULT                       = approximation::approximateBTSPP(drawing::EUCLIDEAN);
     drawData->vertexOrder.updateOrder(drawData->results.BTSPP_APPROX_RESULT.tour, ProblemType::BTSPP_approx);
     approximation::printInfo(drawData->results.BTSPP_APPROX_RESULT, ProblemType::BTSPP_approx);
+  }
+  if (solve::SOLVE[std::to_underlying(ProblemType::BTSVPP_approx)]) {
+    solve::SOLVE[std::to_underlying(ProblemType::BTSVPP_approx)] = false;
+    drawData->results.BTSVPP_APPROX_RESULT                       = approximation::approximateBTSVPP(drawing::EUCLIDEAN);
+    drawData->vertexOrder.updateOrder(drawData->results.BTSVPP_APPROX_RESULT.tour, ProblemType::BTSVPP_approx);
+    approximation::printInfo(drawData->results.BTSVPP_APPROX_RESULT, ProblemType::BTSVPP_approx);
   }
   if (solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)]) {
     solve::SOLVE[std::to_underlying(ProblemType::BTSP_exact)] = false;
@@ -154,6 +160,20 @@ static void cycleBTSPPApproxDisplay() {
   }
 }
 
+static void cycleBTSVPPApproxDisplay() {
+  if (drawing::BTSVPP_DRAW_BICONNECTED_GRAPH) {
+    drawing::BTSVPP_DRAW_BICONNECTED_GRAPH = false;
+    drawing::BTSVPP_DRAW_HAMILTON_PATH     = true;
+  }
+  else if (drawing::BTSVPP_DRAW_HAMILTON_PATH) {
+    drawing::BTSVPP_DRAW_HAMILTON_PATH     = false;
+    drawing::BTSVPP_DRAW_BICONNECTED_GRAPH = true;
+  }
+  else {
+    drawing::BTSVPP_DRAW_BICONNECTED_GRAPH = true;
+  }
+}
+
 /***********************************************************************************************************************
  *                                                      callbacks
  **********************************************************************************************************************/
@@ -182,12 +202,15 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]);
   }
   if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSVPP_approx)]);
   }
   if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
-    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_exact)]);
   }
   if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
+    toggle(drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_exact)]);
+  }
+  if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
   }
   if (key == GLFW_KEY_T && action == GLFW_PRESS) {
@@ -196,6 +219,9 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
     }
     if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSPP_approx)]) {
       cycleBTSPPApproxDisplay();
+    }
+    if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSVPP_approx)]) {
+      cycleBTSVPPApproxDisplay();
     }
   }
 }

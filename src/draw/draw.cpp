@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -119,6 +119,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
   clearWindow(window, drawData->appearance.clearColour);
   drawVertices(programs.drawCircles, EUCLIDEAN.numberOfNodes(), drawData->appearance.vertexColour);
 
+  // BTSP approx
   unsigned int typeInt = std::to_underlying(ProblemType::BTSP_approx);
   if (BTSP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSP_approx)) {
     drawGraph(programs.drawLine,
@@ -142,6 +143,8 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
              drawData->appearance.thickness[typeInt] * 1.75f,
              drawData->appearance.colour[typeInt]);
   }
+
+  // BTSPP approx
   typeInt = std::to_underlying(ProblemType::BTSPP_approx);
   if (BTSPP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSPP_approx)) {
     drawGraph(programs.drawLine,
@@ -162,6 +165,30 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
              drawData->appearance.thickness[typeInt] * 1.75f,
              drawData->appearance.colour[typeInt]);
   }
+
+  // BTSVPP approx
+  typeInt = std::to_underlying(ProblemType::BTSVPP_approx);
+  if (BTSVPP_DRAW_BICONNECTED_GRAPH && ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSVPP_approx)) {
+    drawGraph(programs.drawLine,
+              drawData->floatVertices,
+              drawData->results.BTSVPP_APPROX_RESULT.biconnectedGraph,
+              drawData->appearance.thickness[typeInt],
+              drawData->appearance.colour[typeInt]);
+  }
+  if (BTSVPP_DRAW_HAMILTON_PATH && ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSVPP_approx)) {
+    drawPath(programs.drawPathSegments,
+             drawData->buffers.tour,
+             drawData->vertexOrder[ProblemType::BTSVPP_approx],
+             drawData->appearance.thickness[typeInt],
+             drawData->appearance.colour[typeInt]);
+    drawEdge(programs.drawLine,
+             drawData->floatVertices,
+             drawData->results.BTSVPP_APPROX_RESULT.bottleneckEdge,
+             drawData->appearance.thickness[typeInt] * 1.75f,
+             drawData->appearance.colour[typeInt]);
+  }
+
+  // BTSP exact
   typeInt = std::to_underlying(ProblemType::BTSP_exact);
   if (ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSP_exact)) {
     drawPath(programs.drawPathSegments,
@@ -175,6 +202,8 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
              drawData->appearance.thickness[typeInt] * 1.75f,
              drawData->appearance.colour[typeInt]);
   }
+
+  // BTSPP exact
   typeInt = std::to_underlying(ProblemType::BTSPP_exact);
   if (ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::BTSPP_exact)) {
     drawPath(programs.drawPathSegments,
@@ -188,6 +217,8 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
              drawData->appearance.thickness[typeInt] * 1.75f,
              drawData->appearance.colour[typeInt]);
   }
+
+  // TSP exact
   typeInt = std::to_underlying(ProblemType::TSP_exact);
   if (ACTIVE[typeInt] && drawData->vertexOrder.initialized(ProblemType::TSP_exact)) {
     drawPath(programs.drawPathSegments,

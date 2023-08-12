@@ -1,6 +1,6 @@
 /*
- * pathBTSP is a tool to solve, approximate and draw instances of BTSPP,
- * BTSP and TSP. Drawing is limited to euclidean graphs.
+ * BTSPP is a tool to solve, approximate and draw instances of BTSVPP,
+ * BTSPP, BTSP and TSP. Drawing is limited to euclidean graphs.
  * Copyright (C) 2023 Jurek Rostalsky
  *
  * This program is free software: you can redistribute it and/or modify
@@ -44,6 +44,8 @@ bool BTSP_DRAW_BICONNECTED_GRAPH;
 bool BTSP_DRAW_HAMILTON_CYCLE;
 bool BTSPP_DRAW_BICONNECTED_GRAPH;
 bool BTSPP_DRAW_HAMILTON_PATH;
+bool BTSVPP_DRAW_BICONNECTED_GRAPH;
+bool BTSVPP_DRAW_HAMILTON_PATH;
 }  // namespace drawing
 
 namespace input {
