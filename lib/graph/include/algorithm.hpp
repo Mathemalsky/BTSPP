@@ -25,6 +25,7 @@
 #include <stack>
 #include <stdexcept>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 #include "exceptions.hpp"
@@ -296,8 +297,14 @@ std::tuple<AdjacencyListGraph, double> addEdgesUntilBiconnected(const G& complet
   size_t upperbound = numberOfEdges - numberOfNodes + 2;  // in case all but one node form a complete subgraph
   size_t lowerbound = numberOfNodes;                      // in case the graph is a cycle
 
+  size_t middle;
   // heuristic: experiments show that euclidean graphs have ususally less than 11 edges per node
-  size_t middle = std::min(numberOfNodes * 11, (lowerbound + upperbound) / 2);
+  if constexpr (std::is_same_v<G, Euclidean>) {
+    middle = std::min(numberOfNodes * 11, (lowerbound + upperbound) / 2);
+  }
+  else {
+    middle = (2 * lowerbound + upperbound) / 3;
+  }
 
   while (upperbound != lowerbound) {
     for (size_t i = lowerbound; i < middle; ++i) {
