@@ -63,7 +63,7 @@ void printInfo(const approximation::Result& res, const ProblemType problemType, 
 /*!
  * @brief doubles and deletes edges to make open ear decomposition eularian
  * @param ears open ear decomposition
- * @param numberofNodes tells the function the ranges of indices ocurring in ears
+ * @param numberOfNodes tells the function the ranges of indices ocurring in ears
  */
 static graph::AdjacencyListDigraph constructDigraph(const graph::EarDecomposition& ears, const size_t numberOfNodes) {
   graph::AdjacencyListGraph graph = earDecompToAdjacencyListGraph(ears, numberOfNodes);
@@ -139,8 +139,8 @@ static graph::AdjacencyListDigraph constructDigraph(const graph::EarDecompositio
 }
 
 /*!
- * @brief prepairs the graphs for finding the euler tour
- * @param graphPair graph and digraph
+ * @brief prepairs the graphs for finding the Euler tour
+ * @param digraph directed graph where all graphs have even degree
  */
 static void prepareForEulertour(graph::AdjacencyListDigraph& digraph) {
   const size_t numberOfNodes = digraph.numberOfNodes();
@@ -164,9 +164,8 @@ static void prepareForEulertour(graph::AdjacencyListDigraph& digraph) {
 }
 
 /*!
- * @brief finds an euler tour in graph
- * @param graph
- * @param digraph holds information needed to construct an euler tour that can be shortcutted to hamiltonian cycle
+ * @brief finds an Euler tour in graph
+ * @param digraph holds information needed to construct an Euler tour that can be shortcutted to hamiltonian cycle
  * @return std::vector<size_t> of node indices; first is not repeated as last
  */
 static std::vector<size_t> findEulertour(graph::AdjacencyListDigraph& digraph) {
@@ -176,9 +175,10 @@ static std::vector<size_t> findEulertour(graph::AdjacencyListDigraph& digraph) {
 }
 
 /*!
- * @brief shortcuts euler tour to hamiltonian cycle
- * @param longEulertour euler tour in multigraph
+ * @brief shortcuts Euler tour to hamiltonian cycle
+ * @param longEulertour Euler tour in multigraph
  * @param digraph holds information for shortcutting
+ * @param numberOfNodes number of nodes in the oroginal graph
  * @return std::vector<size_t> of node indices, first is not repeated as last
  */
 static std::vector<size_t> shortcutToHamiltoncycle(const std::vector<size_t>& longEulertour,

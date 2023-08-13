@@ -21,6 +21,9 @@
 #include <stdexcept>
 #include <string>
 
+/*!
+ * \brief The Exceptions class is a base class for all specific exceptions.
+ */
 class Exception : public std::exception {
 public:
   explicit Exception(const char* message) : pMessage(message) {}

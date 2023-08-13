@@ -43,6 +43,7 @@ void printInfo(const exactsolver::Result& res, const ProblemType problemType, co
 
 /*!
  * @brief solves an instance of BTSP, BTSPP or TSP
+ * @param euclidean euclidean graph
  * @param problemType type of instance
  * @param noCrossing if BTSP the solution can be forced to have no crossings
  */

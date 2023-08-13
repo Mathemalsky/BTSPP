@@ -470,7 +470,7 @@ protected:
   /*!
    * @brief adds an edge from out to in with weight edgeWeight
    * @param out start vertex of edge
-   * @param end vertex of edge
+   * @param in end vertex of edge
    * @param edgeWeight of new edge
    */
   virtual void addEdge(const size_t out, const size_t in, const EdgeWeight edgeWeight) = 0;
