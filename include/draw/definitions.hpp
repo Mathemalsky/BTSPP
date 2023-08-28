@@ -77,13 +77,15 @@ constexpr bool INITIAL_BTSVPP_DRAW_BICONNECTED_GRAPH    = false;
 constexpr bool INITIAL_BTSVPP_DRAW_HAMILTON_PATH        = false;
 
 constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_THICKNESS{
-    6.0f,  // BTSP_approx
-    6.0f,  // BTSPP_approx
+    4.0f,  // BTSP_approx
+    4.0f,  // BTSPP_approx
     2.0f,  // BTSVPP_approx
-    5.0f,  // BTSP_exact
-    5.0f,  // BTSPP_exact
+    2.0f,  // BTSP_exact
+    3.0f,  // BTSPP_exact
     3.0f   // TSP_exact
 };
+
+constexpr float THICKNESS_STEP = 0.5;
 
 constexpr RGBA_COLOUR INITIAL_CLEAR_COLOUR  = {0.19, 0.19, 0.25, 1.0};
 constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 0.0f, 0.0f, 1.0f};

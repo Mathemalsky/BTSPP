@@ -96,6 +96,7 @@ static void handleSlowEvents(std::shared_ptr<DrawData> drawData) {
     solve::SOLVE[std::to_underlying(ProblemType::TSP_exact)] = false;
     exactsolver::Result res                                  = exactsolver::solve(drawing::EUCLIDEAN, ProblemType::TSP_exact);
     drawData->vertexOrder.updateOrder(res.tour, ProblemType::TSP_exact);
+    exactsolver::printInfo(res, ProblemType::TSP_exact);
   }
 }
 

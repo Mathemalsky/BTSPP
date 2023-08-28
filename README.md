@@ -1,6 +1,8 @@
 # BSTPP
 
-This software contains the implementation of approximation algorithms for 3 variants of the bottleneck travelling salesman problem. Those are BTSP, BTSPP and BTSVPP.
+This software contains the implementation of approximation algorithms for 3 variants of the bottleneck travelling salesman problem. Those are the bottleneck travelling salesman problem (BTSP), the bottleneck travelling salesman path problem (BTSPP) and the bottleneck travelling salesman variable path problem (BTSVPP).
+In addition, methods to solve TSP, BTSP and BTSPP using a MILP solver are also included.
+This program is part of my master thesis.
 
 ## Using the whole program
 
@@ -9,7 +11,7 @@ The whole program includes the visualisation for examples on euclidean graphs.
 ### Prerequisites
 - [cmake](https://cmake.org/) version 3.20 or higher is required for compiling
 - [dear imgui](https://github.com/ocornut/imgui) is used for graphical output. dear imgui is contained as git submodule, but it needs
-- [glfw](https://www.glfw.org/) Can be installed using the following steps:
+- [glfw](https://www.glfw.org/) can be installed using the following steps:
 ```
 sudo apt-get install xorg-dev
 sudo apt-get install libgl1-mesa-dev
