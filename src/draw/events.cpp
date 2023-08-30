@@ -214,6 +214,9 @@ void keyCallback([[maybe_unused]] GLFWwindow* window, int key, [[maybe_unused]] 
   if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
     toggle(drawing::ACTIVE[std::to_underlying(ProblemType::TSP_exact)]);
   }
+  if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+    toggle(drawing::COLLAPSE_SETTINGS_WINDOW);
+  }
   if (key == GLFW_KEY_T && action == GLFW_PRESS) {
     if (drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]) {
       cycleBTSPApproxDisplay();

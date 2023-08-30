@@ -36,8 +36,9 @@
 namespace drawing {
 extern graph::Euclidean EUCLIDEAN;
 
-extern bool SHOW_SETTINGS_WINDOW;
 extern bool SHOW_DEBUG_WINDOW;
+extern bool SHOW_SETTINGS_WINDOW;
+extern bool COLLAPSE_SETTINGS_WINDOW;
 
 extern std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
 

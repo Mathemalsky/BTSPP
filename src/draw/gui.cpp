@@ -73,6 +73,8 @@ void drawImgui(Appearance& appearance) {
   if (drawing::SHOW_SETTINGS_WINDOW) {
     ImGui::Begin("Settings", &drawing::SHOW_SETTINGS_WINDOW);
 
+    ImGui::SetWindowCollapsed(drawing::COLLAPSE_SETTINGS_WINDOW);
+
     ImGui::Checkbox("BTSP approx", &drawing::ACTIVE[std::to_underlying(ProblemType::BTSP_approx)]);
     ImGui::ColorEdit3("##BTSP approx", (float*) &appearance.colour[std::to_underlying(ProblemType::BTSP_approx)]);
     ImGui::SliderFloat("thickness##BTSP approx", &appearance.thickness[std::to_underlying(ProblemType::BTSP_approx)], 0.0f, 30.0f, "%.1f");

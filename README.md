@@ -43,6 +43,7 @@ key   | function
 ------|-------------
 `ESC` | close application
 `F3`  | toggle visibility of settings window
+`C`   | toggle collapse mode of settings window
 `R`   | recompute solution(s)
 `T`   | switch display of approximation to next mode
 `1`   | toggle drawing of BTSP approximation

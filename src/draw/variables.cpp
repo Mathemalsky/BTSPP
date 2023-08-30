@@ -37,6 +37,7 @@ graph::Euclidean EUCLIDEAN;
 
 bool SHOW_DEBUG_WINDOW;
 bool SHOW_SETTINGS_WINDOW;
+bool COLLAPSE_SETTINGS_WINDOW;
 
 std::array<bool, std::to_underlying(ProblemType::NUMBER_OF_OPTIONS)> ACTIVE;
 bool BTSP_DRAW_OPEN_EAR_DECOMPOSITION;
