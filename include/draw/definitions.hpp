@@ -45,10 +45,12 @@ constexpr std::array<ProblemType, static_cast<unsigned int>(ProblemType::NUMBER_
 }  // namespace problemType
 
 namespace drawing {
-constexpr bool INITIAL_SHOW_SETTINGS_WINDOW = true;
-constexpr bool INITIAL_SHOW_DEBUG_WINDOW    = false;
-constexpr float VETREX_RADIUS               = 0.01f;
-constexpr unsigned int PATH_OVERHEAD        = 3;
+constexpr bool INITIAL_SHOW_SETTINGS_WINDOW  = true;
+constexpr bool INITIAL_SHOW_DEBUG_WINDOW     = false;
+constexpr float VETREX_RADIUS                = 0.01f;
+constexpr int CIRCLE_STEPS                   = 8;
+constexpr float BOTLLENECK_EDGE_WIDTH_FACTOR = 2.0f;
+constexpr unsigned int PATH_OVERHEAD         = 3;
 
 constexpr std::array<bool, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPTIONS)> INITIAL_ACTIVENESS{
     false,  // BTSP_approx
@@ -86,7 +88,7 @@ constexpr std::array<float, static_cast<unsigned int>(ProblemType::NUMBER_OF_OPT
 };
 
 constexpr RGBA_COLOUR INITIAL_CLEAR_COLOUR  = {0.19, 0.19, 0.25, 1.0};
-constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 0.0f, 0.0f, 1.0f};
+constexpr RGBA_COLOUR INITIAL_VERTEX_COLOUR = {1.0f, 1.0f, 0.0f, 1.0f};
 }  // namespace drawing
 
 namespace input {
@@ -96,7 +98,7 @@ constexpr int INITIAL_NODE_IN_MOTION = namedInts::INVALID;
 }  // namespace input
 
 namespace mainwindow {
-constexpr unsigned int INITIAL_HEIGHT = 960;
-constexpr unsigned int INITIAL_WIDTH  = 960;
+constexpr unsigned int INITIAL_HEIGHT = 1000;
+constexpr unsigned int INITIAL_WIDTH  = 1000;
 constexpr const char* NAME            = "BTSPP";
 }  // namespace mainwindow

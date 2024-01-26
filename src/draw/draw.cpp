@@ -50,7 +50,7 @@ static void clearWindow(GLFWwindow* window, const RGBA_COLOUR& clearColour) {
 // the vertex buffer object needs to be bound and the attribute vertex_position needs to be enabled
 static void drawVertices(const ShaderProgram& drawCircles, const size_t numberOfVertices, const RGBA_COLOUR& vertexColour) {
   drawCircles.use();  // need to call glUseProgram before setting uniforms
-  drawCircles.setUniform("u_steps", 8);
+  drawCircles.setUniform("u_steps", CIRCLE_STEPS);
   drawCircles.setUniform("u_radius", VETREX_RADIUS);
   drawCircles.setUniform("u_colour", vertexColour);
 
@@ -140,7 +140,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
     drawEdge(programs.drawLine,
              drawData->floatVertices,
              drawData->results.BTSP_APPROX_RESULT.bottleneckEdge,
-             drawData->appearance.thickness[typeInt] * 1.75f,
+             drawData->appearance.thickness[typeInt] * BOTLLENECK_EDGE_WIDTH_FACTOR,
              drawData->appearance.colour[typeInt]);
   }
 
@@ -162,7 +162,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
     drawEdge(programs.drawLine,
              drawData->floatVertices,
              drawData->results.BTSPP_APPROX_RESULT.bottleneckEdge,
-             drawData->appearance.thickness[typeInt] * 1.75f,
+             drawData->appearance.thickness[typeInt] * BOTLLENECK_EDGE_WIDTH_FACTOR,
              drawData->appearance.colour[typeInt]);
   }
 
@@ -184,7 +184,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
     drawEdge(programs.drawLine,
              drawData->floatVertices,
              drawData->results.BTSVPP_APPROX_RESULT.bottleneckEdge,
-             drawData->appearance.thickness[typeInt] * 1.75f,
+             drawData->appearance.thickness[typeInt] * BOTLLENECK_EDGE_WIDTH_FACTOR,
              drawData->appearance.colour[typeInt]);
   }
 
@@ -199,7 +199,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
     drawEdge(programs.drawLine,
              drawData->floatVertices,
              drawData->results.BTSP_EXACT_RESULT.bottleneckEdge,
-             drawData->appearance.thickness[typeInt] * 1.75f,
+             drawData->appearance.thickness[typeInt] * BOTLLENECK_EDGE_WIDTH_FACTOR,
              drawData->appearance.colour[typeInt]);
   }
 
@@ -214,7 +214,7 @@ void draw(GLFWwindow* window, const ShaderProgramCollection& programs, const std
     drawEdge(programs.drawLine,
              drawData->floatVertices,
              drawData->results.BTSPP_EXACT_RESULT.bottleneckEdge,
-             drawData->appearance.thickness[typeInt] * 1.75f,
+             drawData->appearance.thickness[typeInt] * BOTLLENECK_EDGE_WIDTH_FACTOR,
              drawData->appearance.colour[typeInt]);
   }
 
