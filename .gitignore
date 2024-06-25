@@ -1,8 +1,14 @@
-# Ignore everything
-*
+# Ignore everything on top level
+/*
 
 # look into subdirectories
 !*/
+
+# disallow some subdirectories
+.vscode/
+bin/
+build/
+doc/
 
 # allow this gitignore file
 !.gitignore
@@ -19,21 +25,9 @@
 
 # allow implementation
 !CMakeLists.txt
-!src/*.cpp
-!include/*.hpp
-!src/draw/*.cpp
-!include/draw/*.hpp
-!src/graph/*.cpp
-!include/graph/*.hpp
-!include/utility/*.hpp
-!src/solve/*.cpp
-!include/solve/*.hpp
-!include/exception/*.hpp
+!src/
+!include/
 
 # libraries
-!lib/graph/*
-# !lib/graph/CMakeLists.txt
-# !lib/graph/src/*.cpp
-# !lib/graph/include/*.hpp
-
-!lib/imgui/*
+!lib/graph/
+!lib/imgui/
