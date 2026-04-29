@@ -1,4 +1,4 @@
-# BSTPP
+# BTSPP
 
 This software contains the implementation of approximation algorithms for 3 variants of the bottleneck travelling salesman problem. Those are the bottleneck travelling salesman problem (BTSP), the bottleneck travelling salesman path problem (BTSPP) and the bottleneck travelling salesman variable path problem (BTSVPP).
 In addition, methods to solve TSP, BTSP and BTSPP using a MILP solver are also included.
